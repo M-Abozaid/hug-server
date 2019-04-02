@@ -4,7 +4,6 @@ const config = require('../config');
 const { OpenVidu } = require('openvidu-node-client');
 const openvidu = new OpenVidu(config.OPENVIDU_URL, config.OPENVIDU_SECRET);
 
-/* GET home page. */
 router.post('/session', async function (req, res, next) {
   const session = await openvidu.createSession(req.body);
   const token = await session.generateToken();
