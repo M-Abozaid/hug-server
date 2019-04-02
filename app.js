@@ -4,8 +4,8 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 
-const usersRouter = require('./routes/users');
-const openviduRouter = require('./routes/openvidu');
+const usersRouter = require('./src/routes/users');
+const openviduRouter = require('./src/routes/openvidu');
 
 const app = express();
 // view engine setup

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();// eslint-disable-line new-cap
-const config = require('../config');
+const config = require('../../config');
 const { OpenVidu } = require('openvidu-node-client');
 const openvidu = new OpenVidu(config.OPENVIDU_URL, config.OPENVIDU_SECRET);
 
