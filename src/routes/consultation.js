@@ -8,6 +8,7 @@ router.post('/', async function (req, res, next) {
   const consultation = new Consultation(req.body);
   await consultation.save();
   res.json(consultation);
+
 });
 
 router.get('/:id', function (req, res, next) {
