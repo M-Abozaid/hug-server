@@ -1,0 +1,32 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [{
+      "type": "node",
+      "request": "launch",
+      "name": "Launch server",
+      "program": "${workspaceFolder}/bin/www",
+      "env": {
+        "PORT": "3000",
+        "NODE_TLS_REJECT_UNAUTHORIZED": 0,
+        "DB_URI": "mongodb://localhost/hug_at_home",
+        "NODE_ENV":"development"
+      }
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "current file",
+      "program": "${file}",
+      "env": {
+        "NODE_TLS_REJECT_UNAUTHORIZED": 0,
+        "DB_URI": "mongodb://localhost/hug_at_home",
+        "NODE_ENV":"development"
+
+      }
+    }
+  ]
+}
+//https://gsk-hk-0219.oniabsis.com/fulfillment
