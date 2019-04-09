@@ -9,10 +9,14 @@ const openvidu = new OpenVidu(sails.config.OPENVIDU_URL, sails.config.OPENVIDU_S
 module.exports = {
   getToken: async function(req, res){
 
-    const session = await openvidu.createSession(req.body);
-    const token = await session.generateToken();
-    res.json({ token, id: session.id });
-  }
+    try {
+      const session = await openvidu.createSession(req.body);
+      const token = await session.generateToken();
+      return res.json({ token, id: session.id });
+    } catch (error) {
+      return res.json(error);
+    }
 
+  }
 };
 
