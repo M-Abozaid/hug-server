@@ -33,15 +33,16 @@ module.exports = {
       model: 'consultation'
     },
     read:{
-      type:'boolean'
+      type:'boolean',
+      // default:false
     }
 
   },
 
   afterCreate: function (message, proceed) {
 
-    sails.sockets.broadcast(message.to, {event:'chatMessage',data:message});
-    console.log('users ' , users);
+    sails.sockets.broadcast(message.to, {event:'newMessage',data:message});
+    return proceed();
 
   }
 };

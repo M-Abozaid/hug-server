@@ -8,7 +8,6 @@
 module.exports = {
 
   attributes: {
-
     firstName: {
       type: 'string',
       required: true
@@ -29,10 +28,21 @@ module.exports = {
       type: 'number',
       required: true
     },
+    accepted:{
+      type: 'boolean'
+    },
+    acceptedBy:{
+      model: 'user'
+    },
     owner: {
       model: 'user'
     }
 
   },
 
+  afterCreate: function (consultation, proceed) {
+
+    sails.sockets.broadcast('doctors', {event:'newConsultation',data:consultation});
+    return proceed();
+  }
 };

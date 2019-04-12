@@ -13,7 +13,8 @@ module.exports = {
       type: 'string'
     },
     email: {
-      type: 'string'
+      type: 'string',
+      isEmail: true
     },
     firstName: {
       type: 'string',
@@ -23,12 +24,17 @@ module.exports = {
       type: 'string',
       required: true
     },
+    role: {
+      type:'string',
+      isIn: ['doctor', 'nurse'],
+      required: true
+    },
+
 
     // Add a reference to Consultation
     consultations: {
       collection: 'consultation',
       via: 'owner'
     }
-
-  },
+  }
 };

@@ -21,7 +21,8 @@ module.exports.routes = {
 
   '/': { view: 'pages/homepage' },
   'post /openvidu-session': 'OpenviduSessionController.getToken',
-  'get /subscribe-to-chat': 'SubscribeToChatController.subscribe'
+  'get /subscribe-to-socket': 'SubscribeToSocket.subscribe',
+  'get /subscribe-to-doctors':'SubscribeToDoctors.subscribe',
   /***************************************************************************
   *                                                                          *
   * More custom routes here...                                               *
