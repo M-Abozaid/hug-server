@@ -42,7 +42,7 @@ module.exports = {
 
   afterCreate: function (consultation, proceed) {
 
-    sails.sockets.broadcast('doctors', {event:'newConsultation',data:consultation});
+    sails.sockets.broadcast('doctors', 'newConsultation', {event:'newConsultation',data:consultation});
     return proceed();
   }
 };

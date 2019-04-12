@@ -30,7 +30,8 @@ module.exports = {
       type: 'string'
     },
     consultation:{
-      model: 'consultation'
+      model: 'consultation',
+      required:true
     },
     read:{
       type:'boolean',
@@ -41,7 +42,7 @@ module.exports = {
 
   afterCreate: function (message, proceed) {
 
-    sails.sockets.broadcast(message.to, {event:'newMessage',data:message});
+    sails.sockets.broadcast(message.to, 'newMessage', {data:message});
     return proceed();
 
   }

@@ -21,13 +21,13 @@ module.exports = {
       return res.forbidden();
     }
 
-    sails.sockets.join(req, user.id, (err) => {
+    sails.sockets.join(req, 'doctors', (err) => {
       if (err) {
         return res.serverError(err);
       }
 
       return res.json({
-        message: 'Subscribed to a fun room called '+user.id+'!'
+        message: 'Subscribed to doctors!'
       });
     });
   }
