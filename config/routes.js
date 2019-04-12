@@ -23,7 +23,7 @@ module.exports.routes = {
   'post /openvidu-session': 'OpenviduSessionController.getToken',
   'get /subscribe-to-socket': 'SubscribeToSocketController.subscribe',
   'get /subscribe-to-doctors':'SubscribeToDoctorsController.subscribe',
-  'get /read-messages':'ReadMessagesController.read',
+  'get /message/read-messages':'MessageController.readMessages',
   /***************************************************************************
   *                                                                          *
   * More custom routes here...                                               *
