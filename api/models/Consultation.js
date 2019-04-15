@@ -28,8 +28,11 @@ module.exports = {
       type: 'number',
       required: true
     },
-    accepted:{
-      type: 'boolean'
+    status:{
+      type: 'string',
+      isIn: ['pending', 'active', 'closed'],
+      // default:'pending',
+      required: true
     },
     acceptedBy:{
       model: 'user'

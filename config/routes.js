@@ -23,7 +23,12 @@ module.exports.routes = {
   'post /openvidu-session': 'OpenviduSessionController.getToken',
   'get /subscribe-to-socket': 'SubscribeToSocketController.subscribe',
   'get /subscribe-to-doctors':'SubscribeToDoctorsController.subscribe',
-  'get /message/read-messages':'MessageController.readMessages',
+  'patch /read-messages':'MessageController.readMessages',
+  'get /consultations-overview':'ConsultationController.consultationOverview',
+  'post /consultation/:consultation/accept': 'ConsultationController.acceptConsultation',
+  'post /consultation/:consultation/call': 'ConsultationController.call',
+  'post /consultation/:consultation/reject-call': 'ConsultationController.rejectCall',
+
   /***************************************************************************
   *                                                                          *
   * More custom routes here...                                               *
@@ -34,6 +39,6 @@ module.exports.routes = {
   * not match any of those, it is matched against static assets.             *
   *                                                                          *
   ***************************************************************************/
-
+  //
 
 };

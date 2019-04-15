@@ -17,8 +17,16 @@ module.exports.policies = {
   *                                                                          *
   ***************************************************************************/
 
-  // '*': true,
+  '*': 'isLoggedIn',
+  '/subscribe-to-doctors':['isLoggedIn', 'isDoctor'],
   UserController:{
     create:'setRole'
+  },
+  MessageController:{
+    create: ['isLoggedIn', 'setMessageDestination']
+  },
+  ConsultationController:{
+    acceptConsultation:['isLoggedIn', 'isDoctor']
   }
+
 };

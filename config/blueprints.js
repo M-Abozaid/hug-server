@@ -40,4 +40,15 @@ module.exports.blueprints = {
 
   prefix: '/api/v1',
 
+  populate : false,
+
+  parseBlueprintOptions(req) {
+    var queryOptions = req._sails.hooks.blueprints.parseBlueprintOptions(req);
+
+    if(!req.param('populate', false) && !queryOptions.alias) {
+      queryOptions.populates = {};
+    }
+    return queryOptions;
+  }
+
 };

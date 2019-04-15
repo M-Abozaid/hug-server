@@ -42,7 +42,8 @@ module.exports = {
 
   afterCreate: function (message, proceed) {
 
-    sails.sockets.broadcast(message.to, 'newMessage', {data:message});
+    sails.sockets.broadcast(message.to || 'doctors', 'newMessage', {data:message});
+
     return proceed();
 
   }
