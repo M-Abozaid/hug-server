@@ -32,6 +32,7 @@ SPECS version 1
 %files
 %defattr(-,root,root, 0755)
 %{_datadir}/%{name}/
+%{_libdir}/systemd/system/
 
 %post
 ## Commands to for the post install
