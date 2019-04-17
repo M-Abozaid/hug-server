@@ -1,5 +1,5 @@
-Summary: Front end for Hug@Home web application
-Name: hug-home-web
+Summary: Front end for Hug@Home Backend application
+Name: hug-home-backend
 Version: 1.0.0
 Release: 0
 Group: Web Application
@@ -40,4 +40,4 @@ SPECS version 1
 
 %changelog
 * Wed Apr 17 2019 Olivier Bitsch <olivier.b@iabsis.com>
-- Initial spec file for hug-home-web package.
+- Initial spec file for hug-home-backend package.
