@@ -9,6 +9,7 @@
  * https://sailsjs.com/config/http
  */
 
+var express = require('express');
 module.exports.http = {
 
   /****************************************************************************
@@ -41,6 +42,24 @@ module.exports.http = {
     // ],
 
 
+    passportInit    : require('passport').initialize(),
+    passportSession : require('passport').session(),
+
+    order: [
+      'cookieParser',
+      'session',
+      'passportInit',
+      'passportSession',
+      'bodyParser',
+      'compress',
+      'poweredBy',
+      'router',
+      'www',
+      'favicon',
+    ],
+
+
+
     /***************************************************************************
     *                                                                          *
     * The body parser that will handle incoming multipart HTTP requests.       *
@@ -57,4 +76,9 @@ module.exports.http = {
 
   },
 
+
 };
+
+// module.exports.express = {
+
+// };

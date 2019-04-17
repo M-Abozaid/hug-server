@@ -8,8 +8,12 @@
     "@sailshq/connect-redis": "^3.2.1",
     "@sailshq/lodash": "^3.10.3",
     "@sailshq/socket.io-redis": "^5.2.0",
+    "bcrypt-nodejs": "0.0.3",
     "grunt": "^1.0.4",
+    "jsonwebtoken": "^8.5.1",
     "openvidu-node-client": "^2.8.0",
+    "passport": "^0.4.0",
+    "passport-local": "^1.0.0",
     "sails": "^1.1.0",
     "sails-hook-grunt": "^3.1.0",
     "sails-hook-orm": "^2.1.1",
@@ -17,7 +21,8 @@
     "sails-mongo": "^1.0.1"
   },
   "devDependencies": {
-    "@sailshq/eslint": "^4.19.3"
+    "@sailshq/eslint": "^4.19.3",
+    "grunt-contrib-copy": "^1.0.0"
   },
   "scripts": {
     "start": "NODE_ENV=production node app.js",

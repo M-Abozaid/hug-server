@@ -12,6 +12,7 @@
         "PORT": "3000",
         "NODE_TLS_REJECT_UNAUTHORIZED": 0,
         "DB_URI": "mongodb://localhost/hug_at_home",
+        "APP_SECRET":"321",
         "NODE_ENV":"development"
       }
     },
@@ -23,6 +24,7 @@
       "env": {
         "NODE_TLS_REJECT_UNAUTHORIZED": 0,
         "DB_URI": "mongodb://localhost/hug_at_home",
+        "APP_SECRET":"321",
         "NODE_ENV":"development"
 
       }

@@ -49,4 +49,6 @@ module.exports.globals = {
 
   sails: true,
 
+  APP_SECRET: process.env.APP_SECRET
+
 };

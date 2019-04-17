@@ -18,16 +18,20 @@ module.exports.routes = {
   * `assets` directory)                                                      *
   *                                                                          *
   ***************************************************************************/
-
-  '/': { view: 'pages/homepage' },
-  'post /openvidu-session': 'OpenviduSessionController.getToken',
-  'get /subscribe-to-socket': 'SubscribeToSocketController.subscribe',
-  'get /subscribe-to-doctors':'SubscribeToDoctorsController.subscribe',
-  'patch /read-messages':'MessageController.readMessages',
-  'get /consultations-overview':'ConsultationController.consultationOverview',
-  'post /consultation/:consultation/accept': 'ConsultationController.acceptConsultation',
-  'post /consultation/:consultation/call': 'ConsultationController.call',
-  'post /consultation/:consultation/reject-call': 'ConsultationController.rejectCall',
+  'get /app/*': 'DashboardController.get',
+  'get /app': 'DashboardController.get',
+  'get /' :'/app/dashboard',
+  // '/dashboard': { view: 'pages/homepage' },
+  'post /api/openvidu-session': 'OpenviduSessionController.getToken',
+  'get /api/subscribe-to-socket': 'SubscribeToSocketController.subscribe',
+  'get /api/subscribe-to-doctors':'SubscribeToDoctorsController.subscribe',
+  'patch /api/read-messages':'MessageController.readMessages',
+  'get /api/consultations-overview':'ConsultationController.consultationOverview',
+  'post /api/consultation/:consultation/accept': 'ConsultationController.acceptConsultation',
+  'post /api/consultation/:consultation/call': 'ConsultationController.call',
+  'post /api/consultation/:consultation/reject-call': 'ConsultationController.rejectCall',
+  'POST /api/login': 'AuthController.login',
+  '/logout': 'AuthController.logout',
 
   /***************************************************************************
   *                                                                          *
