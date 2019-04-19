@@ -11,6 +11,7 @@ module.exports = async function (req, res, proceed) {
     return res.forbidden();
   }
 
+  req.body.from = req.headers.id;
   // a doctor is sending the message
   if(consultation.acceptedBy === req.headers.id && consultation.status !== 'pending'){
     req.body.to = consultation.owner;

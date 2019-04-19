@@ -26,7 +26,9 @@ module.exports.policies = {
   MessageController:{
 
     '*': 'isLoggedIn',
-    create: ['isLoggedIn', 'setMessageDestination']
+    create: ['isLoggedIn', 'setMessageDestination'],
+    find:['isLoggedIn', 'isConsultationOwner'],
+    readMessages:['isLoggedIn', 'isConsultationOwner'],
   },
   ConsultationController:{
 

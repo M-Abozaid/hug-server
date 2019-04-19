@@ -8,15 +8,15 @@
 module.exports = {
 
   readMessages: async function(req, res){
-    let id = req.headers.id;
-    let senderId = req.query.senderId;
 
-    await sails.models.user.update({ from: senderId, to:id, read:false })
+
+    let msgs = await sails.models.message.update({ consultation: req.params.consultation, or:[{to:req.user.id },{to:null}] ,  read:false })
     .set({
       read:true
     });
 
-    res.ok(200);
+    res.status(200);
+    res.json({message:'success', msgs});
   }
 
 };

@@ -38,14 +38,38 @@ module.exports = {
       {
         '$project':{
           'consultation':1,
+          'lastMsg':{
+            '$arrayElemAt':[
+              '$messages',
+              -1
+            ]
+          },
+
+          'messages':1,
+
+        }
+      },
+      {
+        '$project':{
+          'consultation':1,
           'messages':{
             '$filter':{
               'input':'$messages',
               'as':'msg',
               'cond':{
-                '$eq':[
-                  '$$msg.read',
-                  false
+                '$and':[
+                  {'$eq':[
+                    '$$msg.read',
+                    false
+                  ]},
+                  { '$or':[{'$eq':[
+                    '$$msg.to',
+                    new ObjectId(req.headers.id)
+                  ]},{'$eq':[
+                    '$$msg.to',
+                    null
+                  ]}]
+                  }
                 ]
               }
             }
@@ -54,16 +78,20 @@ module.exports = {
       },
       {
         '$project':{
+
           'consultation':1,
-          'lastMsg':{
-            '$arrayElemAt':[
-              '$messages',
-              -1
-            ]
-          },
+          'lastMsg':1,
           'unreadCount':{
             '$size':'$messages'
           }
+        }
+      },
+      {
+        '$lookup':{
+          'from':'user',
+          'localField':'consultation.owner',
+          'foreignField':'_id',
+          'as':'nurse'
         }
       }
     ];
@@ -83,7 +111,7 @@ module.exports = {
     let consultation = await sails.models.consultation.updateOne({ _id: req.params.consultation, status:'pending' })
     .set({
       status:'active',
-      acceptedBy: req.headers.id
+      acceptedBy: req.user.id
     });
 
 
@@ -91,7 +119,8 @@ module.exports = {
       return res.notFound();
     }
 
-    return res.ok();
+    res.status(200);
+    return res.json({message: 'success'});
   },
 
   call: async function(req, res){
