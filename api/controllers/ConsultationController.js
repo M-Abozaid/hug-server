@@ -7,19 +7,29 @@
 const ObjectId = require('mongodb').ObjectID;
 const { OpenVidu } = require('openvidu-node-client');
 const openvidu = new OpenVidu(sails.config.OPENVIDU_URL, sails.config.OPENVIDU_SECRET);
+const ROLE_DOCTOR = 'doctor';
+const ROLE_NURSE= 'nurse';
+
 module.exports = {
   consultationOverview: async function(req, res){
+    let match = [{
+      'owner': new ObjectId(req.headers.id)
+    }];
+    if(req.user.role === 'doctor'){
+      match = [
+        {
+          'acceptedBy': new ObjectId(req.headers.id)
+        },
+        {
+          'status':'pending'
+        }
+      ];
+    }
+
     const agg = [
       {
         '$match':{
-          '$or':[
-            {
-              'acceptedBy': new ObjectId(req.headers.id)
-            },
-            {
-              'status':'pending'
-            }
-          ]
+          '$or':match
         }
       },
       {
@@ -155,9 +165,9 @@ module.exports = {
 
       // call from nurse
       if(req.headers.id === consultation.owner){
-        sails.sockets.broadcast(consultation.acceptedBy, 'newCall', {data:{ token:calleeToken, id: calleeSession.id }});
+        sails.sockets.broadcast(consultation.acceptedBy, 'newCall', {data:{ consultation:req.params.consultation, token:calleeToken, id: calleeSession.id }});
       }else if(req.headers.id === consultation.acceptedBy){
-        sails.sockets.broadcast(consultation.owner, 'newCall', {data:{ token:calleeToken, id: calleeSession.id }});
+        sails.sockets.broadcast(consultation.owner, 'newCall', {data:{ consultation:req.params.consultation, token:calleeToken, id: calleeSession.id }});
       }
 
       return res.json({ token:callerToken, id: callerSession.id });
