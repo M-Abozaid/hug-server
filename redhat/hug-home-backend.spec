@@ -22,7 +22,7 @@ SPECS version 1
 %install
 %{__make} install
 %{__install} -d -m0755 %{buildroot}/%{_datadir}/%{name}/
-%{__cp} -a app.js api assets config models node_modules package.json package-lock.json public tasks views %{buildroot}/%{_datadir}/%{name}/
+%{__cp} -a app.js api config models node_modules package.json package-lock.json public tasks views %{buildroot}/%{_datadir}/%{name}/
 %{__install} -d -m0755 %{buildroot}/lib/systemd/system
 %{__cp} redhat/hug-home.service %{buildroot}/lib/systemd/system
 %{__install} -d -m0755 %{buildroot}/%{_sysconfdir}/hug-home/
