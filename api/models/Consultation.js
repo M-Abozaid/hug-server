@@ -30,7 +30,7 @@ module.exports = {
     },
     status:{
       type: 'string',
-      isIn: ['pending', 'active', 'closed'],
+      isIn: ['pending', 'active', 'closed', 'terminated'],
       // default:'pending',
       required: true
     },
@@ -39,13 +39,21 @@ module.exports = {
     },
     owner: {
       model: 'user'
+    },
+    acceptedAt:{
+      type:'number'
+    },
+    closedAt:{
+      type:'number'
     }
 
   },
 
-  afterCreate: function (consultation, proceed) {
+  afterCreate: async function (consultation, proceed) {
 
-    sails.sockets.broadcast('doctors', 'newConsultation', {event:'newConsultation',data:consultation});
+    let nurse = await sails.models.user.find({id:consultation.owner});
+
+    sails.sockets.broadcast('doctors', 'newConsultation', {event:'newConsultation',data:{_id:consultation.id, unreadCount: 0, consultation, nurse}});
     return proceed();
   }
 };

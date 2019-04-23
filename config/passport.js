@@ -27,7 +27,9 @@ passport.use(new LocalStrategy({
         email: user.email,
         username: user.username,
         id: user.id,
-        role: user.role
+        role: user.role,
+        firstName: user.firstName,
+        lastName: user.lastName
       };
       let token = jwt.sign(userDetails,  sails.config.globals.APP_SECRET);
       userDetails.token = token;

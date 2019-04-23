@@ -52,6 +52,7 @@ module.exports = {
       {
         '$project':{
           'consultation':1,
+          'lastMsg':1,
           'messages':{
             '$filter':{
               'input':'$messages',
@@ -111,7 +112,8 @@ module.exports = {
     let consultation = await sails.models.consultation.updateOne({ _id: req.params.consultation, status:'pending' })
     .set({
       status:'active',
-      acceptedBy: req.user.id
+      acceptedBy: req.user.id,
+      acceptedAt: Date.now()
     });
 
 
@@ -122,6 +124,25 @@ module.exports = {
     res.status(200);
     return res.json({message: 'success'});
   },
+
+  closeConsultation: async function(req, res){
+
+
+    let consultation = await sails.models.consultation.updateOne({ _id: req.params.consultation, status:'active' })
+    .set({
+      status:'closed',
+      closedAt: Date.now()
+    });
+
+
+    if(!consultation){
+      return res.notFound();
+    }
+
+    res.status(200);
+    return res.json({message: 'success'});
+  },
+
 
   call: async function(req, res){
     try {
