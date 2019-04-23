@@ -24,7 +24,7 @@ module.exports.sockets = {
   // and answer pubsub logic
   adapter: '@sailshq/socket.io-redis',
 
-
+  // path:'/socket.io',
 
 
   // Node.js (and consequently Sails.js) apps scale horizontally.

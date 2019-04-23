@@ -33,7 +33,8 @@ module.exports.policies = {
   ConsultationController:{
 
     '*': 'isLoggedIn',
-    acceptConsultation:['isLoggedIn', 'isDoctor']
+    acceptConsultation:['isLoggedIn', 'isDoctor'],
+    create:['isLoggedIn', 'isNurse', 'setConsultationOwner']
   }
 
 };
