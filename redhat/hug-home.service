@@ -1,0 +1,14 @@
+[Unit]
+Description=Hug@Home Script
+After=network.target
+
+[Service]
+Environment=NODE_PORT=3001
+Environment=DB_URI='mongodb://localhost:27017/hug-home'
+Type=simple
+User=apache
+ExecStart=/usr/bin/node /usr/share/hug-home-backend/bin/www
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
