@@ -3,11 +3,11 @@ Description=Hug@Home Script
 After=network.target
 
 [Service]
-Environment=NODE_PORT=3001
-Environment=DB_URI='mongodb://localhost:27017/hug-home'
+EnvironmentFile=/etc/hug-home/hug-home-backend.conf
 Type=simple
 User=apache
-ExecStart=/usr/bin/node /usr/share/hug-home-backend/bin/www
+ExecStart=/usr/bin/node /usr/share/hug-home-backend/app.js
+WorkingDirectory=/usr/share/hug-home-backend
 Restart=on-failure
 
 [Install]
