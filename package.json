@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "name": "HUG@HOME",
   "version": "0.0.1",
   "private": true,
@@ -18,5 +19,47 @@
     "npm": "^6.9.0",
     "openvidu-node-client": "^2.8.0",
     "socket.io": "^2.2.0"
+=======
+  "name": "hug-home-web",
+  "private": true,
+  "version": "0.0.0",
+  "description": "a Sails application",
+  "keywords": [],
+  "dependencies": {
+    "@sailshq/connect-redis": "^3.2.1",
+    "@sailshq/lodash": "^3.10.3",
+    "@sailshq/socket.io-redis": "^5.2.0",
+    "bcrypt-nodejs": "0.0.3",
+    "grunt": "^1.0.4",
+    "jsonwebtoken": "^8.5.1",
+    "openvidu-node-client": "^2.8.0",
+    "passport": "^0.4.0",
+    "passport-local": "^1.0.0",
+    "sails": "^1.1.0",
+    "sails-hook-grunt": "^3.1.0",
+    "sails-hook-orm": "^2.1.1",
+    "sails-hook-sockets": "^1.5.5",
+    "sails-mongo": "^1.0.1"
+  },
+  "devDependencies": {
+    "@sailshq/eslint": "^4.19.3",
+    "grunt-contrib-copy": "^1.0.0"
+  },
+  "scripts": {
+    "start": "NODE_ENV=production node app.js",
+    "test": "npm run lint && npm run custom-tests && echo 'Done.'",
+    "lint": "eslint . --max-warnings=0 --report-unused-disable-directives && echo '✔  Your .js files look good.'",
+    "custom-tests": "echo \"(No other custom tests yet.)\" && echo"
+  },
+  "main": "app.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/delamart/hug-home-web.git"
+  },
+  "author": "delamart",
+  "license": "",
+  "engines": {
+    "node": "^11.6"
+>>>>>>> sailsjs
   }
 }
