@@ -1,7 +1,7 @@
 Summary: Front end for Hug@Home Backend application
 Name: hug-home-backend
 Version: 1.0.0
-Release: 1
+Release: 2
 Group: Web Application
 License: HUG
 Source: %{name}-%{version}.tar.gz
@@ -22,9 +22,11 @@ SPECS version 1
 %install
 %{__make} install
 %{__install} -d -m0755 %{buildroot}/%{_datadir}/%{name}/
-%{__cp} -a app.js bin config helpers init models node_modules package.json public src views %{buildroot}/%{_datadir}/%{name}/
-%{__install} -d -m0755 %{buildroot}/%{_libdir}/systemd/system
-%{__cp} redhat/hug-home.service %{buildroot}/%{_libdir}/systemd/system
+%{__cp} -a app.js api config models node_modules package.json package-lock.json public tasks views %{buildroot}/%{_datadir}/%{name}/
+%{__install} -d -m0755 %{buildroot}/lib/systemd/system
+%{__cp} redhat/hug-home.service %{buildroot}/lib/systemd/system
+%{__install} -d -m0755 %{buildroot}/%{_sysconfdir}/hug-home/
+%{__cp} redhat/hug-home-backend.conf %{buildroot}/%{_sysconfdir}/hug-home/
 
 %clean
 %{__rm} -rf %{buildroot}
@@ -32,7 +34,8 @@ SPECS version 1
 %files
 %defattr(-,root,root, 0755)
 %{_datadir}/%{name}/
-%{_libdir}/systemd/system/
+/lib/systemd/system/
+%{_sysconfdir}/hug-home/
 
 %post
 ## Commands to for the post install
