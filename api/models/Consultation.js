@@ -25,7 +25,7 @@ module.exports = {
       required: true
     },
     IMADTeam: {
-      type: 'number',
+      type: 'string',
       required: true
     },
     status:{

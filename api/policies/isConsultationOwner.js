@@ -19,7 +19,7 @@ module.exports = async function (req, res, proceed) {
     ]});
 
   if(!consultation){
-  // set role for newly created users
+
     return res.forbidden();
   }
 
