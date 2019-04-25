@@ -22,6 +22,7 @@ module.exports = {
 
     sails.sockets.join(req, user.id, (err) => {
       if (err) {
+        console.log('error joining session ', err);
         return res.serverError(err);
       }
 

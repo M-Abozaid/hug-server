@@ -17,6 +17,7 @@ module.exports = {
     //
 
     let user = await sails.models.user.findOne({id: req.headers.id});
+    if(!user) {return res.forbidden();}
     if(user.role !== ROLE_DOCTOR){
       return res.forbidden();
     }
