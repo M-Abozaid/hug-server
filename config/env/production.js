@@ -21,7 +21,8 @@
 
 module.exports = {
 
-  OPENVIDU_URL : 'https://staging-hug-at-home-openvidu.oniabsis.com:443', // 'https://192.168.43.167:4443'//'https://kurento-hugathome.dev.oniabsis.com:443'//'https://' + location.hostname + ':4443/';
+  //  OPENVIDU_URL : 'https://staging-hug-at-home-openvidu.oniabsis.com:443', //'https://staging-hug-at-home-openvidu.oniabsis.com:443', // 'https://192.168.43.167:4443'//'https://kurento-hugathome.dev.onia$
+  OPENVIDU_URL : 'https://kurento-hugathome.dev.oniabsis.com:443',
   OPENVIDU_SECRET : 'MY_SECRET',
 
   /**************************************************************************
