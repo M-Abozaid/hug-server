@@ -3,7 +3,7 @@ const LocalStrategy = require('passport-local').Strategy;
 const bcrypt = require('bcrypt-nodejs');
 const jwt = require('jsonwebtoken');
 
-var Strategy = require('passport-trusted-headers').Strategy;
+var Strategy = require('passport-trusted-header').Strategy;
 
 var options =  {
   headers: ['TLS_CLIENT_DN']
