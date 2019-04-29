@@ -1,14 +1,14 @@
 module.exports = async function (req, res, proceed) {
 
 
-  if(!req.headers.id){
-    return res.sendStatus(401);
-
-  }
   if(req.headers.id ){
 
     req.user = await sails.models.user.findOne({id:req.headers.id});
 
+    if(!req.user){
+      return res.sendStatus(401);
+
+    }
 
     return proceed();
   }

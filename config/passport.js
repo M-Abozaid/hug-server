@@ -3,6 +3,13 @@ const LocalStrategy = require('passport-local').Strategy;
 const bcrypt = require('bcrypt-nodejs');
 const jwt = require('jsonwebtoken');
 
+var Strategy = require('passport-trusted-headers').Strategy;
+
+var options =  {
+  headers: ['TLS_CLIENT_DN']
+};
+
+
 passport.serializeUser((user, cb) => {
   cb(null, user.id);
 });
@@ -36,4 +43,19 @@ passport.use(new LocalStrategy({
       return cb(null, userDetails, { message: 'Login Successful'});
     });
   });
+})));
+
+passport.use(new Strategy(options, ((requestHeaders, done) => {
+  var user = null;
+  var userDn = requestHeaders.TLS_CLIENT_DN;
+
+  console.log('headers ',requestHeaders,  requestHeaders['X-SSL-client-s-dn'], requestHeaders['X-SSL-client-i-dn'], requestHeaders['X-SSL-client-session-id'], requestHeaders['X-SSL-client-verify']);
+  // Authentication logic here!
+  if(userDn === 'CN=test-cn') {
+    user = { name: 'Test User' };
+  }
+
+  done(null, user);
+
+
 })));
