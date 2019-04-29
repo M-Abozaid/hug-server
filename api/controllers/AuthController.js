@@ -8,7 +8,7 @@
 const passport = require('passport');
 module.exports = {
   login: function(req, res, next) {
-    passport.authenticate(['local', 'passport-trusted-header'], (err, user, info) => {
+    passport.authenticate(['local', 'trusted-header'], (err, user, info) => {
       if((err) || (!user)) {
         return res.send({
           message: info.message,
