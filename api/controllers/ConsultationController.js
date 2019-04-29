@@ -15,7 +15,7 @@ module.exports = {
     let match = [{
       'owner': new ObjectId(req.headers.id)
     }];
-    if(req.user.role === 'doctor'){
+    if(req.user && req.user.role === 'doctor'){
       match = [
         {
           'acceptedBy': new ObjectId(req.headers.id)
