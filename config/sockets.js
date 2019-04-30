@@ -189,6 +189,8 @@ module.exports.sockets = {
         handshake.user = decoded;
         return proceed(undefined, true);
       });
+    }else{
+      return proceed(false);
     }
 
     // Send back `true` to allow the socket to connect.
