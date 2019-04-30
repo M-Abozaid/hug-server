@@ -5,7 +5,7 @@ module.exports = async function (req, res, proceed) {
     try{
       consultationId = JSON.parse(req.query.where).consultation;
     }catch(err){
-      res.send(err)
+      res.send(err);
     }
   }
   let consultation;
@@ -14,7 +14,7 @@ module.exports = async function (req, res, proceed) {
     consultation = await sails.models.consultation.count({
       id:consultationId,
       owner:req.user.id
-    })
+    });
 
   }else if(req.user.role === 'doctor'){
 
@@ -26,8 +26,6 @@ module.exports = async function (req, res, proceed) {
       ]});
 
   }
-
-
 
   if(!consultation){
 

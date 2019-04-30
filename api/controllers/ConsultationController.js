@@ -132,6 +132,7 @@ module.exports = {
     }
 
     sails.sockets.broadcast(consultation.owner, 'consultationAccepted', {data:{ consultation, _id: consultation.id}});
+    sails.sockets.broadcast('doctors', 'consultationAccepted', {data:{ consultation, _id: consultation.id}});
 
     res.status(200);
     return res.json({message: 'success'});

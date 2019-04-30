@@ -19,7 +19,7 @@ module.exports.routes = {
   *                                                                          *
   ***************************************************************************/
   'get /app/*': 'DashboardController.get',
-  'get /app': 'DashboardController.get',
+  'get /app': '/app/dashboard',
   'get /' :'/app/dashboard',
   // '/dashboard': { view: 'pages/homepage' },
   'get /api/v1/subscribe-to-socket': 'SubscribeToSocketController.subscribe',

@@ -178,7 +178,7 @@ module.exports.sockets = {
 
     // socket authentication
 
-    if(handshake._query){
+    if(handshake._query && handshake._query.token){
       jwt.verify(handshake._query.token, sails.config.globals.APP_SECRET, (err, decoded) => {
         if(err){
           console.log('error ', err);
@@ -190,7 +190,8 @@ module.exports.sockets = {
         return proceed(undefined, true);
       });
     }else{
-      return proceed({message:'no Token was found'});
+
+      return proceed({message:'no Token was found'}, false);
     }
 
     // Send back `true` to allow the socket to connect.

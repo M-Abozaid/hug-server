@@ -40,7 +40,8 @@ module.exports.policies = {
 
     '*': 'isLoggedIn',
     acceptConsultation:['isLoggedIn', 'isDoctor'],
-    create:['isLoggedIn', 'isNurse', 'setConsultationOwner']
+    create:['isLoggedIn', 'isNurse', 'setConsultationOwner'],
+    destroy:['isLoggedIn', 'isNurse', 'setConsultationOwner']
   }
 
 };

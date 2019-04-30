@@ -575,8 +575,7 @@ var JwtInterceptor = /** @class */ (function () {
         if (currentUser && currentUser.token) {
             request = request.clone({
                 setHeaders: {
-                    "x-access-token": "" + currentUser.token,
-                    "id": currentUser.id
+                    "x-access-token": "" + currentUser.token
                 }
             });
         }
@@ -822,6 +821,19 @@ var ConsultationService = /** @class */ (function () {
             c.lastMsg = msg.data;
             c.unreadCount++;
             _this.updateUnreadCount();
+            _this.sortConsultations();
+            _this.consultationsOverviewSub.next(_this.consultationsOverview);
+        });
+        this.socketEventsService.onConsultationAccepted().subscribe(function (event) {
+            var consultation = _this.consultationsOverview.find(function (c) { return c._id === event.data._id; });
+            if (consultation) {
+                consultation.consultation.status = 'active';
+                _this.sortConsultations();
+                _this.consultationsOverviewSub.next(_this.consultationsOverview);
+            }
+        });
+        this.socketEventsService.onConsultationCanceled().subscribe(function (event) {
+            _this.consultationsOverview = _this.consultationsOverview.find(function (c) { return c._id !== event.data._id; });
             _this.sortConsultations();
             _this.consultationsOverviewSub.next(_this.consultationsOverview);
         });
@@ -1958,9 +1970,13 @@ var SocketEventsService = /** @class */ (function () {
         }.bind(this));
     };
     SocketEventsService.prototype.onConsultation = function () {
+        var _this = this;
         var sub = new rxjs__WEBPACK_IMPORTED_MODULE_2__["Subject"]();
         var obs = rxjs__WEBPACK_IMPORTED_MODULE_2__["Observable"].create(function (observer) {
-            socket.on('newConsultation', function (e) { return observer.next(e); });
+            socket.on('newConsultation', function (e) {
+                _this.playAudio();
+                observer.next(e);
+            });
         });
         obs.subscribe(sub);
         return sub;
@@ -1990,6 +2006,26 @@ var SocketEventsService = /** @class */ (function () {
         });
         obs.subscribe(sub);
         return sub;
+    };
+    SocketEventsService.prototype.onConsultationAccepted = function () {
+        var obs = rxjs__WEBPACK_IMPORTED_MODULE_2__["Observable"].create(function (observer) {
+            console.log('consultation accepted');
+            socket.on('consultationAccepted', function (e) { return observer.next(e); });
+        });
+        return obs;
+    };
+    SocketEventsService.prototype.onConsultationCanceled = function () {
+        var obs = rxjs__WEBPACK_IMPORTED_MODULE_2__["Observable"].create(function (observer) {
+            console.log('consultation canceled');
+            socket.on('consultationCanceled', function (e) { return observer.next(e); });
+        });
+        return obs;
+    };
+    SocketEventsService.prototype.playAudio = function () {
+        var audio = new Audio();
+        audio.src = "../assets/sounds/notification.mp3";
+        audio.load();
+        audio.play();
     };
     SocketEventsService = tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Injectable"])({
