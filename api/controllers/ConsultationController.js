@@ -13,12 +13,12 @@ const ROLE_NURSE= 'nurse';
 module.exports = {
   consultationOverview: async function(req, res){
     let match = [{
-      'owner': new ObjectId(req.headers.id)
+      'owner': new ObjectId(req.user.id)
     }];
     if(req.user && req.user.role === 'doctor'){
       match = [
         {
-          'acceptedBy': new ObjectId(req.headers.id)
+          'acceptedBy': new ObjectId(req.user.id)
         },
         {
           'status':'pending'
@@ -75,7 +75,7 @@ module.exports = {
                   ]},
                   { '$or':[{'$eq':[
                     '$$msg.to',
-                    new ObjectId(req.headers.id)
+                    new ObjectId(req.user.id)
                   ]},{'$eq':[
                     '$$msg.to',
                     null
@@ -165,12 +165,12 @@ module.exports = {
       const calleeSession = await openvidu.createSession({customSessionId:req.params.consultation});
       const calleeToken = await calleeSession.generateToken();
 
-      const user = await sails.models.user.findOne({id: req.headers.id });
+      const user = await sails.models.user.findOne({id: req.user.id });
       // call from nurse
       const data = { consultation:req.params.consultation, token:calleeToken, id: calleeSession.id, user:{ firstName: user.firstName, lastName: user.lastName}};
-      if(req.headers.id === consultation.owner){
+      if(req.user.id === consultation.owner){
         sails.sockets.broadcast(consultation.acceptedBy, 'newCall', { data });
-      }else if(req.headers.id === consultation.acceptedBy){
+      }else if(req.user.id === consultation.acceptedBy){
         sails.sockets.broadcast(consultation.owner, 'newCall', { data });
       }
 
@@ -185,9 +185,9 @@ module.exports = {
     try {
       const consultation = await sails.models.consultation.findOne({ _id: req.params.consultation });
       // call rejected by nurse
-      if(req.headers.id === consultation.owner){
+      if(req.user.id === consultation.owner){
         sails.sockets.broadcast(consultation.acceptedBy, 'rejectCall', {data:{ consultation }});
-      }else if(req.headers.id === consultation.acceptedBy){
+      }else if(req.user.id === consultation.acceptedBy){
         sails.sockets.broadcast(consultation.owner, 'rejectCall', {data:{ consultation }});
       }
 

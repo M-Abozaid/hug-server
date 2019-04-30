@@ -5,9 +5,6 @@ const jwt = require('jsonwebtoken');
 
 var Strategy = require('passport-trusted-header').Strategy;
 
-var options =  {
-  headers: ['TLS_CLIENT_DN']
-};
 
 
 passport.serializeUser((user, cb) => {
@@ -45,17 +42,46 @@ passport.use(new LocalStrategy({
   });
 })));
 
-passport.use(new Strategy(options, ((requestHeaders, done) => {
+var options =  {
+  headers: ['x-ssl-client-s-dn']
+};
+
+passport.use(new Strategy(options, ( async (requestHeaders, cb) => {
+
   var user = null;
-  var userDn = requestHeaders.TLS_CLIENT_DN;
+  var userDn = requestHeaders['x-ssl-client-s-dn'];
+  let CNMatch = userDn.match(/CN=([^\/]+)/);
+  let emailMatch = userDn.match(/emailAddress=([^\/\s]+)/);
+  let email =  emailMatch? emailMatch[1] : null;
+  let firstName = (CNMatch && CNMatch[1])? CNMatch[1].split(/\s+/)[0] : null;
+  let lastName = (CNMatch && CNMatch[1])? CNMatch[1].split(/\s+/)[1] : null;
 
-  console.log('headers ',requestHeaders,  requestHeaders['X-SSL-client-s-dn'], requestHeaders['X-SSL-client-i-dn'], requestHeaders['X-SSL-client-session-id'], requestHeaders['X-SSL-client-verify']);
-  // Authentication logic here!
-  if(userDn === 'CN=test-cn') {
-    user = { name: 'Test User' };
+  console.log('headers ',firstName, lastName, email);
+
+  if(email) {
+    user = await User.findOne({email:email});
+    if(!user){
+      try {
+        user = await User.create({
+          email,
+          firstName,
+          lastName,
+          role: sails.config.globals.NURSE_DOCTOR
+        });
+      } catch (error) {
+        return cb(error, null, { message: 'Login Unsuccessful'});
+      }
+
+    }
+
+    let token = jwt.sign(user,  sails.config.globals.APP_SECRET);
+
+    user.token = token;
+
+    return cb(null, user, { message: 'Login Successful'});
+
+  }else{
+    return cb(null, null, {message: 'email not found'});
   }
-
-  done(null, user);
-
 
 })));

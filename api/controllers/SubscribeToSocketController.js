@@ -13,9 +13,7 @@ module.exports = {
       return res.badRequest();
     }
 
-    //
-
-    let user = await sails.models.user.findOne({id: req.headers.id});
+    let user = await sails.models.user.findOne({id: req.user.id});
     if(!user){
       return res.forbidden();
     }

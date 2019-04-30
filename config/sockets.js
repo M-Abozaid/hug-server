@@ -7,6 +7,7 @@
  * For more information on using Sails with Sockets, check out:
  * http://sailsjs.org/#documentation
  */
+const jwt = require('jsonwebtoken');
 
 module.exports.sockets = {
 
@@ -177,9 +178,22 @@ module.exports.sockets = {
 
     // socket authentication
 
+    if(handshake._query){
+      jwt.verify(handshake._query.token, sails.config.globals.APP_SECRET, (err, decoded) => {
+        if(err){
+          console.log('error ', err);
+          return proceed(false);
+
+        }
+        console.log(decoded); // bar
+        handshake.user = decoded;
+        return proceed(undefined, true);
+      });
+    }
+
     // Send back `true` to allow the socket to connect.
     // (Or send back `false` to reject the attempt.)
-    return proceed(undefined, true);
+
 
   },
   // 'url':'mongodb://localhost/hug_at_home_ws'

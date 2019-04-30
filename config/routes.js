@@ -22,7 +22,6 @@ module.exports.routes = {
   'get /app': 'DashboardController.get',
   'get /' :'/app/dashboard',
   // '/dashboard': { view: 'pages/homepage' },
-  'post /api/v1/openvidu-session': 'OpenviduSessionController.getToken',
   'get /api/v1/subscribe-to-socket': 'SubscribeToSocketController.subscribe',
   'get /api/v1/subscribe-to-doctors':'SubscribeToDoctorsController.subscribe',
   'post /api/v1/consultation/:consultation/read-messages':'MessageController.readMessages',
