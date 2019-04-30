@@ -1,7 +1,7 @@
 module.exports = async function (req, res, proceed) {
 
 
-  if(req.user && reqw.user.role === 'nurse'){
+  if(req.user && req.user.role === 'nurse'){
     return proceed();
 
   }

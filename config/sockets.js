@@ -190,7 +190,7 @@ module.exports.sockets = {
         return proceed(undefined, true);
       });
     }else{
-      return proceed(false);
+      return proceed({message:'no Token was found'});
     }
 
     // Send back `true` to allow the socket to connect.

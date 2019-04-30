@@ -3,26 +3,16 @@ const jwt = require('jsonwebtoken');
 module.exports = async function (req, res, proceed) {
 
 
-  if (req.isSocket) {
-    jwt.verify(req.headers['x-access-token'], sails.config.globals.APP_SECRET, (err, decoded) => {
-      if(err){
-        console.log('error ', err);
-        return res.sendStatus(400);
-      }
-      console.log(decoded); // bar
-      req.user = decoded;
-      return proceed();
-    });
 
-  }else{
-    if(req.isAuthenticated()){
-      return proceed();
+  jwt.verify(req.headers['x-access-token'], sails.config.globals.APP_SECRET, (err, decoded) => {
+    if(err){
+      console.log('error ', err);
+      return res.sendStatus(400);
     }
-
-
-
-    return res.sendStatus(401);
-  }
+    console.log(decoded); // bar
+    req.user = decoded;
+    return proceed();
+  });
 
 
 };
