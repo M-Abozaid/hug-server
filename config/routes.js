@@ -30,6 +30,7 @@ module.exports.routes = {
   'post /api/v1/consultation/:consultation/close': 'ConsultationController.closeConsultation',
   'post /api/v1/consultation/:consultation/call': 'ConsultationController.call',
   'post /api/v1/consultation/:consultation/reject-call': 'ConsultationController.rejectCall',
+  'post /api/v1/consultation/:consultation/upload-file': 'ConsultationController.uploadFile',
   'POST /api/v1/login': 'AuthController.login',
   '/logout': 'AuthController.logout',
 

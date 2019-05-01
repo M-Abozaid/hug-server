@@ -30,7 +30,7 @@ module.exports = {
     },
     status:{
       type: 'string',
-      isIn: ['pending', 'active', 'closed', 'terminated'],
+      isIn: ['pending', 'active', 'closed'],
       // default:'pending',
       required: true
     },
@@ -60,7 +60,7 @@ module.exports = {
 
   beforeDestroy: async function (criteria, proceed) {
 
-   await sails.models.message.destroy({consultation:criteria.where.id});
+    await sails.models.message.destroy({consultation:criteria.where.id});
 
 
     sails.sockets.broadcast('doctors', 'consultationCanceled', {event:'consultationCanceled',data:{_id:criteria.where.id, consultation:criteria.where}});

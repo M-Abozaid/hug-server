@@ -20,7 +20,7 @@ passport.use(new LocalStrategy({
   usernameField: 'email',
   passportField: 'password'
 }, ((email, password, cb) => {
-  User.findOne({email: email, role:'doctor'}, (err, user) => {
+  User.findOne({email: email}, (err, user) => {
     if (err) {return cb(err);}
     if (!user) {return cb(null, false, {message: 'email not found'});}
     bcrypt.compare(password, user.password, (err, res) => {

@@ -185,7 +185,7 @@ module.exports.sockets = {
           return proceed(false);
 
         }
-        console.log(decoded); // bar
+
         handshake.user = decoded;
         return proceed(undefined, true);
       });

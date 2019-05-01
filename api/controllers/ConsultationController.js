@@ -6,9 +6,8 @@
  */
 const ObjectId = require('mongodb').ObjectID;
 const { OpenVidu } = require('openvidu-node-client');
+const uuidv1 = require('uuid/v1');
 const openvidu = new OpenVidu(sails.config.OPENVIDU_URL, sails.config.OPENVIDU_SECRET);
-const ROLE_DOCTOR = 'doctor';
-const ROLE_NURSE= 'nurse';
 
 module.exports = {
   consultationOverview: async function(req, res){
@@ -197,6 +196,37 @@ module.exports = {
       return res.json(error);
     }
 
+  },
+
+  uploadFile : async function(req, res){
+    let fileId = uuidv1();
+    let filePath = req.params.consultation+'_'+fileId+ '.' + req.headers['mime-type'].split('/')[1];
+    req.file('attachment')
+    .upload({
+      dirname: sails.config.globals.attachmentsDir,
+      saveAs: filePath
+    }, async function whenDone(err, uploadedFiles) {
+      if (err) {
+        return  res.negotiate(err);
+      }
+      else {
+        console.log('uploaded ', uploadedFiles);
+
+        let message = await Message.create({
+          type:'attachment',
+          mimeType: req.headers['mime-type'],
+          fileName: req.headers['fileName'],
+          filePath,
+          consultation: req.params.consultation,
+          to:req.body.to || null,
+          from: req.user.id
+        }).fetch();
+
+        return res.send({
+          message,
+          textParams: req.params
+        });}
+    });
   }
 
 };

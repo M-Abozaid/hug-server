@@ -36,8 +36,20 @@ module.exports = {
     read:{
       type:'boolean',
       // default:false
+    },
+    type:{
+      type: 'string',
+      isIn: ['attachment', 'text'],
+    },
+    mimeType:{
+      type:'string'
+    },
+    fileName:{
+      type: 'string'
+    },
+    filePath:{
+      type: 'string'
     }
-
   },
 
   afterCreate: function (message, proceed) {

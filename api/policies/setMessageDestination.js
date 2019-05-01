@@ -1,11 +1,21 @@
 
 module.exports = async function (req, res, proceed) {
 
-  let consultation = await sails.models.consultation.findOne({
-    or:[
-      {owner: req.user.id , _id: req.body.consultation || req.params.consultation},
-      {acceptedBy: req.user.id , _id: req.body.consultation || req.params.consultation}
-    ]});
+  let consultation;
+  if(req.user.role === sails.config.globals.ROLE_DOCTOR){
+    consultation = await sails.models.consultation.findOne({
+      or:[
+        {status: 'pending' , id: req.body.consultation || req.params.consultation},
+        {acceptedBy: req.user.id , id: req.body.consultation || req.params.consultation}
+      ]});
+
+  }
+  if(req.user.role === sails.config.globals.ROLE_NURSE){
+    consultation = await sails.models.consultation.findOne(
+        {owner: req.user.id , _id: req.body.consultation || req.params.consultation}
+    );
+
+  }
 
   if(!consultation){
     return res.forbidden();
