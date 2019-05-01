@@ -8,7 +8,7 @@ const ObjectId = require('mongodb').ObjectID;
 const { OpenVidu } = require('openvidu-node-client');
 const uuidv1 = require('uuid/v1');
 const openvidu = new OpenVidu(sails.config.OPENVIDU_URL, sails.config.OPENVIDU_SECRET);
-
+const fs = require('fs');
 module.exports = {
   consultationOverview: async function(req, res){
     let match = [{
@@ -227,6 +227,17 @@ module.exports = {
           textParams: req.params
         });}
     });
+  },
+
+  attachment: async function(req, res){
+    let msg = await Message.findOne({id:req.params.attachment});
+
+    if(!msg.mimeType.startsWith('audio') && !msg.mimeType.endsWith('jpeg') && !msg.mimeType.endsWith('png')){
+      res.setHeader('Content-disposition', 'attachment; filename=' + msg.fileName);
+    }
+
+    let readStream = fs.createReadStream(sails.config.globals.attachmentsDir + '/' + msg.filePath);
+    readStream.pipe(res);
   }
 
 };
