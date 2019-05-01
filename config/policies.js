@@ -17,7 +17,13 @@ module.exports.policies = {
   *                                                                          *
   ***************************************************************************/
 
-  '/subscribe-to-doctors':['isLoggedIn', 'isDoctor'],
+  SubscribeToSocketController:{
+    subscribe: ['isLoggedIn']
+  },
+  SubscribeToDoctorsController:{
+    subscribe: ['isLoggedIn', 'isDoctor']
+  },
+  // '/api/v1/subscribe-to-socket':['isLoggedIn'],
   UserController:{
     '*': 'isLoggedIn',
     create:'setRole',
@@ -34,7 +40,8 @@ module.exports.policies = {
 
     '*': 'isLoggedIn',
     acceptConsultation:['isLoggedIn', 'isDoctor'],
-    create:['isLoggedIn', 'isNurse', 'setConsultationOwner']
+    create:['isLoggedIn', 'isNurse', 'setConsultationOwner'],
+    destroy:['isLoggedIn', 'isNurse', 'setConsultationOwner']
   }
 
 };

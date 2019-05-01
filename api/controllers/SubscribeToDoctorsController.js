@@ -6,7 +6,7 @@
  */
 
 
-const ROLE_DOCTOR = 'doctor';
+
 module.exports = {
 
   subscribe: async function(req, res){
@@ -14,10 +14,9 @@ module.exports = {
       return res.badRequest();
     }
 
-    //
-
-    let user = await sails.models.user.findOne({id: req.headers.id});
-    if(user.role !== ROLE_DOCTOR){
+    let user = await sails.models.user.findOne({id: req.user.id});
+    if(!user) {return res.forbidden();}
+    if(user.role !== 'doctor'){
       return res.forbidden();
     }
 

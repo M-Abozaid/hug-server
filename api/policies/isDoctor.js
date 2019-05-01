@@ -1,12 +1,11 @@
 module.exports = async function (req, res, proceed) {
 
 
-  let user = await sails.models.user.count({_id:req.user.id , role:'doctor'});
-  if(!user){
+  if(req.user && req.user.role === 'doctor'){
+    return proceed();
 
-    return res.forbidden();
   }
+  return res.forbidden();
 
 
-  return proceed();
 };

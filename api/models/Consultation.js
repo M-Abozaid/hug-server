@@ -55,5 +55,16 @@ module.exports = {
 
     sails.sockets.broadcast('doctors', 'newConsultation', {event:'newConsultation',data:{_id:consultation.id, unreadCount: 0, consultation, nurse}});
     return proceed();
-  }
+  },
+
+
+  beforeDestroy: async function (criteria, proceed) {
+
+   await sails.models.message.destroy({consultation:criteria.where.id});
+
+
+    sails.sockets.broadcast('doctors', 'consultationCanceled', {event:'consultationCanceled',data:{_id:criteria.where.id, consultation:criteria.where}});
+    return proceed();
+  },
+
 };

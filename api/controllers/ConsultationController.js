@@ -13,12 +13,12 @@ const ROLE_NURSE= 'nurse';
 module.exports = {
   consultationOverview: async function(req, res){
     let match = [{
-      'owner': new ObjectId(req.headers.id)
+      'owner': new ObjectId(req.user.id)
     }];
-    if(req.user.role === 'doctor'){
+    if(req.user && req.user.role === 'doctor'){
       match = [
         {
-          'acceptedBy': new ObjectId(req.headers.id)
+          'acceptedBy': new ObjectId(req.user.id)
         },
         {
           'status':'pending'
@@ -75,7 +75,7 @@ module.exports = {
                   ]},
                   { '$or':[{'$eq':[
                     '$$msg.to',
-                    new ObjectId(req.headers.id)
+                    new ObjectId(req.user.id)
                   ]},{'$eq':[
                     '$$msg.to',
                     null
@@ -132,6 +132,7 @@ module.exports = {
     }
 
     sails.sockets.broadcast(consultation.owner, 'consultationAccepted', {data:{ consultation, _id: consultation.id}});
+    sails.sockets.broadcast('doctors', 'consultationAccepted', {data:{ consultation, _id: consultation.id}});
 
     res.status(200);
     return res.json({message: 'success'});
@@ -165,11 +166,13 @@ module.exports = {
       const calleeSession = await openvidu.createSession({customSessionId:req.params.consultation});
       const calleeToken = await calleeSession.generateToken();
 
+      const user = await sails.models.user.findOne({id: req.user.id });
       // call from nurse
-      if(req.headers.id === consultation.owner){
-        sails.sockets.broadcast(consultation.acceptedBy, 'newCall', {data:{ consultation:req.params.consultation, token:calleeToken, id: calleeSession.id }});
-      }else if(req.headers.id === consultation.acceptedBy){
-        sails.sockets.broadcast(consultation.owner, 'newCall', {data:{ consultation:req.params.consultation, token:calleeToken, id: calleeSession.id }});
+      const data = { consultation:req.params.consultation, token:calleeToken, id: calleeSession.id, user:{ firstName: user.firstName, lastName: user.lastName}};
+      if(req.user.id === consultation.owner){
+        sails.sockets.broadcast(consultation.acceptedBy, 'newCall', { data });
+      }else if(req.user.id === consultation.acceptedBy){
+        sails.sockets.broadcast(consultation.owner, 'newCall', { data });
       }
 
       return res.json({ token:callerToken, id: callerSession.id });
@@ -183,9 +186,9 @@ module.exports = {
     try {
       const consultation = await sails.models.consultation.findOne({ _id: req.params.consultation });
       // call rejected by nurse
-      if(req.headers.id === consultation.owner){
+      if(req.user.id === consultation.owner){
         sails.sockets.broadcast(consultation.acceptedBy, 'rejectCall', {data:{ consultation }});
-      }else if(req.headers.id === consultation.acceptedBy){
+      }else if(req.user.id === consultation.acceptedBy){
         sails.sockets.broadcast(consultation.owner, 'rejectCall', {data:{ consultation }});
       }
 

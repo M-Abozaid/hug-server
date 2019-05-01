@@ -49,6 +49,9 @@ module.exports.globals = {
 
   sails: true,
 
-  APP_SECRET: process.env.APP_SECRET
+  APP_SECRET: process.env.APP_SECRET,
+
+  ROLE_DOCTOR : 'doctor',
+  NURSE_DOCTOR : 'nurse'
 
 };

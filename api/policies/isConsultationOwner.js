@@ -5,18 +5,27 @@ module.exports = async function (req, res, proceed) {
     try{
       consultationId = JSON.parse(req.query.where).consultation;
     }catch(err){
-
+      res.send(err);
     }
   }
+  let consultation;
+  if(req.user.role === 'nurse'){
 
+    consultation = await sails.models.consultation.count({
+      id:consultationId,
+      owner:req.user.id
+    });
 
-  let consultation = await sails.models.consultation.count({
-    id:consultationId,
-    or:[
-      {owner: req.headers.id , _id: consultationId},
-      {acceptedBy: req.headers.id , _id: consultationId},
-      {acceptedBy: null}
-    ]});
+  }else if(req.user.role === 'doctor'){
+
+    consultation = await sails.models.consultation.count({
+      id:consultationId,
+      or:[
+        {acceptedBy: req.user.id , _id: consultationId},
+        {acceptedBy: null}
+      ]});
+
+  }
 
   if(!consultation){
 
