@@ -215,7 +215,7 @@ module.exports = {
         let message = await Message.create({
           type:'attachment',
           mimeType: req.headers['mime-type'],
-          fileName: req.headers['fileName'],
+          fileName: req.headers['filename'],
           filePath,
           consultation: req.params.consultation,
           to:req.body.to || null,
@@ -235,8 +235,14 @@ module.exports = {
     if(!msg.mimeType.startsWith('audio') && !msg.mimeType.endsWith('jpeg') && !msg.mimeType.endsWith('png')){
       res.setHeader('Content-disposition', 'attachment; filename=' + msg.fileName);
     }
+    const filePath = sails.config.globals.attachmentsDir + '/' + msg.filePath;
 
-    let readStream = fs.createReadStream(sails.config.globals.attachmentsDir + '/' + msg.filePath);
+    if (!fs.existsSync(filePath)) {
+      return res.notFound();
+    }
+    let readStream = fs.createReadStream(filePath);
+
+
     readStream.pipe(res);
   }
 
