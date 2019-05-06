@@ -12,6 +12,7 @@
     "grunt": "^1.0.4",
     "install": "^0.12.2",
     "jsonwebtoken": "^8.5.1",
+    "nodemailer": "^6.1.1",
     "npm": "^6.9.0",
     "openvidu-node-client": "^2.8.0",
     "passport": "^0.4.0",
