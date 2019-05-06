@@ -9,6 +9,18 @@ const { OpenVidu } = require('openvidu-node-client');
 const uuidv1 = require('uuid/v1');
 const openvidu = new OpenVidu(sails.config.OPENVIDU_URL, sails.config.OPENVIDU_SECRET);
 const fs = require('fs');
+
+const nodemailer = require('nodemailer');
+let transporter = nodemailer.createTransport({
+  host: 'smtp',
+  port: 25,
+  secure: false,
+  auth: {
+
+  }
+});
+
+
 module.exports = {
   consultationOverview: async function(req, res){
     let match = [{
@@ -207,7 +219,7 @@ module.exports = {
       saveAs: filePath
     }, async function whenDone(err, uploadedFiles) {
       if (err) {
-        return  res.negotiate(err);
+        return  res.status(500).send(err);
       }
       else {
         console.log('uploaded ', uploadedFiles);
@@ -244,6 +256,52 @@ module.exports = {
 
 
     readStream.pipe(res);
+  },
+
+  sendReport: async function(req, res){
+    let filePath = uuidv1() + '.pdf';
+
+    req.file('report')
+    .upload({
+      dirname: './.tmp',
+      saveAs: filePath
+    }, async function whenDone(err, uploadedFiles) {
+      if (err) {
+        return  res.status(500).send(err);
+      }
+      else {
+
+        const options = {
+          from: 'noreply@hcuge.ch',
+          to: 'aapozaid@gmail.com',
+          subject: 'Report',
+          text: 'PDF report ',
+          attachments: [
+            {
+              fileName:'Report.pdf',
+              path:  uploadedFiles[0].fd
+            }
+          ]
+        };
+
+        transporter.sendMail(options, (error, info) =>{
+          if(error) {
+            //...
+
+            console.log('error sending email ', error);
+            res.sendStatus(500);
+          } else {
+            //...
+            console.log('email send successfully ');
+            res.send(200);
+          }
+
+          // fs.unlinkSync(uploadedFiles[0].fd);
+        });
+
+      }
+    });
+
   }
 
 };
