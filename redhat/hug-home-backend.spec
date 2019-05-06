@@ -1,7 +1,7 @@
 Summary: Front end for Hug@Home Backend application
 Name: hug-home-backend
 Version: 1.0.0
-Release: 10
+Release: 11
 Group: Web Application
 License: HUG
 Source: %{name}-%{version}.tar.gz
@@ -22,7 +22,7 @@ SPECS version 1
 %install
 %{__make} install
 %{__install} -d -m0755 %{buildroot}/%{_datadir}/%{name}/
-%{__cp} -a app.js api config models node_modules package.json package-lock.json assets public tasks views %{buildroot}/%{_datadir}/%{name}/
+%{__cp} -a app.js api config models node_modules package.json package-lock.json .tmp public tasks views %{buildroot}/%{_datadir}/%{name}/
 %{__install} -d -m0755 %{buildroot}/lib/systemd/system
 %{__cp} redhat/hug-home.service %{buildroot}/lib/systemd/system
 %{__install} -d -m0755 %{buildroot}/%{_sysconfdir}/hug-home/
@@ -42,6 +42,9 @@ SPECS version 1
 systemctl daemon-reload
 #mkdir -p /usr/share/hug-home-backend/.tmp
 #chown -R apache /usr/share/hug-home-backend/.tmp
+#./node_modules/.bin/grunt build:production
+mkdir -p /var/lib/hug-home/attachments/
+chown -R apache /var/lib/hug-home/attachments/
 
 %changelog
 * Wed Apr 17 2019 Olivier Bitsch <olivier.b@iabsis.com>
