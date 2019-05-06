@@ -12,6 +12,7 @@ show:
 
 install:
 		@ npm install
+		@ ./node_modules/.bin/grunt build:production
 
 archive:
 		@ tar -czvf "dosetup-$(timeStamp).tar.gz" dist
