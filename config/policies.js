@@ -17,6 +17,7 @@ module.exports.policies = {
   *                                                                          *
   ***************************************************************************/
 
+  '*': false,
   SubscribeToSocketController:{
     subscribe: ['isLoggedIn']
   },
@@ -25,20 +26,20 @@ module.exports.policies = {
   },
   // '/api/v1/subscribe-to-socket':['isLoggedIn'],
   UserController:{
-    '*': 'isLoggedIn',
-    create:'setRole',
+    '*': false ,
+    create:[ 'isLoggedIn', 'isAdmin'],
     'login': true
   },
   MessageController:{
 
-    '*': 'isLoggedIn',
+    '*': false,
     create: ['isLoggedIn', 'setMessageDestination'],
     find:['isLoggedIn', 'isConsultationOwner'],
     readMessages:['isLoggedIn', 'isConsultationOwner'],
   },
   ConsultationController:{
 
-    '*': 'isLoggedIn',
+    '*': false,
     acceptConsultation:['isLoggedIn', 'isDoctor'],
     create:['isLoggedIn', 'isNurse', 'setConsultationOwner'],
     destroy:['isLoggedIn', 'isNurse', 'setConsultationOwner'],
