@@ -163,6 +163,8 @@ module.exports = {
       return res.notFound();
     }
 
+    sails.sockets.broadcast(consultation.owner, 'consultationClosed', {data:{ consultation, _id: consultation.id}});
+
     res.status(200);
     return res.json({message: 'success'});
   },
@@ -179,7 +181,7 @@ module.exports = {
 
       const user = await sails.models.user.findOne({id: req.user.id });
       // call from nurse
-      const data = { consultation:req.params.consultation, token:calleeToken, id: calleeSession.id, user:{ firstName: user.firstName, lastName: user.lastName}};
+      const data = { consultation:req.params.consultation, token:calleeToken, id: calleeSession.id, user:{ firstName: user.firstName, lastName: user.lastName}, audioOnly: req.query.audioOnly};
       if(req.user.id === consultation.owner){
         sails.sockets.broadcast(consultation.acceptedBy, 'newCall', { data });
       }else if(req.user.id === consultation.acceptedBy){
