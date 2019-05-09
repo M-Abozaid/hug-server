@@ -18,6 +18,9 @@ module.exports.policies = {
   ***************************************************************************/
 
   '*': false,
+  DashboardController:{
+    get:true
+  },
   SubscribeToSocketController:{
     subscribe: ['isLoggedIn']
   },
@@ -40,6 +43,7 @@ module.exports.policies = {
   ConsultationController:{
 
     '*': false,
+    consultationOverview: ['isLoggedIn'],
     acceptConsultation:['isLoggedIn', 'isDoctor'],
     create:['isLoggedIn', 'isNurse', 'setConsultationOwner'],
     destroy:['isLoggedIn', 'isNurse', 'setConsultationOwner'],
