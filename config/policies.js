@@ -29,9 +29,10 @@ module.exports.policies = {
   },
   // '/api/v1/subscribe-to-socket':['isLoggedIn'],
   UserController:{
+    'login': true,
     '*': false ,
     create:[ 'isLoggedIn', 'isAdmin'],
-    'login': true
+
   },
   MessageController:{
 
@@ -50,6 +51,9 @@ module.exports.policies = {
     uploadFile: ['isLoggedIn', 'setMessageDestination'],
     attachment: ['isLoggedIn', 'isConsultationOwner'],
     sendReport: ['isLoggedIn', 'isConsultationOwner']
+  },
+  AuthController: {
+    login:true
   }
 
 };
