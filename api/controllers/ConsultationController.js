@@ -225,7 +225,7 @@ module.exports = {
 
 
       let msg = await Message.create({
-        type: (req.query.audioOnly) ? 'audioCall' : 'videoCall',
+        type: (req.query.audioOnly === 'true' ) ? 'audioCall' : 'videoCall',
         consultation: req.params.consultation,
         from: req.user.id,
         to: calleeId
