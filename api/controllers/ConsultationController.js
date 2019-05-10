@@ -121,6 +121,35 @@ module.exports = {
         'foreignField': '_id',
         'as': 'nurse'
       }
+    },
+    {
+      '$lookup': {
+        'from': 'user',
+        'localField': 'consultation.acceptedBy',
+        'foreignField': '_id',
+        'as': 'doctor'
+      }
+    },
+    {
+      '$project':{
+        'consultation': 1,
+        'lastMsg': 1,
+        'unreadCount':1,
+        'doctor':{ $arrayElemAt: [ '$doctor', 0 ] },
+        'nurse':{ $arrayElemAt: [ '$nurse', 0 ] },
+
+      }
+    },
+    {
+      '$project':{
+        'consultation': 1,
+        'lastMsg': 1,
+        'unreadCount':1,
+        'doctor.firstName':1,
+        'doctor.lastName':1,
+        'nurse.firstName':1,
+        'nurse.lastName':1
+      }
     }
     ];
 
