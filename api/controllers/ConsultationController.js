@@ -239,7 +239,7 @@ module.exports = {
           firstName: user.firstName,
           lastName: user.lastName
         },
-        audioOnly: req.query.audioOnly,
+        audioOnly: req.query.audioOnly === 'true' ? true: false,
         msg
       };
 
