@@ -39,7 +39,7 @@ module.exports = {
     },
     type:{
       type: 'string',
-      isIn: ['attachment', 'text'],
+      isIn: ['attachment', 'text', 'videoCall', 'audioCall'],
     },
     mimeType:{
       type:'string'
@@ -49,6 +49,12 @@ module.exports = {
     },
     filePath:{
       type: 'string'
+    },
+    acceptedAt:{
+      type:'number'
+    },
+    closedAt:{
+      type:'number'
     }
   },
 

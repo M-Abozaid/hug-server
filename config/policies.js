@@ -46,11 +46,15 @@ module.exports.policies = {
     '*': false,
     consultationOverview: ['isLoggedIn'],
     acceptConsultation:['isLoggedIn', 'isDoctor'],
+    closeConsultation:['isLoggedIn', 'isDoctor', 'isConsultationOwner'],
     create:['isLoggedIn', 'isNurse', 'setConsultationOwner'],
     destroy:['isLoggedIn', 'isNurse', 'setConsultationOwner'],
     uploadFile: ['isLoggedIn', 'setMessageDestination'],
     attachment: ['isLoggedIn', 'isConsultationOwner'],
-    sendReport: ['isLoggedIn', 'isConsultationOwner']
+    sendReport: ['isLoggedIn','isDoctor',  'isConsultationOwner'],
+    call: ['isLoggedIn', 'isConsultationOwner'],
+    rejectCall: ['isLoggedIn', 'isConsultationOwner'],
+    acceptCall: ['isLoggedIn', 'isConsultationOwner']
   },
   AuthController: {
     login:true
