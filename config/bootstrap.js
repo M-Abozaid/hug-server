@@ -27,4 +27,12 @@ module.exports.bootstrap = async function() {
   // ]);
   // ```
 
+  const db = sails.models.consultation.getDatastore().manager;
+
+  const consultationCollection = db.collection('consultation');
+  const messageCollection = db.collection('message');
+  await consultationCollection.createIndex({closedAtISO:1}, { expireAfterSeconds: 86400}); // expires after a day
+  await messageCollection.createIndex({consultationClosedAtISO:1}, { expireAfterSeconds: 86400}); // expires after a day
+
+
 };

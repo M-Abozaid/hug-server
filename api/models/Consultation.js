@@ -51,7 +51,7 @@ module.exports = {
 
   afterCreate: async function (consultation, proceed) {
 
-    let nurse = await sails.models.user.find({id:consultation.owner});
+    let nurse = await sails.models.user.findOne({id:consultation.owner});
 
     sails.sockets.broadcast('doctors', 'newConsultation', {event:'newConsultation',data:{_id:consultation.id, unreadCount: 0, consultation, nurse}});
     return proceed();

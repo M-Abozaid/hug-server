@@ -22,6 +22,7 @@ let transporter = nodemailer.createTransport({
   }
 });
 
+const db = sails.models.consultation.getDatastore().manager;
 
 module.exports = {
   consultationOverview: async function (req, res) {
@@ -153,7 +154,6 @@ module.exports = {
     }
     ];
 
-    const db = sails.models.consultation.getDatastore().manager;
 
     const consultationCollection = db.collection('consultation');
     let results = await consultationCollection.aggregate(agg);
@@ -172,7 +172,7 @@ module.exports = {
       .set({
         status: 'active',
         acceptedBy: req.user.id,
-        acceptedAt: Date.now()
+        acceptedAt: new Date()
       });
 
 
@@ -183,13 +183,21 @@ module.exports = {
     sails.sockets.broadcast(consultation.owner, 'consultationAccepted', {
       data: {
         consultation,
-        _id: consultation.id
+        _id: consultation.id,
+        doctor: {
+          firstName: req.user.firstName,
+          lastName: req.user.lastName
+        }
       }
     });
     sails.sockets.broadcast('doctors', 'consultationAccepted', {
       data: {
         consultation,
-        _id: consultation.id
+        _id: consultation.id,
+        doctor: {
+          firstName: req.user.firstName,
+          lastName: req.user.lastName
+        }
       }
     });
 
@@ -201,32 +209,47 @@ module.exports = {
 
   closeConsultation: async function (req, res) {
 
+    try {
 
-    let consultation = await sails.models.consultation.updateOne({
-      _id: req.params.consultation,
-      status: 'active'
-    })
-      .set({
+
+      const closedAt = new Date();
+
+      let consultation  = await Consultation.findOne({id: req.params.consultation});
+      if (!consultation || consultation.status !== 'active') {
+        return res.notFound();
+      }
+
+      const consultationCollection = db.collection('consultation');
+      let {result} = await consultationCollection.update({ _id:  new ObjectId(req.params.consultation)},{$set:{
         status: 'closed',
-        closedAt: Date.now()
+        closedAtISO: closedAt,
+        closedAt: closedAt.getTime()
+      }});
+
+
+
+      const messageCollection = db.collection('message');
+      await messageCollection.update({ consultation:  new ObjectId(req.params.consultation)},{$set:{
+        consultationClosedAtISO: closedAt,
+        consultationClosedAt: closedAt.getTime()
+      }},{multi:true});
+
+
+      sails.sockets.broadcast(consultation.owner, 'consultationClosed', {
+        data: {
+          consultation,
+          _id: consultation.id
+        }
       });
 
+      res.status(200);
+      return res.json({
+        message: 'success'
+      });
 
-    if (!consultation) {
-      return res.notFound();
+    } catch (error) {
+      console.log('error ', error);
     }
-
-    sails.sockets.broadcast(consultation.owner, 'consultationClosed', {
-      data: {
-        consultation,
-        _id: consultation.id
-      }
-    });
-
-    res.status(200);
-    return res.json({
-      message: 'success'
-    });
   },
 
 
@@ -298,7 +321,7 @@ module.exports = {
         consultation: req.params.consultation
       })
         .set({
-          closedAt: Date.now()
+          closedAt: new Date()
         });
 
       // call rejected by nurse
@@ -333,7 +356,7 @@ module.exports = {
         consultation: req.params.consultation
       })
         .set({
-          acceptedAt: Date.now()
+          acceptedAt: new Date()
         });
 
       res.json({
