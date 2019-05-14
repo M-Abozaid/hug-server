@@ -8,6 +8,10 @@
  * For more information on seeding your app with fake data, check out:
  * https://sailsjs.com/config/bootstrap
  */
+const fs = require('fs');
+const { promisify } = require('util');
+
+const readdirP = promisify(fs.readdir);
 
 module.exports.bootstrap = async function() {
 
@@ -27,6 +31,7 @@ module.exports.bootstrap = async function() {
   // ]);
   // ```
 
+  // set ttl index
   const db = sails.models.consultation.getDatastore().manager;
 
   const consultationCollection = db.collection('consultation');
@@ -34,5 +39,33 @@ module.exports.bootstrap = async function() {
   await consultationCollection.createIndex({closedAtISO:1}, { expireAfterSeconds: 86400}); // expires after a day
   await messageCollection.createIndex({consultationClosedAtISO:1}, { expireAfterSeconds: 86400}); // expires after a day
 
+
+  // delete expired files
+  setInterval(async ()=>{
+
+    try {
+      let files = await readdirP(sails.config.globals.attachmentsDir);
+
+      for (let i = 0; i < files.length; i++) {
+        const filePath = files[i];
+        let found = await messageCollection.count({filePath});
+
+        if(!found){
+          fs.unlink(sails.config.globals.attachmentsDir + '/' + filePath, err=>{
+
+            if(err){
+              console.log('error deleting file ', err);
+            }
+
+          });
+        }
+      }
+    } catch (err) {
+      console.log(err);
+    }
+
+
+    // every 5 min
+  },300000);
 
 };
