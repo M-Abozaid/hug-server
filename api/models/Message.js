@@ -62,6 +62,10 @@ module.exports = {
 
     sails.sockets.broadcast(message.to || 'doctors', 'newMessage', {data:message});
 
+    if(message.type === 'audioCall' || message.type === 'videoCall'){
+      sails.sockets.broadcast(message.from, 'newMessage', {data:message});
+    }
+
     return proceed();
 
   }
