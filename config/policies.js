@@ -48,7 +48,7 @@ module.exports.policies = {
     acceptConsultation:['isLoggedIn', 'isDoctor'],
     closeConsultation:['isLoggedIn', 'isDoctor', 'isConsultationOwner'],
     create:['isLoggedIn', 'isNurse', 'setConsultationOwner'],
-    destroy:['isLoggedIn', 'isNurse', 'setConsultationOwner'],
+    destroy:['isLoggedIn', 'isNurse'],
     uploadFile: ['isLoggedIn', 'setMessageDestination'],
     attachment: ['isLoggedIn', 'isConsultationOwner'],
     sendReport: ['isLoggedIn','isDoctor',  'isConsultationOwner'],

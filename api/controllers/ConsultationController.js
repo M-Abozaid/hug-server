@@ -370,7 +370,7 @@ module.exports = {
 
   uploadFile: async function (req, res) {
     let fileId = uuidv1();
-    let filePath = req.params.consultation + '_' + fileId + '.' + req.headers['mime-type'].split('/')[1];
+    let filePath = req.params.consultation + '_' + fileId  + (req.headers['mime-type'].split('/')[1]? '.' +req.headers['mime-type'].split('/')[1] : '');
     req.file('attachment')
       .upload({
         dirname: sails.config.globals.attachmentsDir,
@@ -380,11 +380,23 @@ module.exports = {
           return res.status(500).send(err);
         } else {
           console.log('uploaded ', uploadedFiles);
+          if(!uploadedFiles[0]) {return res.status(400);}
+
+          try {
+            const {is_infected} = await sails.config.globals.clamscan.is_infected(uploadedFiles[0].fd);
+            if(is_infected){
+              return res.status(400).send(new Error('File is infected'));
+            }
+          } catch (error) {
+            console.log('Error scanning', error);
+            return res.serverError();
+          }
+
 
           let message = await Message.create({
             type: 'attachment',
             mimeType: req.headers['mime-type'],
-            fileName: req.headers['filename'],
+            fileName: decodeURIComponent(req.headers['filename']),
             filePath,
             consultation: req.params.consultation,
             to: req.body.to || null,
