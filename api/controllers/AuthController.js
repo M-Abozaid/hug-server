@@ -12,6 +12,7 @@ module.exports = {
       return res.status(400).send({error:'Can\'t user two authentication methods '});
     }
     passport.authenticate(['local', 'trusted-header'], (err, user, info) => {
+      console.log(err, req.headers);
       if((err) || (!user)) {
         return res.send({
           message: info.message,

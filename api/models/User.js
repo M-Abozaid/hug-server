@@ -48,7 +48,7 @@ module.exports = {
 
   beforeCreate: async function(user, cb){
     try {
-      // if(user.role === 'nurse') {return cb();}
+      if(user.role === 'nurse') {return cb();}
       if(!user.password) {
         return cb({
           message:'password is required '
