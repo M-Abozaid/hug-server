@@ -18,6 +18,7 @@
     "openvidu-node-client": "^2.8.0",
     "passport": "^0.4.0",
     "passport-local": "^1.0.0",
+    "passport-saml": "^1.1.0",
     "passport-trusted-header": "^1.1.0",
     "sails": "^1.1.0",
     "sails-hook-grunt": "^3.1.0",

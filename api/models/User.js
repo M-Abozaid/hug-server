@@ -4,7 +4,6 @@
  * @description :: A model definition represents a database table/collection.
  * @docs        :: https://sailsjs.com/docs/concepts/models-and-orm/models
  */
-const bcrypt = require('bcrypt-nodejs');
 
 module.exports = {
 
@@ -19,20 +18,16 @@ module.exports = {
     },
     firstName: {
       type: 'string',
-      required: true
     },
     lastName: {
       type: 'string',
-      required: true
     },
     role: {
       type:'string',
       isIn: ['doctor', 'nurse', 'admin'],
       required: true
     },
-    password: {
-      type: 'string'
-    },
+
 
     // Add a reference to Consultation
     consultations: {
@@ -48,26 +43,14 @@ module.exports = {
 
   beforeCreate: async function(user, cb){
     try {
-      // if(user.role === 'nurse') {return cb();}
-      if(!user.password) {
-        return cb({
-          message:'password is required '
-        });
-      }
+
       let existing = await User.findOne({email:user.email});
       if(existing){
         return cb({
           message:'Email already used '
         });
       }
-      bcrypt.genSalt(10, (err, salt) => {
-        if(err) {return cb(err);}
-        bcrypt.hash(user.password, salt, null, (err, hash) => {
-          if(err) {return cb(err);}
-          user.password = hash;
-          return cb();
-        });
-      });
+
     } catch (error) {
       console.log('error ', error);
       return cb(error);

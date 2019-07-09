@@ -57,7 +57,10 @@ module.exports.policies = {
     acceptCall: ['isLoggedIn', 'isConsultationOwner']
   },
   AuthController: {
-    login:true
+    login:true,
+    samlLogin:true,
+    metadata:true,
+    getUser:true,
   }
 
 };

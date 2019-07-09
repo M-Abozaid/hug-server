@@ -35,6 +35,11 @@ module.exports.routes = {
   'post /api/v1/consultation/:consultation/send-report': 'ConsultationController.sendReport',
   'get /api/v1/consultation/:consultation/attachment/:attachment': 'ConsultationController.attachment',
   'POST /api/v1/login': 'AuthController.login',
+  'GET /api/v1/login': 'AuthController.samlLogin',
+  'GET /api/v1/get-user': 'AuthController.getUser',
+  'GET /api/v1/metadata': 'AuthController.metadata',
+  'POST /api/v1/saml-callback': 'AuthController.samlCallback',
+
   '/logout': 'AuthController.logout',
 
   /***************************************************************************
