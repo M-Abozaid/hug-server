@@ -338,10 +338,8 @@ var AuthGuard = /** @class */ (function () {
         if (currentUser) {
             return true;
         }
-        console.log(' redirect >>>>>>>>>>>>>>>>>>>>>>>>>>>>');
-        location.replace('/api/v1/login');
         console.log('no user');
-        // this.router.navigate(['api/v1/login'], { queryParams: { returnUrl: state.url } });
+        this.router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
         return false;
     };
     AuthGuard = tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
@@ -517,7 +515,7 @@ var AppComponent = /** @class */ (function () {
             if (!user) {
                 console.log('userlogged out ................');
                 _this.isLoggedIn = false;
-                return location.replace('/api/v1/login');
+                return _this.router.navigate(['/login']);
             }
             console.log('got user >..........');
             _this.zone.run(function () {
@@ -781,7 +779,7 @@ var AuthService = /** @class */ (function () {
     AuthService.prototype.loggedInSub = function () {
         return this.loggedIn;
     };
-    AuthService.prototype.login = function (email, password) {
+    AuthService.prototype.login = function () {
         var _this = this;
         return this.http.get(_environments_environment__WEBPACK_IMPORTED_MODULE_5__["environment"].api + "/get-user")
             .pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_4__["map"])(function (res) {
@@ -828,7 +826,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/fesm5/core.js");
 /* harmony import */ var rxjs__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! rxjs */ "./node_modules/rxjs/_esm5/index.js");
 /* harmony import */ var rxjs_operators__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! rxjs/operators */ "./node_modules/rxjs/_esm5/operators/index.js");
-/* harmony import */ var _auth_service__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./auth.service */ "./src/app/auth/auth.service.ts");
+/* harmony import */ var _environments_environment__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../environments/environment */ "./src/environments/environment.ts");
+/* harmony import */ var _auth_service__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./auth.service */ "./src/app/auth/auth.service.ts");
+
 
 
 
@@ -845,7 +845,7 @@ var ErrorInterceptor = /** @class */ (function () {
             if (err.status === 401 || err.status === 403) {
                 // auto logout if 401 response returned from api
                 _this.authService.logout();
-                location.replace('/api/v1/login');
+                location.replace(_environments_environment__WEBPACK_IMPORTED_MODULE_4__["environment"].api + "/login");
             }
             var error = err.error.message || err.statusText;
             return Object(rxjs__WEBPACK_IMPORTED_MODULE_2__["throwError"])(error);
@@ -853,7 +853,7 @@ var ErrorInterceptor = /** @class */ (function () {
     };
     ErrorInterceptor = tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Injectable"])(),
-        tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:paramtypes", [_auth_service__WEBPACK_IMPORTED_MODULE_4__["AuthService"]])
+        tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:paramtypes", [_auth_service__WEBPACK_IMPORTED_MODULE_5__["AuthService"]])
     ], ErrorInterceptor);
     return ErrorInterceptor;
 }());
@@ -1901,7 +1901,7 @@ var DurationPipe = /** @class */ (function () {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<ng-container>\n<div class=\"wrap\">\n\n\n  <div class=\"container\">\n      <div class=\"at\">@ <span>HOME</span></div>\n      <div style=\"color: #ffffff; text-align: center; margin-top:200px;\">\n        <h3>CONNECTION</h3>\n        <p>\n            Portail d'accès médecin\n        </p>\n      </div>\n      <form (submit)=\"onSubmit()\" class=\"example-form\">\n          <mat-form-field class=\"example-full-width\">\n            <input matInput placeholder=\"Email\" [formControl]=\"emailFormControl\"\n                   [errorStateMatcher]=\"matcher\">\n\n            <mat-error *ngIf=\"emailFormControl.hasError('email') && !emailFormControl.hasError('required')\">\n              Please enter a valid email address\n            </mat-error>\n            <mat-error *ngIf=\"emailFormControl.hasError('required')\">\n              Email is <strong>required</strong>\n            </mat-error>\n          </mat-form-field>\n          <mat-form-field class=\"example-full-width\">\n              <input matInput placeholder=\"Password\" type=\"password\" [formControl]=\"passwordFormControl\"\n                     [errorStateMatcher]=\"matcher\">\n\n\n              <mat-error *ngIf=\"passwordFormControl.hasError('required')\">\n                Password is <strong>required</strong>\n              </mat-error>\n            </mat-form-field>\n\n            <button class=\"submit-btn\" mat-button type=\"submit\">Se connecter</button>\n\n        </form>\n  </div>\n\n</div>\n\n</ng-container>\n"
+module.exports = "<ng-container>\n\n\n</ng-container>\n"
 
 /***/ }),
 
@@ -1968,18 +1968,12 @@ var LoginComponent = /** @class */ (function () {
         this.error = '';
     }
     LoginComponent.prototype.ngOnInit = function () {
-        console.log('init login and deletes');
-        this.authService.logout();
-        this.returnUrl = this.route.snapshot.queryParams.returnUrl || '/dashboard';
-    };
-    LoginComponent.prototype.onSubmit = function () {
         var _this = this;
-        this.submitted = true;
-        this.loading = true;
-        this.authService.login(this.emailFormControl.value, this.passwordFormControl.value)
+        this.returnUrl = this.route.snapshot.queryParams.returnUrl || '/dashboard';
+        this.authService.login()
             .pipe(Object(rxjs_operators__WEBPACK_IMPORTED_MODULE_4__["first"])())
             .subscribe(function (data) {
-            console.log('login successful redirecting ', _this.returnUrl);
+            _this.router.navigate([_this.returnUrl]);
         }, function (error) {
             _this.error = error;
             _this.loading = false;

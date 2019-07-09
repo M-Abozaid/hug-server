@@ -52,11 +52,14 @@ passport.use(new Strategy(options, ( async (requestHeaders, cb) => {
   var userDn = requestHeaders['x-ssl-client-s-dn'];
   let CNMatch = userDn.match(/CN=([^\/]+)/);
   let emailMatch = userDn.match(/emailAddress=([^\/\s]+)/);
-  let email =  emailMatch? emailMatch[1] : null;
-  let firstName = (CNMatch && CNMatch[1])? CNMatch[1].split(/\s+/)[0] : null;
-  let lastName = (CNMatch && CNMatch[1])? CNMatch[1].split(/\s+/)[1] : null;
-
-  console.log('headers ',firstName, lastName, email);
+  // let email =  emailMatch? emailMatch[1] : null;
+  let login = (CNMatch && CNMatch[1]) ? CNMatch[1].split(/\s+/)[0] : null;
+  let firstName = login;
+  let email = firstName + "@imad.ch";
+  let lastName = "UNKNOWN";
+  //let lastName = (CNMatch && CNMatch[1])? CNMatch[1].split(/\s+/)[1] : null;
+  
+  console.log('headers ',userDn, firstName, lastName, email);
 
   if(email) {
     user = await User.findOne({email:email});
@@ -66,8 +69,8 @@ passport.use(new Strategy(options, ( async (requestHeaders, cb) => {
           email,
           firstName,
           lastName,
-          role: sails.config.globals.NURSE_DOCTOR
-        });
+          role: sails.config.globals.ROLE_NURSE
+        }).fetch();
       } catch (error) {
         return cb(error, null, { message: 'Login Unsuccessful'});
       }
