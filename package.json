@@ -21,9 +21,9 @@
     "passport-saml": "^1.1.0",
     "passport-trusted-header": "^1.1.0",
     "sails": "^1.2.3",
-    "sails-hook-grunt": "^3.1.0",
+    "sails-hook-grunt": "^4.0.1",
     "sails-hook-orm": "^2.1.1",
-    "sails-hook-sockets": "^1.5.5",
+    "sails-hook-sockets": "^2.0.0",
     "sails-mongo": "^1.0.1",
     "skipper-disk": "^0.5.12",
     "uuid": "^3.3.2"

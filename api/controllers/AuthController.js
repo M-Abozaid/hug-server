@@ -40,32 +40,36 @@ const samlStrategy = new SamlStrategy(
 
 passport.use(samlStrategy);
 
-module.exports = {
-  login: function(req, res, next) {
-    if((req.body.email || req.body.password) && req.headers['x-ssl-client-s-dn']){
-      return res.status(400).send({error:'Can\'t user two authentication methods '});
-    }
-    passport.authenticate(['local', 'trusted-header'], (err, user, info) => {
-      console.log(err, req.headers);
-      if((err) || (!user)) {
-        return res.send({
-          message: info.message,
-          user
-        });
-      }
-      req.logIn(user, (err) => {
-        if(err) {return res.send(err);}
-        try {
-          return res.send({
-            message: info? info.message: '',
-            user
-          });
-        } catch (error) {
-          console.log(error);
-        }
-
+function logIn(err, user, info)  {
+  if((err) || (!user)) {
+    return res.send({
+      message: info.message,
+      user
+    });
+  }
+  req.logIn(user, (err) => {
+    if(err) {return res.send(err);}
+    try {
+      return res.send({
+        message: info? info.message: '',
+        user
       });
-    })(req, res, next);
+    } catch (error) {
+      console.log(error);
+    }
+
+  });
+}
+
+
+module.exports = {
+  loginCert: function(req, res, next){
+
+    passport.authenticate('trusted-header', logIn)(req, res, next);
+  },
+  loginLocal: function(req, res, next){
+
+    passport.authenticate('local', logIn)(req, res, next);
   },
   logout: function(req, res) {
     req.logout();
@@ -85,7 +89,7 @@ module.exports = {
     }
   },
 
-  samlLogin: function(req, res, next) {
+  loginSaml: function(req, res, next) {
     passport.authenticate('saml', { failureRedirect: '/app/login'})(req, res, next);
   },
 
