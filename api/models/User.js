@@ -43,7 +43,7 @@ module.exports = {
 
   beforeCreate: async function(user, cb){
     try {
-
+      if(user.role === 'nurse') {return cb();}
       let existing = await User.findOne({email:user.email});
       if(existing){
         return cb({
