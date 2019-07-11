@@ -96,12 +96,10 @@ module.exports = {
 
 
   samlCallback: function(req, res, next){
-    passport.authenticate(config.passport.strategy,
+    passport.authenticate('saml',
       {
         successRedirect: '/app/login',
-      }, (user, err) => {
-        console.log('user ');
-      });
+      }, logIn);
   },
 
   metadata: function(req, res){

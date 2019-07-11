@@ -62,6 +62,7 @@ module.exports.policies = {
     loginSaml:true,
     metadata:true,
     getUser:true,
+    samlCallback:true,
   }
 
 };
