@@ -41,20 +41,4 @@ module.exports = {
     return _.omit(this, ['password']);
   },
 
-  beforeCreate: async function(user, cb){
-    try {
-      if(user.role === 'nurse') {return cb();}
-      let existing = await User.findOne({email:user.email});
-      if(existing){
-        return cb({
-          message:'Email already used '
-        });
-      }
-
-    } catch (error) {
-      console.log('error ', error);
-      return cb(error);
-    }
-
-  }
 };

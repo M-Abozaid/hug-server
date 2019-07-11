@@ -61,7 +61,7 @@ module.exports.policies = {
     loginCert:true,
     loginSaml:true,
     metadata:true,
-    getUser:true,
+    getUser:['isLoggedIn'],
     samlCallback:true,
   }
 
