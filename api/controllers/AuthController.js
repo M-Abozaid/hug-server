@@ -6,7 +6,7 @@
  */
 
 const jwt = require('jsonwebtoken');
-
+const bodyParser = require('body-parser');
 const passport = require('passport');
 const SamlStrategy = require('passport-saml').Strategy;
 
@@ -96,10 +96,16 @@ module.exports = {
 
 
   samlCallback: function(req, res, next){
-    passport.authenticate('saml',
-      {
-        successRedirect: '/app/login',
-      }, logIn);
+    bodyParser.urlencoded({ extended: false })(req,res,next);
+    passport.authenticate('saml', { failureRedirect: '/app/login' })(req,res,next);
+
+    setTimeout(()=>{
+      if(!res.headerSent){
+        res.redirect('/app/login');
+      }
+    },1);
+
+
   },
 
   metadata: function(req, res){
