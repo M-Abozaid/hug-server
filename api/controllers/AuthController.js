@@ -97,7 +97,7 @@ module.exports = {
 
   samlCallback: function(req, res, next){
     bodyParser.urlencoded({ extended: false })(req,res,()=>{
-      passport.authenticate('saml', { failureRedirect: '/app/login' })(req,res,next);
+      passport.authenticate('saml', { failureRedirect: '/app/login', successRedirect:'/' })(req,res,next);
     });
 
 
