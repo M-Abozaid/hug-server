@@ -37,9 +37,9 @@ const samlStrategy = new SamlStrategy(
     }
 
     user = (({
-      firstName, lastName,  _id, role
+      firstName, lastName,  id, role
     }) => ({
-      firstName, lastName,  _id, role
+      firstName, lastName,  id, role
     }))(user);
 
 

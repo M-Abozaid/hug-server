@@ -55,10 +55,10 @@ passport.use(new Strategy(options, ( async (requestHeaders, cb) => {
   // let email =  emailMatch? emailMatch[1] : null;
   let login = (CNMatch && CNMatch[1]) ? CNMatch[1].split(/\s+/)[0] : null;
   let firstName = login;
-  let email = firstName + "@imad.ch";
-  let lastName = "UNKNOWN";
+  let email = firstName + '@imad.ch';
+  let lastName = 'UNKNOWN';
   //let lastName = (CNMatch && CNMatch[1])? CNMatch[1].split(/\s+/)[1] : null;
-  
+
   console.log('headers ',userDn, firstName, lastName, email);
 
   if(email) {
