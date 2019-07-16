@@ -17,13 +17,13 @@ module.exports = {
       isEmail: true
     },
     firstName: {
-      type: 'string',
+      type: 'string'
     },
     lastName: {
-      type: 'string',
+      type: 'string'
     },
     role: {
-      type:'string',
+      type: 'string',
       isIn: ['doctor', 'nurse', 'admin'],
       required: true
     },
@@ -37,8 +37,9 @@ module.exports = {
   },
 
 
-  customToJSON: function() {
+  customToJSON () {
     return _.omit(this, ['password']);
-  },
+  }
+
 
 };

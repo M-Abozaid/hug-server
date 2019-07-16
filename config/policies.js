@@ -10,7 +10,7 @@
 
 module.exports.policies = {
 
-  /***************************************************************************
+  /** *************************************************************************
   *                                                                          *
   * Default policy for all controllers and actions, unless overridden.       *
   * (`true` allows public access)                                            *
@@ -18,51 +18,51 @@ module.exports.policies = {
   ***************************************************************************/
 
   '*': false,
-  DashboardController:{
-    get:true
+  DashboardController: {
+    get: true
   },
-  SubscribeToSocketController:{
+  SubscribeToSocketController: {
     subscribe: ['isLoggedIn']
   },
-  SubscribeToDoctorsController:{
+  SubscribeToDoctorsController: {
     subscribe: ['isLoggedIn', 'isDoctor']
   },
   // '/api/v1/subscribe-to-socket':['isLoggedIn'],
-  UserController:{
-    'login': true,
-    '*': false ,
-    create:[ 'isLoggedIn', 'isAdmin'],
+  UserController: {
+    login: true,
+    '*': false,
+    create: ['isLoggedIn', 'isAdmin']
 
   },
-  MessageController:{
+  MessageController: {
 
     '*': false,
     create: ['isLoggedIn', 'setMessageDestination'],
-    find:['isLoggedIn', 'isConsultationOwner'],
-    readMessages:['isLoggedIn', 'isConsultationOwner'],
+    find: ['isLoggedIn', 'isConsultationOwner'],
+    readMessages: ['isLoggedIn', 'isConsultationOwner']
   },
-  ConsultationController:{
+  ConsultationController: {
 
     '*': false,
     consultationOverview: ['isLoggedIn'],
-    acceptConsultation:['isLoggedIn', 'isDoctor'],
-    closeConsultation:['isLoggedIn', 'isDoctor', 'isConsultationOwner'],
-    create:['isLoggedIn', 'isNurse', 'setConsultationOwner'],
-    destroy:['isLoggedIn', 'isNurse'],
+    acceptConsultation: ['isLoggedIn', 'isDoctor'],
+    closeConsultation: ['isLoggedIn', 'isDoctor', 'isConsultationOwner'],
+    create: ['isLoggedIn', 'isNurse', 'setConsultationOwner'],
+    destroy: ['isLoggedIn', 'isNurse'],
     uploadFile: ['isLoggedIn', 'setMessageDestination'],
     attachment: ['isLoggedIn', 'isConsultationOwner'],
-    sendReport: ['isLoggedIn','isDoctor',  'isConsultationOwner'],
+    sendReport: ['isLoggedIn', 'isDoctor', 'isConsultationOwner'],
     call: ['isLoggedIn', 'isConsultationOwner'],
     rejectCall: ['isLoggedIn', 'isConsultationOwner'],
     acceptCall: ['isLoggedIn', 'isConsultationOwner']
   },
   AuthController: {
-    loginLocal:true,
-    loginCert:true,
-    loginSaml:true,
-    metadata:true,
-    getUser:['isLoggedIn'],
-    samlCallback:true,
+    loginLocal: true,
+    loginCert: true,
+    loginSaml: true,
+    metadata: true,
+    getUser: ['isLoggedIn'],
+    samlCallback: true
   }
 
 };

@@ -15,7 +15,7 @@ module.exports.sockets = {
   // The flashsocket transport is disabled by default
   // You can enable flashsockets by adding 'flashsocket' to this list:
   transports: [
-    'websocket',
+    'websocket'
     // 'htmlfile',
     // 'xhr-polling',
     // 'jsonp-polling'
@@ -148,7 +148,7 @@ module.exports.sockets = {
 
 
 
-  //   console.log('data ', data );
+  //   sails.log('data ', data );
   //   return proceed(undefined, true);
   // },
   // authorization: true,
@@ -174,14 +174,15 @@ module.exports.sockets = {
   // // (`undefined` indicates use default)
   // 'static': undefined,
 
-  beforeConnect: function(handshake, proceed) {
+  // socket authentication
+  beforeConnect (handshake, proceed) {
 
     // socket authentication
 
-    if(handshake._query && handshake._query.token){
+    if (handshake._query && handshake._query.token) {
       jwt.verify(handshake._query.token, sails.config.globals.APP_SECRET, (err, decoded) => {
-        if(err){
-          console.log('error ', err);
+        if (err) {
+          sails.log('error ', err);
           return proceed(false);
 
         }
@@ -189,16 +190,16 @@ module.exports.sockets = {
         handshake.user = decoded;
         return proceed(undefined, true);
       });
-    }else{
+    } else {
 
-      return proceed({message:'no Token was found'}, false);
+      return proceed({ message: 'no Token was found' }, false);
     }
 
     // Send back `true` to allow the socket to connect.
     // (Or send back `false` to reject the attempt.)
 
 
-  },
+  }
   // 'url':'mongodb://localhost/hug_at_home_ws'
   // The entry point where Socket.IO starts looking for incoming connections.
   // This should be the same between the client and the server.

@@ -62,6 +62,8 @@ module.exports = {
 
   getUser (req, res) {
 
+    const token = jwt.sign(req.user, sails.config.globals.APP_SECRET);
+    req.user.token = token;
     res.json({
       user: req.user
     });
@@ -79,7 +81,7 @@ module.exports = {
       passport.authenticate('saml', (err, user, info = {}) => {
 
         if (err) {
-          console.log('error authenticating ', err);
+          sails.log('error authenticating ', err);
           return res.redirect('/app/login');
         }
         if (!user) {
@@ -95,8 +97,6 @@ module.exports = {
         res.redirect('/app/login');
       });
     });
-
-
 
 
   },

@@ -8,24 +8,24 @@
 
 module.exports = {
 
-  subscribe: async function(req, res){
+  async subscribe (req, res) {
     if (!req.isSocket) {
       return res.badRequest();
     }
 
-    let user = await sails.models.user.findOne({id: req.user.id});
-    if(!user){
+    const user = await User.findOne({ id: req.user.id });
+    if (!user) {
       return res.forbidden();
     }
 
     sails.sockets.join(req, user.id, (err) => {
       if (err) {
-        console.log('error joining session ', err);
+        sails.log('error joining session ', err);
         return res.serverError(err);
       }
 
       return res.json({
-        message: 'Subscribed to a fun room called '+user.id+'!'
+        message: `Subscribed to a fun room called ${user.id}!`
       });
     });
   }

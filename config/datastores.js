@@ -16,7 +16,7 @@
 module.exports.datastores = {
 
 
-  /***************************************************************************
+  /** *************************************************************************
   *                                                                          *
   * Your app's default datastore.                                            *
   *                                                                          *
@@ -34,7 +34,7 @@ module.exports.datastores = {
 
   default: {
 
-    /***************************************************************************
+    /** *************************************************************************
     *                                                                          *
     * Want to use a different database during development?                     *
     *                                                                          *
@@ -52,9 +52,9 @@ module.exports.datastores = {
     // url: 'mysql://user:password@host:port/database',
 
     adapter: 'sails-mongo',
-    url: process.env.DB_URI || 'mongodb://mongo:mongo@127.0.0.1/hugathome?authSource=admin',
+    url: process.env.DB_URI || 'mongodb://mongo:mongo@127.0.0.1/hugathome?authSource=admin'
 
-  },
+  }
 
 
 };

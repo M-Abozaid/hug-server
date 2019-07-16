@@ -13,7 +13,7 @@ const openvidu = new OpenVidu(sails.config.OPENVIDU_URL, sails.config.OPENVIDU_S
 const fs = require('fs');
 
 const nodemailer = require('nodemailer');
-let transporter = nodemailer.createTransport({
+const transporter = nodemailer.createTransport({
   host: 'smtp',
   port: 25,
   secure: false,
@@ -22,78 +22,78 @@ let transporter = nodemailer.createTransport({
   }
 });
 
-const db = sails.models.consultation.getDatastore().manager;
+const db = Consultation.getDatastore().manager;
 
 module.exports = {
-  consultationOverview: async function (req, res) {
+  async consultationOverview (req, res) {
     let match = [{
-      'owner': new ObjectId(req.user.id)
+      owner: new ObjectId(req.user.id)
     }];
     if (req.user && req.user.role === 'doctor') {
       match = [{
-        'acceptedBy': new ObjectId(req.user.id)
+        acceptedBy: new ObjectId(req.user.id)
       },
       {
-        'status': 'pending'
+        status: 'pending'
       }
       ];
     }
 
     const agg = [{
-      '$match': {
-        '$or': match
+      $match: {
+        $or: match
       }
     },
     {
-      '$project': {
-        'consultation': '$$ROOT'
+      $project: {
+        consultation: '$$ROOT'
       }
     },
     {
-      '$lookup': {
-        'from': 'message',
-        'localField': '_id',
-        'foreignField': 'consultation',
-        'as': 'messages'
+      $lookup: {
+        from: 'message',
+        localField: '_id',
+        foreignField: 'consultation',
+        as: 'messages'
       }
     },
     {
-      '$project': {
-        'consultation': 1,
-        'lastMsg': {
-          '$arrayElemAt': [
+      $project: {
+        consultation: 1,
+        lastMsg: {
+          $arrayElemAt: [
             '$messages',
             -1
           ]
         },
 
-        'messages': 1,
+        messages: 1
 
       }
     },
     {
-      '$project': {
-        'consultation': 1,
-        'lastMsg': 1,
-        'messages': {
-          '$filter': {
-            'input': '$messages',
-            'as': 'msg',
-            'cond': {
-              '$and': [{
-                '$eq': [
+      $project: {
+        consultation: 1,
+        lastMsg: 1,
+        messages: {
+          $filter: {
+            input: '$messages',
+            as: 'msg',
+            cond: {
+              $and: [{
+                $eq: [
                   '$$msg.read',
                   false
                 ]
               },
               {
-                '$or': [{
-                  '$eq': [
+                $or: [{
+                  $eq: [
                     '$$msg.to',
                     new ObjectId(req.user.id)
                   ]
                 }, {
-                  '$eq': [
+                  $eq: [
                     '$$msg.to',
                     null
                   ]
@@ -106,66 +106,66 @@ module.exports = {
       }
     },
     {
-      '$project': {
+      $project: {
 
-        'consultation': 1,
-        'lastMsg': 1,
-        'unreadCount': {
-          '$size': '$messages'
+        consultation: 1,
+        lastMsg: 1,
+        unreadCount: {
+          $size: '$messages'
         }
       }
     },
     {
-      '$lookup': {
-        'from': 'user',
-        'localField': 'consultation.owner',
-        'foreignField': '_id',
-        'as': 'nurse'
+      $lookup: {
+        from: 'user',
+        localField: 'consultation.owner',
+        foreignField: '_id',
+        as: 'nurse'
       }
     },
     {
-      '$lookup': {
-        'from': 'user',
-        'localField': 'consultation.acceptedBy',
-        'foreignField': '_id',
-        'as': 'doctor'
+      $lookup: {
+        from: 'user',
+        localField: 'consultation.acceptedBy',
+        foreignField: '_id',
+        as: 'doctor'
       }
     },
     {
-      '$project':{
-        'consultation': 1,
-        'lastMsg': 1,
-        'unreadCount':1,
-        'doctor':{ $arrayElemAt: [ '$doctor', 0 ] },
-        'nurse':{ $arrayElemAt: [ '$nurse', 0 ] },
+      $project: {
+        consultation: 1,
+        lastMsg: 1,
+        unreadCount: 1,
+        doctor: { $arrayElemAt: ['$doctor', 0] },
+        nurse: { $arrayElemAt: ['$nurse', 0] }
 
       }
     },
     {
-      '$project':{
-        'consultation': 1,
-        'lastMsg': 1,
-        'unreadCount':1,
-        'doctor.firstName':1,
-        'doctor.lastName':1,
-        'nurse.firstName':1,
-        'nurse.lastName':1
+      $project: {
+        consultation: 1,
+        lastMsg: 1,
+        unreadCount: 1,
+        'doctor.firstName': 1,
+        'doctor.lastName': 1,
+        'nurse.firstName': 1,
+        'nurse.lastName': 1
       }
     }
     ];
 
 
     const consultationCollection = db.collection('consultation');
-    let results = await consultationCollection.aggregate(agg);
+    const results = await consultationCollection.aggregate(agg);
 
     res.json(await results.toArray());
 
   },
 
-  acceptConsultation: async function (req, res) {
+  async acceptConsultation (req, res) {
 
 
-    let consultation = await sails.models.consultation.updateOne({
+    const consultation = await Consultation.updateOne({
       _id: req.params.consultation,
       status: 'pending'
     })
@@ -207,34 +207,37 @@ module.exports = {
     });
   },
 
-  closeConsultation: async function (req, res) {
+  async closeConsultation (req, res) {
 
     try {
 
 
       const closedAt = new Date();
 
-      let consultation  = await Consultation.findOne({id: req.params.consultation});
+      const consultation = await Consultation.findOne({ id: req.params.consultation });
       if (!consultation || consultation.status !== 'active') {
         return res.notFound();
       }
 
       const consultationCollection = db.collection('consultation');
-      let {result} = await consultationCollection.update({ _id:  new ObjectId(req.params.consultation)},{$set:{
+      // mark consultation as closed and set closedAtISO for mongodb ttl
+      const { result } = await consultationCollection.update({ _id: new ObjectId(req.params.consultation) }, { $set: {
         status: 'closed',
         closedAtISO: closedAt,
         closedAt: closedAt.getTime()
-      }});
+      } });
 
 
 
       const messageCollection = db.collection('message');
-      await messageCollection.update({ consultation:  new ObjectId(req.params.consultation)},{$set:{
+      // set consultationClosedAtISO for mongodb ttl index
+      await messageCollection.update({ consultation: new ObjectId(req.params.consultation) }, { $set: {
         consultationClosedAtISO: closedAt,
         consultationClosedAt: closedAt.getTime()
-      }},{multi:true});
+      } }, { multi: true });
 
 
+      // emit consultation closed event with the consultation
       sails.sockets.broadcast(consultation.owner, 'consultationClosed', {
         data: {
           consultation,
@@ -248,14 +251,15 @@ module.exports = {
       });
 
     } catch (error) {
-      console.log('error ', error);
+      sails.log('error ', error);
     }
   },
 
 
-  call: async function (req, res) {
+  async call (req, res) {
     try {
-      const consultation = await sails.models.consultation.findOne({
+      // the consultation this call belongs to
+      const consultation = await Consultation.findOne({
         _id: req.params.consultation
       });
       const callerSession = await openvidu.createSession({
@@ -268,7 +272,8 @@ module.exports = {
       });
       const calleeToken = await calleeSession.generateToken();
 
-      const user = await sails.models.user.findOne({
+      // the current user
+      const user = await User.findOne({
         id: req.user.id
       });
 
@@ -276,8 +281,9 @@ module.exports = {
       const calleeId = (req.user.id === consultation.owner) ? consultation.acceptedBy : consultation.owner;
 
 
-      let msg = await Message.create({
-        type: (req.query.audioOnly === 'true' ) ? 'audioCall' : 'videoCall',
+      // create a new message
+      const msg = await Message.create({
+        type: (req.query.audioOnly === 'true') ? 'audioCall' : 'videoCall',
         consultation: req.params.consultation,
         from: req.user.id,
         to: calleeId
@@ -291,7 +297,7 @@ module.exports = {
           firstName: user.firstName,
           lastName: user.lastName
         },
-        audioOnly: req.query.audioOnly === 'true' ? true: false,
+        audioOnly: req.query.audioOnly === 'true',
         msg
       };
 
@@ -310,9 +316,9 @@ module.exports = {
     }
   },
 
-  rejectCall: async function (req, res) {
+  async rejectCall (req, res) {
     try {
-      const consultation = await sails.models.consultation.findOne({
+      const consultation = await Consultation.findOne({
         _id: req.params.consultation
       });
 
@@ -349,7 +355,7 @@ module.exports = {
   },
 
 
-  acceptCall: async function (req, res) {
+  async acceptCall (req, res) {
     try {
       await Message.updateOne({
         _id: req.params.message,
@@ -368,32 +374,32 @@ module.exports = {
 
   },
 
-  uploadFile: async function (req, res) {
-    let fileId = uuidv1();
-    let filePath = req.params.consultation + '_' + fileId  + (req.headers['mime-type'].split('/')[1]? '.' +req.headers['mime-type'].split('/')[1] : '');
+  uploadFile (req, res) {
+    const fileId = uuidv1();
+    const filePath = `${req.params.consultation }_${ fileId }${req.headers['mime-type'].split('/')[1] ? `.${ req.headers['mime-type'].split('/')[1]}` : ''}`;
     req.file('attachment')
       .upload({
         dirname: sails.config.globals.attachmentsDir,
         saveAs: filePath
-      }, async function whenDone(err, uploadedFiles) {
+      }, async function whenDone (err, uploadedFiles) {
         if (err) {
           return res.status(500).send(err);
         } else {
-          console.log('uploaded ', uploadedFiles);
-          if(!uploadedFiles[0]) {return res.status(400);}
+          sails.log('uploaded ', uploadedFiles);
+          if (!uploadedFiles[0]) {return res.status(400);}
 
           try {
-            const {is_infected} = await sails.config.globals.clamscan.is_infected(uploadedFiles[0].fd);
-            if(is_infected){
+            const { is_infected } = await sails.config.globals.clamscan.is_infected(uploadedFiles[0].fd);
+            if (is_infected) {
               return res.status(400).send(new Error('File is infected'));
             }
           } catch (error) {
-            console.log('Error scanning', error);
+            sails.log('Error scanning', error);
             return res.serverError();
           }
 
 
-          let message = await Message.create({
+          const message = await Message.create({
             type: 'attachment',
             mimeType: req.headers['mime-type'],
             fileName: decodeURIComponent(req.headers['filename']),
@@ -411,33 +417,33 @@ module.exports = {
       });
   },
 
-  attachment: async function (req, res) {
-    let msg = await Message.findOne({
+  async attachment (req, res) {
+    const msg = await Message.findOne({
       id: req.params.attachment
     });
 
     if (!msg.mimeType.startsWith('audio') && !msg.mimeType.endsWith('jpeg') && !msg.mimeType.endsWith('png')) {
-      res.setHeader('Content-disposition', 'attachment; filename=' + msg.fileName);
+      res.setHeader('Content-disposition', `attachment; filename=${ msg.fileName}`);
     }
-    const filePath = sails.config.globals.attachmentsDir + '/' + msg.filePath;
+    const filePath = `${sails.config.globals.attachmentsDir }/${ msg.filePath}`;
 
     if (!fs.existsSync(filePath)) {
       return res.notFound();
     }
-    let readStream = fs.createReadStream(filePath);
+    const readStream = fs.createReadStream(filePath);
 
 
     readStream.pipe(res);
   },
 
-  sendReport: async function (req, res) {
-    let filePath = uuidv1() + '.pdf';
+  sendReport (req, res) {
+    const filePath = `${uuidv1() }.pdf`;
 
     req.file('report')
       .upload({
         dirname: './.tmp',
         saveAs: filePath
-      }, async function whenDone(err, uploadedFiles) {
+      }, function whenDone (err, uploadedFiles) {
         if (err) {
           return res.status(500).send(err);
         } else {
@@ -455,13 +461,13 @@ module.exports = {
 
           transporter.sendMail(options, (error, info) => {
             if (error) {
-              //...
+              // ...
 
-              console.log('error sending email ', error);
-              res.sendStatus(500);
+              sails.log('error sending email ', error);
+              res.serverError();
             } else {
-              //...
-              console.log('email send successfully ');
+              // ...
+              sails.log('email send successfully ');
               res.send(200);
             }
 

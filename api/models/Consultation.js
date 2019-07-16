@@ -28,43 +28,45 @@ module.exports = {
       type: 'string',
       required: true
     },
-    status:{
+    status: {
       type: 'string',
       isIn: ['pending', 'active', 'closed'],
       // default:'pending',
       required: true
     },
-    acceptedBy:{
+    acceptedBy: {
       model: 'user'
     },
     owner: {
       model: 'user'
     },
-    acceptedAt:{
-      type:'number'
+    acceptedAt: {
+      type: 'number'
     },
-    closedAt:{
-      type:'number'
+    closedAt: {
+      type: 'number'
     }
 
   },
 
-  afterCreate: async function (consultation, proceed) {
+  async afterCreate (consultation, proceed) {
 
-    let nurse = await sails.models.user.findOne({id:consultation.owner});
+    const nurse = await User.findOne({ id: consultation.owner });
 
-    sails.sockets.broadcast('doctors', 'newConsultation', {event:'newConsultation',data:{_id:consultation.id, unreadCount: 0, consultation, nurse}});
+    sails.sockets.broadcast('doctors', 'newConsultation',
+    { event: 'newConsultation', data: { _id: consultation.id, unreadCount: 0, consultation, nurse } });
     return proceed();
   },
 
 
-  beforeDestroy: async function (criteria, proceed) {
+  async beforeDestroy (criteria, proceed) {
 
-    await sails.models.message.destroy({consultation:criteria.where.id});
+    await Message.destroy({ consultation: criteria.where.id });
 
 
-    sails.sockets.broadcast('doctors', 'consultationCanceled', {event:'consultationCanceled',data:{_id:criteria.where.id, consultation:criteria.where}});
+    sails.sockets.broadcast('doctors', 'consultationCanceled',
+    { event: 'consultationCanceled', data: { _id: criteria.where.id, consultation: criteria.where } });
     return proceed();
-  },
+  }
 
 };

@@ -11,7 +11,7 @@
 
 module.exports.blueprints = {
 
-  /***************************************************************************
+  /** *************************************************************************
   *                                                                          *
   * Automatically expose implicit routes for every action in your app?       *
   *                                                                          *
@@ -20,7 +20,7 @@ module.exports.blueprints = {
   // actions: false,
 
 
-  /***************************************************************************
+  /** *************************************************************************
   *                                                                          *
   * Automatically expose RESTful routes for your models?                     *
   *                                                                          *
@@ -29,7 +29,7 @@ module.exports.blueprints = {
   // rest: true,
 
 
-  /***************************************************************************
+  /** *************************************************************************
   *                                                                          *
   * Automatically expose CRUD "shortcut" routes to GET requests?             *
   * (These are enabled by default in development only.)                      *
@@ -40,12 +40,12 @@ module.exports.blueprints = {
 
   prefix: '/api/v1',
 
-  populate : false,
+  populate: false,
 
-  parseBlueprintOptions(req) {
-    var queryOptions = req._sails.hooks.blueprints.parseBlueprintOptions(req);
+  parseBlueprintOptions (req) {
+    const queryOptions = req._sails.hooks.blueprints.parseBlueprintOptions(req);
 
-    if(!req.param('populate', false) && !queryOptions.alias) {
+    if (!req.param('populate', false) && !queryOptions.alias) {
       queryOptions.populates = {};
     }
     return queryOptions;

@@ -1,7 +1,7 @@
-module.exports = async function (req, res, proceed) {
+module.exports = function (req, res, proceed) {
 
 
-  if(req.user && req.user.role === 'admin'){
+  if (req.user && req.user.role === 'admin') {
     return proceed();
 
   }

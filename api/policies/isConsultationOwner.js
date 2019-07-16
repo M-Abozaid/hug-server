@@ -1,33 +1,34 @@
 module.exports = async function (req, res, proceed) {
 
-  let consultationId = (req.body? req.body.consultation: null) || req.params.consultation;
-  if(req.query.where){
-    try{
+  let consultationId = (req.body ? req.body.consultation : null) || req.params.consultation;
+  if (req.query.where) {
+    try {
       consultationId = JSON.parse(req.query.where).consultation;
-    }catch(err){
-      res.send(err);
+    } catch (err) {
+      console.error(err);
+      res.badRequest('invalid where parameter');
     }
   }
   let consultation;
-  if(req.user.role === 'nurse'){
+  if (req.user.role === 'nurse') {
 
-    consultation = await sails.models.consultation.count({
-      id:consultationId,
-      owner:req.user.id
+    consultation = await Consultation.count({
+      id: consultationId,
+      owner: req.user.id
     });
 
-  }else if(req.user.role === 'doctor'){
+  } else if (req.user.role === 'doctor') {
 
-    consultation = await sails.models.consultation.count({
-      id:consultationId,
-      or:[
-        {acceptedBy: req.user.id , _id: consultationId},
-        {acceptedBy: null}
-      ]});
+    consultation = await Consultation.count({
+      id: consultationId,
+      or: [
+        { acceptedBy: req.user.id, _id: consultationId },
+        { acceptedBy: null }
+      ] });
 
   }
 
-  if(!consultation){
+  if (!consultation) {
 
     return res.forbidden();
   }

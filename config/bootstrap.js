@@ -13,7 +13,7 @@ const { promisify } = require('util');
 
 const readdirP = promisify(fs.readdir);
 
-module.exports.bootstrap = async function() {
+module.exports.bootstrap = async function () {
 
   // By convention, this is a good place to set up fake data during development.
   //
@@ -32,40 +32,41 @@ module.exports.bootstrap = async function() {
   // ```
 
   // set ttl index
-  const db = sails.models.consultation.getDatastore().manager;
+  const db = Consultation.getDatastore().manager;
 
   const consultationCollection = db.collection('consultation');
   const messageCollection = db.collection('message');
-  await consultationCollection.createIndex({closedAtISO:1}, { expireAfterSeconds: 86400}); // expires after a day
-  await messageCollection.createIndex({consultationClosedAtISO:1}, { expireAfterSeconds: 86400}); // expires after a day
+  await consultationCollection.createIndex({ closedAtISO: 1 }, { expireAfterSeconds: 86400 }); // expires after a day
+  await messageCollection.createIndex({ consultationClosedAtISO: 1 }, { expireAfterSeconds: 86400 }); // expires after a day
 
 
-  // delete expired files
-  setInterval(async ()=>{
+  // check and delete expired files
+  setInterval(async () => {
 
     try {
-      let files = await readdirP(sails.config.globals.attachmentsDir);
+      const files = await readdirP(sails.config.globals.attachmentsDir);
 
       for (let i = 0; i < files.length; i++) {
         const filePath = files[i];
-        let found = await messageCollection.count({filePath});
+        const found = await messageCollection.count({ filePath });
 
-        if(!found){
-          fs.unlink(sails.config.globals.attachmentsDir + '/' + filePath, err=>{
+        // if the file message is not found (message was deleted) delete the file
+        if (!found) {
+          fs.unlink(`${sails.config.globals.attachmentsDir }/${ filePath}`, err => {
 
-            if(err){
-              console.log('error deleting file ', err);
+            if (err) {
+              sails.log.warn('error deleting file ', err);
             }
 
           });
         }
       }
     } catch (err) {
-      console.log(err);
+      sails.log(err);
     }
 
 
     // every 5 min
-  },300000);
+  }, 300000);
 
 };

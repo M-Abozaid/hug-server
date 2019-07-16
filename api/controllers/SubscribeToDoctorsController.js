@@ -9,14 +9,14 @@
 
 module.exports = {
 
-  subscribe: async function(req, res){
+  async subscribe (req, res) {
     if (!req.isSocket) {
       return res.badRequest();
     }
 
-    let user = await sails.models.user.findOne({id: req.user.id});
-    if(!user) {return res.forbidden();}
-    if(user.role !== 'doctor'){
+    const user = await User.findOne({ id: req.user.id });
+    if (!user) {return res.forbidden();}
+    if (user.role !== 'doctor') {
       return res.forbidden();
     }
 
@@ -25,6 +25,7 @@ module.exports = {
         return res.serverError(err);
       }
 
+      res.status(200);
       return res.json({
         message: 'Subscribed to doctors!'
       });

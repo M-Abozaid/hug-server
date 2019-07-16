@@ -1,4 +1,4 @@
-module.exports = async function (req, res, proceed) {
+module.exports = function (req, res, proceed) {
 
 
   req.body.status = 'pending';

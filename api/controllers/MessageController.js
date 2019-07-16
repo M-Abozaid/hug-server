@@ -7,16 +7,16 @@
 
 module.exports = {
 
-  readMessages: async function(req, res){
+  // set all messages belonging to req.params.consultation
+  async readMessages (req, res) {
 
-
-    let msgs = await sails.models.message.update({ consultation: req.params.consultation, or:[{to:req.user.id },{to:null}] ,  read:false })
+    const msgs = await Message.update({ consultation: req.params.consultation, or: [{ to: req.user.id }, { to: null }], read: false })
     .set({
-      read:true
+      read: true
     });
 
     res.status(200);
-    res.json({message:'success', msgs});
+    res.json({ message: 'success', msgs });
   }
 
 };

@@ -12,20 +12,20 @@
  *   https://sailsjs.com/anatomy/tasks/register/default.js
  *
  */
-var fs = require('fs');
+const fs = require('fs');
 const path = require('path');
 
 module.exports = function (grunt) {
 
-  grunt.registerTask('updateIndex', function()  {
-    var done = this.async();
-    var writeStream = fs.createWriteStream(path.join(__dirname, '../../views/pages/homepage.ejs'));
+  grunt.registerTask('updateIndex', function () {
+    const done = this.async();
+    const writeStream = fs.createWriteStream(path.join(__dirname, '../../views/pages/homepage.ejs'));
     fs.createReadStream(path.join(__dirname, '../../assets/index.html')).pipe(writeStream);
 
     writeStream.on('finish', (e) => {
-      console.log('file copied ');
+      sails.log('file copied ');
       done(true);
-    } );
+    });
   });
 
   grunt.registerTask('default', [
@@ -34,7 +34,7 @@ module.exports = function (grunt) {
     'compileAssets',
     // 'babel',        //« uncomment to ALSO transpile during development (for broader browser compat.)
     'linkAssets',
-    'watch',
+    'watch'
 
   ]);
 

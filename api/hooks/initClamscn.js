@@ -1,7 +1,7 @@
 const NodeClam = require('clamscan');
-module.exports = function myBasicHook(sails) {
+module.exports = function myBasicHook (sails) {
   return {
-    initialize: async function(cb) {
+    async initialize (cb) {
 
       const clamscan = await new NodeClam().init({
         remove_infected: true });

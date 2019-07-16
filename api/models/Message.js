@@ -29,41 +29,41 @@ module.exports = {
     text: {
       type: 'string'
     },
-    consultation:{
+    consultation: {
       model: 'consultation',
-      required:true
+      required: true
     },
-    read:{
-      type:'boolean',
+    read: {
+      type: 'boolean'
       // default:false
     },
-    type:{
+    type: {
       type: 'string',
-      isIn: ['attachment', 'text', 'videoCall', 'audioCall'],
+      isIn: ['attachment', 'text', 'videoCall', 'audioCall']
     },
-    mimeType:{
-      type:'string'
-    },
-    fileName:{
+    mimeType: {
       type: 'string'
     },
-    filePath:{
+    fileName: {
       type: 'string'
     },
-    acceptedAt:{
-      type:'number'
+    filePath: {
+      type: 'string'
     },
-    closedAt:{
-      type:'number'
+    acceptedAt: {
+      type: 'number'
+    },
+    closedAt: {
+      type: 'number'
     }
   },
 
-  afterCreate: function (message, proceed) {
+  afterCreate (message, proceed) {
 
-    sails.sockets.broadcast(message.to || 'doctors', 'newMessage', {data:message});
+    sails.sockets.broadcast(message.to || 'doctors', 'newMessage', { data: message });
 
-    if(message.type === 'audioCall' || message.type === 'videoCall'){
-      sails.sockets.broadcast(message.from, 'newMessage', {data:message});
+    if (message.type === 'audioCall' || message.type === 'videoCall') {
+      sails.sockets.broadcast(message.from, 'newMessage', { data: message });
     }
 
     return proceed();
