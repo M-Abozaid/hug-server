@@ -10,6 +10,7 @@ const bodyParser = require('body-parser');
 const passport = require('passport');
 
 const { samlStrategy } = require('../../config/passport');
+const jwt = require('jsonwebtoken');
 
 
 

@@ -10,7 +10,7 @@
 
 module.exports.routes = {
 
-  /***************************************************************************
+  /** *************************************************************************
   *                                                                          *
   * Make the view located at `views/homepage.ejs` your home page.            *
   *                                                                          *
@@ -20,12 +20,12 @@ module.exports.routes = {
   ***************************************************************************/
   'get /app/*': 'DashboardController.get',
   'get /app': '/app/dashboard',
-  'get /' :'/app/dashboard',
+  'get /': '/app/dashboard',
   // '/dashboard': { view: 'pages/homepage' },
   'get /api/v1/subscribe-to-socket': 'SubscribeToSocketController.subscribe',
-  'get /api/v1/subscribe-to-doctors':'SubscribeToDoctorsController.subscribe',
-  'post /api/v1/consultation/:consultation/read-messages':'MessageController.readMessages',
-  'get /api/v1/consultations-overview':'ConsultationController.consultationOverview',
+  'get /api/v1/subscribe-to-doctors': 'SubscribeToDoctorsController.subscribe',
+  'post /api/v1/consultation/:consultation/read-messages': 'MessageController.readMessages',
+  'get /api/v1/consultations-overview': 'ConsultationController.consultationOverview',
   'post /api/v1/consultation/:consultation/accept': 'ConsultationController.acceptConsultation',
   'post /api/v1/consultation/:consultation/close': 'ConsultationController.closeConsultation',
   'post /api/v1/consultation/:consultation/call': 'ConsultationController.call',
@@ -41,9 +41,9 @@ module.exports.routes = {
   'GET /api/v1/metadata': 'AuthController.metadata',
   'POST /api/v1/saml-callback': 'AuthController.samlCallback',
 
-  '/logout': 'AuthController.logout',
+  '/logout': 'AuthController.logout'
 
-  /***************************************************************************
+  /** *************************************************************************
   *                                                                          *
   * More custom routes here...                                               *
   * (See https://sailsjs.com/config/routes for examples.)                    *
