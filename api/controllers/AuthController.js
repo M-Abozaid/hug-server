@@ -103,6 +103,6 @@ module.exports = {
   },
 
   metadata (req, res) {
-    res.send(samlStrategy.generateServiceProviderMetadata(process.env.SAML_PRIVATE_KEY, process.env.SAML_PRIVATE_CERT));
+    res.send(samlStrategy.generateServiceProviderMetadata(process.env.SAML_KEY, process.env.SAML_CERT));
   }
 };

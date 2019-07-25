@@ -102,12 +102,13 @@ const samlStrategy = new SamlStrategy(
     callbackUrl: process.env.SAML_CALLBACK || 'https://dev-hug-at-home.oniabsis.com/api/v1/saml-callback',
     path: '/api/v1/login-callback',
     entryPoint: process.env.SAML_ENTRY_POINT || 'https://login.microsoftonline.com/17e1281a-ff7f-4071-9ddd-60a77a0a0fe7/saml2',
+    logoutUrl: process.env.LOGOUT_URL,
     issuer: process.env.SAML_ISSUER || 'de2981db-9607-451a-80ca-4a0a886ca206',
-    cert: process.env.SAML_PUBLIC_CERT,
-    privateCert: process.env.SAML_PRIVATE_CERT,
-    decryptionPvk: process.env.SAML_PRIVATE_KEY,
-    logoutUrl: process.env.LOGOUT_URL
-
+    decryptionCert: process.env.SAML_CERT,
+    decryptionPvk: process.env.SAML_KEY,
+    signingCert: process.env.SAML_CERT,
+    privateCert: process.env.SAML_KEY,
+    cert: process.env.SAML_CERT_IDENTITY
   },
   (async (profile, cb) => {
 
