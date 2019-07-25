@@ -111,11 +111,11 @@ const samlStrategy = new SamlStrategy(
   (async (profile, cb) => {
 
 
-    let user = await User.findOne({ email: profile.nameID });
+    let user = await User.findOne({ email: profile[process.env.EMAIL_FIELD] });
     try {
       if (!user) {
         user = await User.create({
-          email: profile[EMAIL_FIELD],
+          email: profile[process.env.EMAIL_FIELD],
           firstName: profile[process.env.FIRSTNAME_FIELD],
           lastName: profile[process.env.LASTNAME_FIELD],
           role: sails.config.globals.ROLE_DOCTOR
