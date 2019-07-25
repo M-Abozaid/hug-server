@@ -102,7 +102,11 @@ const samlStrategy = new SamlStrategy(
     callbackUrl: process.env.SAML_CALLBACK || 'https://dev-hug-at-home.oniabsis.com/api/v1/saml-callback',
     path: '/api/v1/login-callback',
     entryPoint: process.env.SAML_ENTRY_POINT || 'https://login.microsoftonline.com/17e1281a-ff7f-4071-9ddd-60a77a0a0fe7/saml2',
-    issuer: process.env.SAML_ISSUER || 'de2981db-9607-451a-80ca-4a0a886ca206'
+    issuer: process.env.SAML_ISSUER || 'de2981db-9607-451a-80ca-4a0a886ca206',
+    cert: process.env.SAML_PUBLIC_CERT,
+    privateCert: process.env.SAML_PRIVATE_CERT,
+    decryptionPvk: process.env.SAML_PRIVATE_KEY
+
   },
   (async (profile, cb) => {
 
@@ -112,8 +116,8 @@ const samlStrategy = new SamlStrategy(
       if (!user) {
         user = await User.create({
           email: profile.nameID,
-          firstName: profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname'],
-          lastName: profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname'],
+          firstName: profile[process.env.FIRSTNAME_FIELD],
+          lastName: profile[process.env.LASTNAME_FIELD],
           role: sails.config.globals.ROLE_DOCTOR
         }).fetch();
       }
