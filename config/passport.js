@@ -115,7 +115,7 @@ const samlStrategy = new SamlStrategy(
     try {
       if (!user) {
         user = await User.create({
-          email: profile.nameID,
+          email: profile.email,
           firstName: profile[process.env.FIRSTNAME_FIELD],
           lastName: profile[process.env.LASTNAME_FIELD],
           role: sails.config.globals.ROLE_DOCTOR
