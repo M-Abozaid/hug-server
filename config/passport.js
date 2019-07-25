@@ -105,7 +105,8 @@ const samlStrategy = new SamlStrategy(
     issuer: process.env.SAML_ISSUER || 'de2981db-9607-451a-80ca-4a0a886ca206',
     cert: process.env.SAML_PUBLIC_CERT,
     privateCert: process.env.SAML_PRIVATE_CERT,
-    decryptionPvk: process.env.SAML_PRIVATE_KEY
+    decryptionPvk: process.env.SAML_PRIVATE_KEY,
+    logoutUrl: process.env.LOGOUT_URL
 
   },
   (async (profile, cb) => {
