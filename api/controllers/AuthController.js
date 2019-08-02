@@ -17,7 +17,7 @@ const jwt = require('jsonwebtoken');
 module.exports = {
 
   // login using client certificate
-  loginCert (req, res, next) {
+  loginCert (req, res) {
 
     passport.authenticate('trusted-header', (err, user, info = {}) => {
       if ((err) || (!user)) {
@@ -31,11 +31,13 @@ module.exports = {
         user
       });
 
-    })(req, res, next);
+    })(req, res, (err) => {
+      console.log('Error with LOGIN CERT', err);
+    });
   },
 
   // used only for development
-  loginLocal (req, res, next) {
+  loginLocal (req, res) {
     if (process.env.NODE_ENV === 'production') {
       return res.notFound();
     }
@@ -54,7 +56,9 @@ module.exports = {
       });
 
 
-    })(req, res, next);
+    })(req, res, (err) => {
+      console.log('Error with LOGIN ', err);
+    });
   },
   logout (req, res) {
     req.logout();
@@ -71,8 +75,11 @@ module.exports = {
 
   },
 
-  loginSaml (req, res, next) {
-    passport.authenticate('saml', { failureRedirect: '/app/login' })(req, res, next);
+  loginSaml (req, res) {
+    passport.authenticate('saml', { failureRedirect: '/app/login' })(req, res, (err) => {
+      console.log('Error with SAML ', err);
+      res.serverError();
+    });
   },
 
 
