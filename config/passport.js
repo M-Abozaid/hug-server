@@ -2,7 +2,7 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const bcrypt = require('bcrypt-nodejs');
 const jwt = require('jsonwebtoken');
-
+const fs = require('fs')
 const { Strategy } = require('passport-trusted-header');
 
 
@@ -105,9 +105,9 @@ const samlStrategy = new SamlStrategy(
     logoutUrl: process.env.LOGOUT_URL,
     issuer: process.env.SAML_ISSUER || 'de2981db-9607-451a-80ca-4a0a886ca206',
     decryptionCert: process.env.SAML_CERT,
-    decryptionPvk: process.env.SAML_KEY,
+    decryptionPvk: fs.readFileSync(process.env.SAML_PATH_KEY, 'utf-8'),
     signingCert: process.env.SAML_CERT,
-    privateCert: process.env.SAML_KEY,
+    privateCert: fs.readFileSync(process.env.SAML_PATH_KEY, 'utf-8'),
     cert: process.env.SAML_CERT_IDENTITY
   },
   (async (profile, cb) => {
