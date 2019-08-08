@@ -78,7 +78,12 @@ module.exports = {
   loginSaml (req, res) {
     passport.authenticate('saml', { failureRedirect: '/app/login' })(req, res, (err) => {
       console.log('Error with SAML ', err);
-      res.serverError();
+      // res.serverError();
+      return res.view('pages/error', {
+
+        error: err
+
+      });
     });
   },
 
@@ -90,7 +95,11 @@ module.exports = {
 
         if (err) {
           sails.log('error authenticating ', err);
-          return res.redirect('/app/login');
+          return res.view('pages/error', {
+
+            error: err
+
+          });
         }
         if (!user) {
           return res.json({
@@ -101,7 +110,15 @@ module.exports = {
 
         return res.redirect(`/app?tk=${ user.token}`);
 
-      })(req, res, () => {
+      })(req, res, (err) => {
+        if (err) {
+          sails.log('error authenticating ', err);
+          return res.view('pages/error', {
+
+            error: err
+
+          });
+        }
         res.redirect('/app/login');
       });
     });

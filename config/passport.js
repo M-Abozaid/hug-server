@@ -113,6 +113,9 @@ const samlStrategy = new SamlStrategy(
   (async (profile, cb) => {
 
 
+    console.log('got saml user profile >> ');
+    console.log(JSON.stringify(profile));
+
     let user = await User.findOne({ email: profile[process.env.EMAIL_FIELD] });
     try {
       if (!user) {
