@@ -32,17 +32,14 @@ module.exports.policies = {
     login: true,
     '*': false,
     create: ['isLoggedIn', 'isAdmin']
-
   },
   MessageController: {
-
     '*': false,
     create: ['isLoggedIn', 'setMessageDestination'],
     find: ['isLoggedIn', 'isConsultationOwner'],
     readMessages: ['isLoggedIn', 'isConsultationOwner']
   },
   ConsultationController: {
-
     '*': false,
     consultationOverview: ['isLoggedIn'],
     acceptConsultation: ['isLoggedIn', 'isDoctor'],

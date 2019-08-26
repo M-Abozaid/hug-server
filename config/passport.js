@@ -2,7 +2,7 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const bcrypt = require('bcrypt-nodejs');
 const jwt = require('jsonwebtoken');
-const fs = require('fs')
+const fs = require('fs');
 const { Strategy } = require('passport-trusted-header');
 
 
@@ -108,23 +108,24 @@ const samlStrategy = new SamlStrategy(
     decryptionPvk: fs.readFileSync(process.env.SAML_PATH_KEY, 'utf-8'),
     signingCert: process.env.SAML_CERT,
     privateCert: fs.readFileSync(process.env.SAML_PATH_KEY, 'utf-8'),
-    cert: process.env.SAML_CERT_IDENTITY
+    cert: process.env.SAML_CERT_IDENTITY,
+    identifierFormat: 'urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified'
   },
   (async (profile, cb) => {
 
 
-    console.log('got saml user profile >> ');
-    console.log(JSON.stringify(profile));
 
-    let user = await User.findOne({ email: profile[process.env.EMAIL_FIELD] });
     try {
+    let user = await User.findOne({ email: profile[process.env.EMAIL_FIELD] });
+
       if (!user) {
-        user = await User.create({
-          email: profile[process.env.EMAIL_FIELD],
-          firstName: profile[process.env.FIRSTNAME_FIELD],
-          lastName: profile[process.env.LASTNAME_FIELD],
-          role: sails.config.globals.ROLE_DOCTOR
-        }).fetch();
+        // user = await User.create({
+        //   email: profile[process.env.EMAIL_FIELD],
+        //   firstName: profile[process.env.FIRSTNAME_FIELD],
+        //   lastName: profile[process.env.LASTNAME_FIELD],
+        //   role: sails.config.globals.ROLE_DOCTOR
+        // }).fetch();
+        return cb(new Error('User not found'))
       }
     } catch (error) {
       sails.log('error cerating user ', error);
