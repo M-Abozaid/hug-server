@@ -36,11 +36,9 @@ module.exports = {
     });
   },
 
-  // used only for development
+  // used only for admin
   loginLocal (req, res) {
-    if (process.env.NODE_ENV === 'production') {
-      return res.notFound();
-    }
+
     passport.authenticate('local', (err, user, info = {}) => {
       if ((err) || (!user)) {
         return res.json({
@@ -49,6 +47,9 @@ module.exports = {
         });
       }
 
+      if(user.role !== 'admin'){
+        return res.forbidden()
+      }
 
       return res.send({
         message: info.message,

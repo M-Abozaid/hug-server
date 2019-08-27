@@ -27,7 +27,9 @@ module.exports = {
       isIn: ['doctor', 'nurse', 'admin'],
       required: true
     },
-
+    password: {
+      type: 'string',
+    },
 
     // Add a reference to Consultation
     consultations: {
