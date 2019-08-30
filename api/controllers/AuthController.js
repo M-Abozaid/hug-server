@@ -97,9 +97,7 @@ module.exports = {
         if (err) {
           sails.log('error authenticating ', err);
           return res.view('pages/error', {
-
             error: err
-
           });
         }
         if (!user) {
