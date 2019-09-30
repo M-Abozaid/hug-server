@@ -389,9 +389,11 @@ module.exports = {
           if (!uploadedFiles[0]) {return res.status(400);}
 
           try {
-            const { is_infected } = await sails.config.globals.clamscan.is_infected(uploadedFiles[0].fd);
-            if (is_infected) {
-              return res.status(400).send(new Error('File is infected'));
+            if(process.env.NODE_ENV !== 'development'){
+              const { is_infected } = await sails.config.globals.clamscan.is_infected(uploadedFiles[0].fd);
+              if (is_infected) {
+                return res.status(400).send(new Error('File is infected'));
+              }
             }
           } catch (error) {
             sails.log('Error scanning', error);

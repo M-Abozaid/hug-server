@@ -94,64 +94,68 @@ passport.use(new Strategy(options, (async (requestHeaders, cb) => {
 
 
 const SamlStrategy = require('passport-saml').Strategy;
+let samlStrategy
+
+if(process.env.NODE_ENV !== 'development'){
+
+
+  samlStrategy = new SamlStrategy(
+    {
+      callbackUrl: process.env.SAML_CALLBACK || 'https://dev-hug-at-home.oniabsis.com/api/v1/saml-callback',
+      path: '/api/v1/login-callback',
+      entryPoint: process.env.SAML_ENTRY_POINT || 'https://login.microsoftonline.com/17e1281a-ff7f-4071-9ddd-60a77a0a0fe7/saml2',
+      logoutUrl: process.env.LOGOUT_URL,
+      issuer: process.env.SAML_ISSUER || 'de2981db-9607-451a-80ca-4a0a886ca206',
+      decryptionCert: process.env.SAML_CERT,
+      decryptionPvk: fs.readFileSync(process.env.SAML_PATH_KEY, 'utf-8'),
+      signingCert: process.env.SAML_CERT,
+      privateCert: fs.readFileSync(process.env.SAML_PATH_KEY, 'utf-8'),
+      identifierFormat: 'urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified'
+  //    cert: process.env.SAML_CERT_IDENTITY
+    },
+    (async (profile, cb) => {
 
 
 
-const samlStrategy = new SamlStrategy(
-  {
-    callbackUrl: process.env.SAML_CALLBACK || 'https://dev-hug-at-home.oniabsis.com/api/v1/saml-callback',
-    path: '/api/v1/login-callback',
-    entryPoint: process.env.SAML_ENTRY_POINT || 'https://login.microsoftonline.com/17e1281a-ff7f-4071-9ddd-60a77a0a0fe7/saml2',
-    logoutUrl: process.env.LOGOUT_URL,
-    issuer: process.env.SAML_ISSUER || 'de2981db-9607-451a-80ca-4a0a886ca206',
-    decryptionCert: process.env.SAML_CERT,
-    decryptionPvk: fs.readFileSync(process.env.SAML_PATH_KEY, 'utf-8'),
-    signingCert: process.env.SAML_CERT,
-    privateCert: fs.readFileSync(process.env.SAML_PATH_KEY, 'utf-8'),
-    identifierFormat: 'urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified'
-//    cert: process.env.SAML_CERT_IDENTITY
-  },
-  (async (profile, cb) => {
+      try {
+      let user = await User.findOne({ email: profile[process.env.EMAIL_FIELD] });
+
+        if (!user) {
+          // user = await User.create({
+          //   email: profile[process.env.EMAIL_FIELD],
+          //   firstName: profile[process.env.FIRSTNAME_FIELD],
+          //   lastName: profile[process.env.LASTNAME_FIELD],
+          //   role: sails.config.globals.ROLE_DOCTOR
+          // }).fetch();
+          return cb(new Error('User not found'))
+        }
+
+        // remove unnecessary fields
+        user = (({
+          firstName, lastName, id, role
+        }) => ({
+          firstName, lastName, id, role
+        }))(user);
 
 
+        const token = jwt.sign(user, sails.config.globals.APP_SECRET);
+        user.token = token;
 
-    try {
-    let user = await User.findOne({ email: profile[process.env.EMAIL_FIELD] });
+        return cb(null, user, { message: 'Login Successful' });
 
-      if (!user) {
-        // user = await User.create({
-        //   email: profile[process.env.EMAIL_FIELD],
-        //   firstName: profile[process.env.FIRSTNAME_FIELD],
-        //   lastName: profile[process.env.LASTNAME_FIELD],
-        //   role: sails.config.globals.ROLE_DOCTOR
-        // }).fetch();
-        return cb(new Error('User not found'))
+      } catch (error) {
+        sails.log('error cerating user ', error);
+        return cb(error);
       }
-    } catch (error) {
-      sails.log('error cerating user ', error);
-      return cb(error);
-    }
 
-    // remove unnecessary fields
-    user = (({
-      firstName, lastName, id, role
-    }) => ({
-      firstName, lastName, id, role
-    }))(user);
+    })
+
+  );
+
+  passport.use(samlStrategy);
 
 
-    const token = jwt.sign(user, sails.config.globals.APP_SECRET);
-    user.token = token;
-
-    return cb(null, user, { message: 'Login Successful' });
-
-  })
-
-);
-
-
-
-passport.use(samlStrategy);
+}
 
 
 exports.samlStrategy = samlStrategy;

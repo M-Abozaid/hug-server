@@ -13,7 +13,7 @@
         "NODE_TLS_REJECT_UNAUTHORIZED": 0,
         "DB_URI": "mongodb://localhost/hug_at_home",
         "APP_SECRET":"321",
-        "NODE_ENV":"production",
+        "NODE_ENV":"development",
         "ATTACHMENTS_DIR":"/home/muhammed/space/web/hug-at-home/server/attachments"
       }
     },

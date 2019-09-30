@@ -18,12 +18,16 @@ const path = require('path');
 module.exports = function (grunt) {
 
   grunt.registerTask('updateIndex', function () {
+
     const done = this.async();
+    if(process.env.NODE_ENV !== 'development') {
+      return done(true)
+    }
     const writeStream = fs.createWriteStream(path.join(__dirname, '../../views/pages/homepage.ejs'));
     fs.createReadStream(path.join(__dirname, '../../assets/index.html')).pipe(writeStream);
 
     writeStream.on('finish', (e) => {
-      sails.log('file copied ');
+      console.log('file copied ');
       done(true);
     });
   });

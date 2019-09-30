@@ -33,12 +33,13 @@ module.exports.security = {
     allowOrigins: [
       'http://localhost',
       'http://localhost:8080',
-      'http://localhost:8100'
+      'http://localhost:8100',
+      'http://localhost:4200'
     ],
     allowCredentials: true,
-    allowAnyOriginWithCredentialsUnsafe: true,
+    // allowAnyOriginWithCredentialsUnsafe: true,
     allowRequestHeaders: 'content-type,id,x-csrf-token,x-access-token,X-SSL-client-s-dn,X-SSL-client-i-dn,X-SSL-client-session-id,X-SSL-client-verify,id,mime-type,filename'
-  }
+  },
 
 
   /** **************************************************************************
@@ -55,6 +56,6 @@ module.exports.security = {
   *                                                                           *
   ****************************************************************************/
 
-  // csrf: false
+  // csrf: true
 
 };
