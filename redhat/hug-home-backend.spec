@@ -1,11 +1,12 @@
 Summary: Front end for Hug@Home Backend application
 Name: hug-home-backend
 Version: 1.0.0
-Release: 20
+Release: 22
 Group: Web Application
 License: HUG
 Source: %{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-root
+#BuildRequires: nodejs
 Requires: nodejs
 BuildArch: noarch
 
