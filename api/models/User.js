@@ -6,9 +6,7 @@
  */
 
 module.exports = {
-
   attributes: {
-
     username: {
       type: 'string'
     },
@@ -28,9 +26,11 @@ module.exports = {
       required: true
     },
     password: {
-      type: 'string',
+      type: 'string'
     },
-
+    phoneNumber: {
+      type: 'string'
+    },
     // Add a reference to Consultation
     consultations: {
       collection: 'consultation',
@@ -38,10 +38,8 @@ module.exports = {
     }
   },
 
-
-  customToJSON () {
-    return _.omit(this, ['password']);
+  customToJSON() {
+    return _.omit(this, ['password'])
   }
 
-
-};
+}
