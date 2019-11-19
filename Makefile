@@ -11,7 +11,7 @@ show:
 		@ echo npm_version: $(npm_version)
 
 install:
-		@ npm install
+		@ npm install --unsafe-perm
 		@ ./node_modules/.bin/grunt build:production
 
 archive:
