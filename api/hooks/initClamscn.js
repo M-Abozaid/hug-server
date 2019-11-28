@@ -4,7 +4,12 @@ module.exports = function myBasicHook (sails) {
     async initialize (cb) {
 
       const clamscan = await new NodeClam().init({
-        remove_infected: true });
+        remove_infected: true,
+        clamdscan: {
+          socket: '/var/run/clamav/clamd.ctl', // Socket file for connecting via TCP
+      },
+        preference: 'clamdscan'
+      });
 
       sails.config.globals.clamscan = clamscan;
       // Do some stuff here to initialize hook
