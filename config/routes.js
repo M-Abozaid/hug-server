@@ -38,8 +38,10 @@ module.exports.routes = {
   'GET /api/v1/login-cert': 'AuthController.loginCert',
   'GET /api/v1/login-saml': 'AuthController.loginSaml',
   'GET /api/v1/get-user': 'AuthController.getUser',
+  'GET /api/v1/user/ip': 'UserController.ip',
   'GET /api/v1/metadata': 'AuthController.metadata',
   'POST /api/v1/saml-callback': 'AuthController.samlCallback',
+  'POST /api/v1/support': 'SupportController.supportRequest',
 
   '/logout': 'AuthController.logout'
 

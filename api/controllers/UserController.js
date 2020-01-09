@@ -8,6 +8,11 @@
 module.exports = {
 
 
+  async ip (req, res) {
+
+
+    res.json({ip: req.ip})
+  }
 
 };
 
