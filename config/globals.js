@@ -57,6 +57,6 @@ module.exports.globals = {
   attachmentsDir: process.env.ATTACHMENTS_DIR || '/var/lib/hug-home/attachments',
 
   REDMINE_DOMAIN: process.env.REDMINE_DOMAIN  || "https://projects.iabsis.com",
-  REDMINE_API_KEY: process.env.REDMINE_API_KEY  || '07b76b9cfacda0de7e93d3757ed7c7fa8d40563e'
+  REDMINE_API_KEY: process.env.REDMINE_API_KEY
 
 };
