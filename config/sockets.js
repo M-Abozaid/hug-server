@@ -180,14 +180,21 @@ module.exports.sockets = {
     // socket authentication
 
     if (handshake._query && handshake._query.token) {
-      jwt.verify(handshake._query.token, sails.config.globals.APP_SECRET, (err, decoded) => {
+      jwt.verify(handshake._query.token, sails.config.globals.APP_SECRET, async (err, decoded) => {
         if (err) {
           sails.log('error ', err);
           return proceed(false);
 
         }
 
-        handshake.user = decoded;
+        const user = await User.findOne({
+          id: decoded.id
+        });
+        if(!user){
+          sails.log('error ', 'No user');
+          return proceed(false)
+        }
+        handshake.user = user;
         return proceed(undefined, true);
       });
     } else {

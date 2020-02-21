@@ -4,13 +4,21 @@ module.exports = function (req, res, proceed) {
 
 
   if (!req.headers['x-access-token'] && !req.query.token) {return res.status(401).json({error: "Unauthorized"});}
-  jwt.verify(req.headers['x-access-token'] || req.query.token, sails.config.globals.APP_SECRET, (err, decoded) => {
+  jwt.verify(req.headers['x-access-token'] || req.query.token, sails.config.globals.APP_SECRET, async (err, decoded) => {
     if (err) {
       console.error('error ', err);
       return res.status(401).json({error: "Unauthorized"});
     }
 
-    req.user = decoded;
+    const user = await User.findOne({
+      id: decoded.id
+    });
+    if(!user){
+      sails.log('error ', 'No user');
+      return res.status(401).json({error: "Unauthorized"});
+    }
+
+    req.user = user;
     return proceed();
   });
 
