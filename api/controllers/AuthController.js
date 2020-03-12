@@ -19,6 +19,7 @@ module.exports = {
   // login using client certificate
   loginCert (req, res) {
 
+    // return res.status(401).send()
     passport.authenticate('trusted-header', (err, user, info = {}) => {
       if ((err) || (!user)) {
         return res.send({
