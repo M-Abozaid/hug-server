@@ -30,7 +30,7 @@ module.exports.policies = {
   // '/api/v1/subscribe-to-socket':['isLoggedIn'],
   UserController: {
     login: true,
-    ip:  ['isLoggedIn'],
+    ip: ['isLoggedIn'],
     '*': false,
     create: ['isLoggedIn', 'isAdmin']
   },
@@ -62,8 +62,11 @@ module.exports.policies = {
     getUser: ['isLoggedIn'],
     samlCallback: true
   },
-  SupportController:{
+  SupportController: {
     supportRequest: ['isLoggedIn'],
+  },
+  InviteController: {
+    '*': false,
+    invite: ['isDoctor']
   }
-
 };
