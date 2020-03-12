@@ -23,7 +23,7 @@ module.exports = {
     },
     role: {
       type: 'string',
-      isIn: ['doctor', 'nurse', 'admin'],
+      isIn: ['doctor', 'nurse', 'admin', 'patient'],
       required: true
     },
     password: {

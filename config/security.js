@@ -38,7 +38,7 @@ module.exports.security = {
     ],
     allowCredentials: true,
     // allowAnyOriginWithCredentialsUnsafe: true,
-    allowRequestHeaders: 'content-type,id,x-csrf-token,x-access-token,X-SSL-client-s-dn,X-SSL-client-i-dn,X-SSL-client-session-id,X-SSL-client-verify,id,mime-type,filename'
+    allowRequestHeaders: 'content-type,id,x-csrf-token,x-access-token,X-SSL-client-s-dn,X-SSL-client-i-dn,X-SSL-client-session-id,X-SSL-client-verify,id,mime-type,filename,inviteToken'
   },
 
 

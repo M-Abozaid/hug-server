@@ -58,6 +58,7 @@ module.exports.policies = {
     loginLocal: true,
     loginCert: true,
     loginSaml: true,
+    loginInvite: true,
     metadata: true,
     getUser: ['isLoggedIn'],
     samlCallback: true
