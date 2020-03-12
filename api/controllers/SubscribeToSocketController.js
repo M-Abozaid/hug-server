@@ -8,12 +8,19 @@
 
 module.exports = {
 
-  async subscribe (req, res) {
+  async subscribe(req, res) {
     if (!req.isSocket) {
       return res.badRequest();
     }
 
-    const user = await User.findOne({ id: req.user.id });
+    let user = null;
+
+    if (req.user.withoutAccount) {
+      user = req.user;
+    } else {
+      user = await User.findOne({ id: req.user.id });
+    }
+
     if (!user) {
       return res.forbidden();
     }

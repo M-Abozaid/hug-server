@@ -51,12 +51,13 @@ module.exports.globals = {
 
   APP_SECRET: process.env.APP_SECRET,
 
-  ROLE_DOCTOR : 'doctor',
-  ROLE_NURSE : 'nurse',
+  ROLE_DOCTOR: 'doctor',
+  ROLE_NURSE: 'nurse',
+  ROLE_PATIENT: 'patient',
 
   attachmentsDir: process.env.ATTACHMENTS_DIR || '/var/lib/hug-home/attachments',
 
-  REDMINE_DOMAIN: process.env.REDMINE_DOMAIN  || "https://projects.iabsis.com",
+  REDMINE_DOMAIN: process.env.REDMINE_DOMAIN || "https://projects.iabsis.com",
   REDMINE_API_KEY: process.env.REDMINE_API_KEY
 
 };

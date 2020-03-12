@@ -6,6 +6,10 @@ const fs = require('fs');
 const { Strategy } = require('passport-trusted-header');
 
 
+const passportCustom = require('passport-custom');
+const CustomStrategy = passportCustom.Strategy;
+
+
 
 passport.serializeUser((user, cb) => {
   cb(null, user.id);
@@ -16,17 +20,44 @@ passport.deserializeUser((id, cb) => {
   });
 });
 
+
+passport.use('invite', new CustomStrategy(
+  async function (req, callback) {
+    // Do your custom user finding logic here, or set to false based on req object
+
+    const invite = await PublicInvite.findOne({ inviteToken: req.body.inviteToken });
+    if (!invite) {
+      return callback({ inviteToken: "not-found" }, null);
+    }
+
+    const user = {
+      id: invite.inviteToken,
+      username: invite.phoneNumber,
+      email: null,
+      firstName: null,
+      lastName: null,
+      role: 'patient',
+      password: null,
+      phoneNumber: invite.phoneNumber,
+      phoneNumberEnteredByPatient: req.body.phoneNumber,
+      withoutAccount: true,
+      inviteToken: invite.inviteToken,
+    }
+    callback(null, user)
+  }
+))
+
 passport.use(new LocalStrategy({
   usernameField: 'email',
   passportField: 'password'
 }, ((email, password, cb) => {
   User.findOne({ email }, (err, user) => {
-    if (err) {return cb(err);}
-    if (!user) {return cb(null, false, { message: 'email not found' });}
+    if (err) { return cb(err); }
+    if (!user) { return cb(null, false, { message: 'email not found' }); }
     bcrypt.compare(password, user.password, (err, res) => {
-      if (err) {return cb(err);}
+      if (err) { return cb(err); }
 
-      if (!res) {return cb(null, false, { message: 'Invalid Password' });}
+      if (!res) { return cb(null, false, { message: 'Invalid Password' }); }
       const userDetails = {
         email: user.email,
         username: user.username,
@@ -55,7 +86,7 @@ passport.use(new Strategy(options, (async (requestHeaders, cb) => {
   // let email =  emailMatch? emailMatch[1] : null;
   const login = (CNMatch && CNMatch[1]) ? CNMatch[1].split(/\s+/)[0] : null;
   const firstName = login;
-  const email = `${firstName }@imad.ch`;
+  const email = `${firstName}@imad.ch`;
   const lastName = 'UNKNOWN';
   // let lastName = (CNMatch && CNMatch[1])? CNMatch[1].split(/\s+/)[1] : null;
 
@@ -96,7 +127,7 @@ passport.use(new Strategy(options, (async (requestHeaders, cb) => {
 const SamlStrategy = require('passport-saml').Strategy;
 let samlStrategy
 
-if(process.env.NODE_ENV !== 'development'){
+if (process.env.NODE_ENV !== 'development') {
 
 
   samlStrategy = new SamlStrategy(
@@ -111,14 +142,14 @@ if(process.env.NODE_ENV !== 'development'){
       signingCert: process.env.SAML_CERT,
       privateCert: fs.readFileSync(process.env.SAML_PATH_KEY, 'utf-8'),
       identifierFormat: 'urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified'
-  //    cert: process.env.SAML_CERT_IDENTITY
+      //    cert: process.env.SAML_CERT_IDENTITY
     },
     (async (profile, cb) => {
 
 
 
       try {
-      let user = await User.findOne({ email: profile[process.env.EMAIL_FIELD] });
+        let user = await User.findOne({ email: profile[process.env.EMAIL_FIELD] });
 
         if (!user) {
           // user = await User.create({

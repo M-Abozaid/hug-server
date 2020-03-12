@@ -20,6 +20,7 @@
     "openvidu-node-client": "^2.10.0",
     "ovh": "^2.0.3",
     "passport": "^0.4.0",
+    "passport-custom": "^1.1.1",
     "passport-local": "^1.0.0",
     "passport-saml": "^1.1.0",
     "passport-trusted-header": "^1.1.0",

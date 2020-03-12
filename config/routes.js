@@ -36,6 +36,7 @@ module.exports.routes = {
   'get /api/v1/consultation/:consultation/attachment/:attachment': 'ConsultationController.attachment',
   'POST /api/v1/login-local': 'AuthController.loginLocal',
   'GET /api/v1/login-cert': 'AuthController.loginCert',
+  'POST /api/v1/login-invite': 'AuthController.loginInvite',
   'GET /api/v1/login-saml': 'AuthController.loginSaml',
   'GET /api/v1/get-user': 'AuthController.getUser',
   'GET /api/v1/user/ip': 'UserController.ip',
