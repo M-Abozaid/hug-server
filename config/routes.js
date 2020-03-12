@@ -42,6 +42,7 @@ module.exports.routes = {
   'GET /api/v1/metadata': 'AuthController.metadata',
   'POST /api/v1/saml-callback': 'AuthController.samlCallback',
   'POST /api/v1/support': 'SupportController.supportRequest',
+  'POST /api/v1/invite': 'InviteController.invite',
 
   '/logout': 'AuthController.logout'
 
