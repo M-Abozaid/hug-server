@@ -67,6 +67,7 @@ module.exports.policies = {
   },
   InviteController: {
     '*': false,
-    invite: ['isLoggedIn', 'isDoctor']
+    invite: ['isLoggedIn', 'isDoctor'],
+    find: ['isLoggedIn', 'isDoctor'],
   }
 };
