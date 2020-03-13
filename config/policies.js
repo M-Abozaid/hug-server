@@ -66,9 +66,13 @@ module.exports.policies = {
   SupportController: {
     supportRequest: ['isLoggedIn'],
   },
-  InviteController: {
-    '*': false,
+  InviteController:{
+    '*':false,
     invite: ['isLoggedIn', 'isDoctor'],
+  },
+
+  PublicInviteController: {
+    '*':false,
     find: ['isLoggedIn', 'isDoctor'],
   }
 };

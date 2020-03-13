@@ -41,7 +41,9 @@ module.exports = {
       defaultsTo: "SENT",
     },
   },
-
+  customToJSON() {
+    return _.omit(this, ['inviteToken'])
+  },
   async beforeCreate(obj, proceed) {
     obj.inviteToken = await generateToken();
     return proceed();

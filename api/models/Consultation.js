@@ -34,6 +34,12 @@ module.exports = {
       // default:'pending',
       required: true
     },
+    queue: {
+      type: 'string',
+      isIn: ['general', 'covid19'],
+      // defaultsTo:'general',
+      required: true
+    },
     acceptedBy: {
       model: 'user'
     },
