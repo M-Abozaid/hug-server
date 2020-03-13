@@ -157,9 +157,32 @@ module.exports = {
 
   },
 
+  async create(req, res) {
+    let consultationJson = req.body;
+
+    if (req.body.invitationToken) {
+      const existingConsultation = await Consultation.findOne({ invitationToken: req.body.invitationToken, status: "pending" });
+      if (existingConsultation) {
+        return res.json(existingConsultation);
+      }
+      const invite = await PublicInvite.findOne({ inviteToken: req.body.invitationToken });
+      if (invite) {
+        consultationJson.firstName = invite.firstName ? invite.firstName : "No firstname";
+        consultationJson.lastName = invite.lastName ? invite.lastName : "No lastname";
+        consultationJson.gender = invite.gender ? invite.gender : "unknown";
+      }
+    }
+
+    Consultation.create(consultationJson).fetch().then(consultation => {
+      console.log(consultation);
+      res.json(consultation);
+    }).catch(err => {
+      let error = err && err.cause ? err.cause : err;
+      res.status(400).json(error);
+    })
+  },
+
   async acceptConsultation(req, res) {
-
-
     const consultation = await Consultation.updateOne({
         _id: req.params.consultation,
         status: 'pending'
@@ -169,7 +192,6 @@ module.exports = {
         acceptedBy: req.user.id,
         acceptedAt: new Date()
       });
-
 
     if (!consultation) {
       return res.notFound();

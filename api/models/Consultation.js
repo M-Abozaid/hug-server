@@ -28,6 +28,10 @@ module.exports = {
       type: 'string',
       required: true
     },
+    invitationToken: {
+      type: 'string',
+      required: false
+    },
     status: {
       type: 'string',
       isIn: ['pending', 'active', 'closed'],
