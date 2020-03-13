@@ -12,7 +12,7 @@ module.exports = async function (req, res, proceed) {
       ] });
   }
 
-  if (user.role === sails.config.globals.ROLE_NURSE) {
+  if (user.role === sails.config.globals.ROLE_NURSE || user.role === sails.config.globals.ROLE_PATIENT) {
     consultation = await Consultation.findOne(
         { owner: user.id, _id: req.body.consultation || req.params.consultation }
     );

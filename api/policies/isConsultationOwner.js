@@ -10,7 +10,7 @@ module.exports = async function (req, res, proceed) {
     }
   }
   let consultation;
-  if (req.user.role === 'nurse') {
+  if (req.user.role === 'nurse' || req.user.role === 'patient') {
 
     consultation = await Consultation.count({
       id: consultationId,
@@ -24,7 +24,8 @@ module.exports = async function (req, res, proceed) {
       or: [
         { acceptedBy: req.user.id, _id: consultationId },
         { acceptedBy: null }
-      ] });
+      ]
+    });
 
   }
 

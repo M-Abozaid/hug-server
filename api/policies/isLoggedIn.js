@@ -10,17 +10,11 @@ module.exports = function (req, res, proceed) {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    console.log("DECODED", decoded);
 
-    let user = null;
+    const user = await User.findOne({
+      id: decoded.id
+    });
 
-    if (decoded.withoutAccount) {
-      user = decoded;
-    } else {
-      user = await User.findOne({
-        id: decoded.id
-      });
-    }
     if (!user) {
       sails.log('error ', 'No user');
       return res.status(401).json({ error: "Unauthorized" });

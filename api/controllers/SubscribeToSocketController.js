@@ -13,13 +13,7 @@ module.exports = {
       return res.badRequest();
     }
 
-    let user = null;
-
-    if (req.user.withoutAccount) {
-      user = req.user;
-    } else {
-      user = await User.findOne({ id: req.user.id });
-    }
+    const user = await User.findOne({ id: req.user.id });
 
     if (!user) {
       return res.forbidden();

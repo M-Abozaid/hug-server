@@ -25,7 +25,7 @@ const transporter = nodemailer.createTransport({
 const db = Consultation.getDatastore().manager;
 
 module.exports = {
-  async consultationOverview (req, res) {
+  async consultationOverview(req, res) {
     let match = [{
       owner: new ObjectId(req.user.id)
     }];
@@ -162,7 +162,7 @@ module.exports = {
 
   },
 
-  async acceptConsultation (req, res) {
+  async acceptConsultation(req, res) {
 
 
     const consultation = await Consultation.updateOne({
@@ -207,7 +207,7 @@ module.exports = {
     });
   },
 
-  async closeConsultation (req, res) {
+  async closeConsultation(req, res) {
 
     try {
 
@@ -221,20 +221,24 @@ module.exports = {
 
       const consultationCollection = db.collection('consultation');
       // mark consultation as closed and set closedAtISO for mongodb ttl
-      const { result } = await consultationCollection.update({ _id: new ObjectId(req.params.consultation) }, { $set: {
-        status: 'closed',
-        closedAtISO: closedAt,
-        closedAt: closedAt.getTime()
-      } });
+      const { result } = await consultationCollection.update({ _id: new ObjectId(req.params.consultation) }, {
+        $set: {
+          status: 'closed',
+          closedAtISO: closedAt,
+          closedAt: closedAt.getTime()
+        }
+      });
 
 
 
       const messageCollection = db.collection('message');
       // set consultationClosedAtISO for mongodb ttl index
-      await messageCollection.update({ consultation: new ObjectId(req.params.consultation) }, { $set: {
-        consultationClosedAtISO: closedAt,
-        consultationClosedAt: closedAt.getTime()
-      } }, { multi: true });
+      await messageCollection.update({ consultation: new ObjectId(req.params.consultation) }, {
+        $set: {
+          consultationClosedAtISO: closedAt,
+          consultationClosedAt: closedAt.getTime()
+        }
+      }, { multi: true });
 
 
       // emit consultation closed event with the consultation
@@ -256,7 +260,7 @@ module.exports = {
   },
 
 
-  async call (req, res) {
+  async call(req, res) {
     try {
       // the consultation this call belongs to
       const consultation = await Consultation.findOne({
@@ -316,7 +320,7 @@ module.exports = {
     }
   },
 
-  async rejectCall (req, res) {
+  async rejectCall(req, res) {
     try {
       const consultation = await Consultation.findOne({
         _id: req.params.consultation
@@ -355,7 +359,7 @@ module.exports = {
   },
 
 
-  async acceptCall (req, res) {
+  async acceptCall(req, res) {
     try {
       await Message.updateOne({
         _id: req.params.message,
@@ -374,22 +378,22 @@ module.exports = {
 
   },
 
-  uploadFile (req, res) {
+  uploadFile(req, res) {
     const fileId = uuidv1();
-    const filePath = `${req.params.consultation }_${ fileId }${req.headers['mime-type'].split('/')[1] ? `.${ req.headers['mime-type'].split('/')[1]}` : ''}`;
+    const filePath = `${req.params.consultation}_${fileId}${req.headers['mime-type'].split('/')[1] ? `.${req.headers['mime-type'].split('/')[1]}` : ''}`;
     req.file('attachment')
       .upload({
         dirname: sails.config.globals.attachmentsDir,
         saveAs: filePath
-      }, async function whenDone (err, uploadedFiles) {
+      }, async function whenDone(err, uploadedFiles) {
         if (err) {
           return res.status(500).send(err);
         } else {
           sails.log('uploaded ', uploadedFiles);
-          if (!uploadedFiles[0]) {return res.status(400);}
+          if (!uploadedFiles[0]) { return res.status(400); }
 
           try {
-            if(process.env.NODE_ENV !== 'development'){
+            if (process.env.NODE_ENV !== 'development') {
               const { is_infected } = await sails.config.globals.clamscan.is_infected(uploadedFiles[0].fd);
               if (is_infected) {
                 return res.status(400).send(new Error('File is infected'));
@@ -419,15 +423,15 @@ module.exports = {
       });
   },
 
-  async attachment (req, res) {
+  async attachment(req, res) {
     const msg = await Message.findOne({
       id: req.params.attachment
     });
 
     if (!msg.mimeType.startsWith('audio') && !msg.mimeType.endsWith('jpeg') && !msg.mimeType.endsWith('png')) {
-      res.setHeader('Content-disposition', `attachment; filename=${ msg.fileName}`);
+      res.setHeader('Content-disposition', `attachment; filename=${msg.fileName}`);
     }
-    const filePath = `${sails.config.globals.attachmentsDir }/${ msg.filePath}`;
+    const filePath = `${sails.config.globals.attachmentsDir}/${msg.filePath}`;
 
     if (!fs.existsSync(filePath)) {
       return res.notFound();
@@ -438,14 +442,14 @@ module.exports = {
     readStream.pipe(res);
   },
 
-  sendReport (req, res) {
-    const filePath = `${uuidv1() }.pdf`;
+  sendReport(req, res) {
+    const filePath = `${uuidv1()}.pdf`;
 
     req.file('report')
       .upload({
         dirname: './.tmp',
         saveAs: filePath
-      }, function whenDone (err, uploadedFiles) {
+      }, function whenDone(err, uploadedFiles) {
         if (err) {
           return res.status(500).send(err);
         } else {

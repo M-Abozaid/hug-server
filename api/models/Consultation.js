@@ -17,7 +17,7 @@ module.exports = {
       required: true
     },
     gender: {
-      type: 'string', isIn: ['male', 'female', 'other'],
+      type: 'string', isIn: ['male', 'female', 'other', 'unknown'],
       required: true
     },
     birthDate: {
@@ -38,7 +38,8 @@ module.exports = {
       model: 'user'
     },
     owner: {
-      model: 'user'
+      model: 'user',
+      required: false
     },
     acceptedAt: {
       type: 'number'
@@ -49,23 +50,23 @@ module.exports = {
 
   },
 
-  async afterCreate (consultation, proceed) {
+  async afterCreate(consultation, proceed) {
 
     const nurse = await User.findOne({ id: consultation.owner });
 
     sails.sockets.broadcast('doctors', 'newConsultation',
-    { event: 'newConsultation', data: { _id: consultation.id, unreadCount: 0, consultation, nurse } });
+      { event: 'newConsultation', data: { _id: consultation.id, unreadCount: 0, consultation, nurse } });
     return proceed();
   },
 
 
-  async beforeDestroy (criteria, proceed) {
+  async beforeDestroy(criteria, proceed) {
 
     await Message.destroy({ consultation: criteria.where.id });
 
 
     sails.sockets.broadcast('doctors', 'consultationCanceled',
-    { event: 'consultationCanceled', data: { _id: criteria.where.id, consultation: criteria.where } });
+      { event: 'consultationCanceled', data: { _id: criteria.where.id, consultation: criteria.where } });
     return proceed();
   }
 
