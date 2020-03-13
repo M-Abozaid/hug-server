@@ -64,6 +64,9 @@ module.exports = {
       }]
     }
 
+    if(process.env.NODE_ENV === 'development'){
+      return exits.success()
+    }
     transporter.sendMail(options, (error, info) => {
       if (error) {
         // ...
