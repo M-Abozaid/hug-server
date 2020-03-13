@@ -446,7 +446,7 @@ module.exports = {
       .upload({
         dirname: './.tmp',
         saveAs: filePath
-      }, function whenDone(err, uploadedFiles) {
+      }, async function whenDone(err, uploadedFiles) {
         if (err) {
           return res.status(500).send(err);
         } else {
