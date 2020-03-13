@@ -45,6 +45,7 @@ module.exports.routes = {
   'POST /api/v1/saml-callback': 'AuthController.samlCallback',
   'POST /api/v1/support': 'SupportController.supportRequest',
   'POST /api/v1/invite': 'InviteController.invite',
+  'POST /api/v1/invite/:invite/resend': 'InviteController.resend',
 
   '/logout': 'AuthController.logout'
 

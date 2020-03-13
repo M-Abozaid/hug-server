@@ -26,6 +26,16 @@ async function generateToken() {
 
 module.exports = {
   attributes: {
+    firstName: {
+      type: 'string'
+    },
+    lastName: {
+      type: 'string'
+    },
+    gender: {
+      type: 'string',
+      isIn: ['male', 'female', 'other', 'unknown'],
+    },
     phoneNumber: {
       type: 'string'
     },
