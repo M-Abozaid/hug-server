@@ -46,7 +46,10 @@ module.exports = {
     try {
       invite = await PublicInvite.create({
         phoneNumber: req.body.phoneNumber,
-        emailAddress: req.body.emailAddress
+        emailAddress: req.body.emailAddress,
+        gender: req.body.gender,
+        firstName: req.body.firstName,
+        lastName: req.body.lastName
       }).fetch();
 
     } catch (e) {
