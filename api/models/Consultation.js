@@ -37,7 +37,7 @@ module.exports = {
     queue: {
       type: 'string',
       isIn: ['general', 'covid19'],
-      defaultsTo:'general',
+      // defaultsTo:'general',
       required: true
     },
     acceptedBy: {
