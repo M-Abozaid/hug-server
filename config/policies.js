@@ -68,11 +68,11 @@ module.exports.policies = {
   },
   InviteController:{
     '*':false,
-    invite: true,//['isLoggedIn', 'isDoctor'],
+    invite: ['isLoggedIn', 'isDoctor'],
   },
 
   PublicInviteController: {
     '*':false,
-    find:true
+    find: ['isLoggedIn', 'isDoctor'],
   }
 };
