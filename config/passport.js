@@ -30,19 +30,31 @@ passport.use('invite', new CustomStrategy(
       return callback({ inviteToken: "not-found" }, null);
     }
 
-    const user = {
-      id: invite.inviteToken,
-      username: invite.phoneNumber,
-      email: null,
-      firstName: null,
-      lastName: null,
+    const phoneNumber = invite.phoneNumber.replace("+", "00");
+
+    const newUser = {
+      username: phoneNumber,
+      email: "",
+      firstName: "",
+      lastName: "",
       role: 'patient',
-      password: null,
+      password: "",
       phoneNumber: invite.phoneNumber,
       phoneNumberEnteredByPatient: req.body.phoneNumber,
-      withoutAccount: true,
-      inviteToken: invite.inviteToken,
+      temporaryAccount: true,
+      inviteToken: invite.id,
     }
+
+    let user = await User.findOne({ username: phoneNumber });
+    if (user) {
+      console.log("FIND USER ", { id: user.id })
+      user = await User.updateOne(user.id).set({ inviteToken: invite.id });
+      console.log("UPdated");
+    } else {
+      user = await User.create(newUser).fetch();
+    }
+
+
     callback(null, user)
   }
 ))

@@ -45,7 +45,7 @@ module.exports = {
         });
       }
 
-      console.log("APP SECRET", sails.config.globals);
+      console.log("GENERATING USER TOKEN", user);
       user.token = jwt.sign(user, sails.config.globals.APP_SECRET);
 
       return res.json({

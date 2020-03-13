@@ -218,11 +218,7 @@ module.exports = {
 
       const consultationCollection = db.collection('consultation');
       // mark consultation as closed and set closedAtISO for mongodb ttl
-      const {
-        result
-      } = await consultationCollection.update({
-        _id: new ObjectId(req.params.consultation)
-      }, {
+      const { result } = await consultationCollection.update({ _id: new ObjectId(req.params.consultation) }, {
         $set: {
           status: 'closed',
           closedAtISO: closedAt,
@@ -234,16 +230,12 @@ module.exports = {
 
       const messageCollection = db.collection('message');
       // set consultationClosedAtISO for mongodb ttl index
-      await messageCollection.update({
-        consultation: new ObjectId(req.params.consultation)
-      }, {
+      await messageCollection.update({ consultation: new ObjectId(req.params.consultation) }, {
         $set: {
           consultationClosedAtISO: closedAt,
           consultationClosedAt: closedAt.getTime()
         }
-      }, {
-        multi: true
-      });
+      }, { multi: true });
 
 
       // emit consultation closed event with the consultation
@@ -385,7 +377,7 @@ module.exports = {
 
   uploadFile(req, res) {
     const fileId = uuidv1();
-    const filePath = `${req.params.consultation }_${ fileId }${req.headers['mime-type'].split('/')[1] ? `.${ req.headers['mime-type'].split('/')[1]}` : ''}`;
+    const filePath = `${req.params.consultation}_${fileId}${req.headers['mime-type'].split('/')[1] ? `.${req.headers['mime-type'].split('/')[1]}` : ''}`;
     req.file('attachment')
       .upload({
         dirname: sails.config.globals.attachmentsDir,
@@ -395,15 +387,11 @@ module.exports = {
           return res.status(500).send(err);
         } else {
           sails.log('uploaded ', uploadedFiles);
-          if (!uploadedFiles[0]) {
-            return res.status(400);
-          }
+          if (!uploadedFiles[0]) { return res.status(400); }
 
           try {
             if (process.env.NODE_ENV !== 'development') {
-              const {
-                is_infected
-              } = await sails.config.globals.clamscan.is_infected(uploadedFiles[0].fd);
+              const { is_infected } = await sails.config.globals.clamscan.is_infected(uploadedFiles[0].fd);
               if (is_infected) {
                 return res.status(400).send(new Error('File is infected'));
               }
@@ -438,9 +426,9 @@ module.exports = {
     });
 
     if (!msg.mimeType.startsWith('audio') && !msg.mimeType.endsWith('jpeg') && !msg.mimeType.endsWith('png')) {
-      res.setHeader('Content-disposition', `attachment; filename=${ msg.fileName}`);
+      res.setHeader('Content-disposition', `attachment; filename=${msg.fileName}`);
     }
-    const filePath = `${sails.config.globals.attachmentsDir }/${ msg.filePath}`;
+    const filePath = `${sails.config.globals.attachmentsDir}/${msg.filePath}`;
 
     if (!fs.existsSync(filePath)) {
       return res.notFound();
@@ -452,7 +440,7 @@ module.exports = {
   },
 
   sendReport(req, res) {
-    const filePath = `${uuidv1() }.pdf`;
+    const filePath = `${uuidv1()}.pdf`;
 
     req.file('report')
       .upload({
