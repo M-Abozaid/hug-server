@@ -132,8 +132,7 @@ async function sendSmsWithSwisscom(phoneNumber, message) {
  * @returns {string} - The invitation SMS message.
  */
 function getSmsText(inviteUrl) {
-  //return `Cliquer ici pour accéder à votre consultation en ligne : ${inviteUrl}`;
-  return `Cliquer ici pour accéder à votre consultation en ligne : https://www.google.com/invite`;
+  return `Cliquer ici pour accéder à votre consultation en ligne : ${inviteUrl}`;
 }
 
 /**
@@ -166,7 +165,7 @@ module.exports = {
       });
     }
 
-    const url = `${process.env.PUBLIC_URL}/?invite=${invite.inviteToken}`
+    const url = `${process.env.PUBLIC_URL}?invite=${invite.inviteToken}`
 
     if (invite.emailAddress) {
       await sails.helpers.email.with({
@@ -210,7 +209,7 @@ module.exports = {
   async resend(req, res){
     try {
       const invite = await PublicInvite.findOne({id: req.params.invite})
-      const url = `${process.env.PUBLIC_URL}/?invite=${invite.inviteToken}`
+      const url = `${process.env.PUBLIC_URL}?invite=${invite.inviteToken}`
 
       if (invite.emailAddress) {
         await sails.helpers.email.with({
