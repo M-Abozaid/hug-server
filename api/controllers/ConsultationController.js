@@ -22,131 +22,131 @@ module.exports = {
     }];
     if (req.user && req.user.role === 'doctor') {
       match = [{
-          acceptedBy: new ObjectId(req.user.id)
-        },
-        {
-          status: 'pending'
-        }
+        acceptedBy: new ObjectId(req.user.id)
+      },
+      {
+        status: 'pending'
+      }
       ];
     }
 
     const agg = [{
-        $match: {
-          $or: match
-        }
-      },
-      {
-        $project: {
-          consultation: '$$ROOT'
-        }
-      },
-      {
-        $lookup: {
-          from: 'message',
-          localField: '_id',
-          foreignField: 'consultation',
-          as: 'messages'
-        }
-      },
-      {
-        $project: {
-          consultation: 1,
-          lastMsg: {
-            $arrayElemAt: [
-              '$messages',
-              -1
-            ]
-          },
+      $match: {
+        $or: match
+      }
+    },
+    {
+      $project: {
+        consultation: '$$ROOT'
+      }
+    },
+    {
+      $lookup: {
+        from: 'message',
+        localField: '_id',
+        foreignField: 'consultation',
+        as: 'messages'
+      }
+    },
+    {
+      $project: {
+        consultation: 1,
+        lastMsg: {
+          $arrayElemAt: [
+            '$messages',
+            -1
+          ]
+        },
 
-          messages: 1
+        messages: 1
 
-        }
-      },
-      {
-        $project: {
-          consultation: 1,
-          lastMsg: 1,
-          messages: {
-            $filter: {
-              input: '$messages',
-              as: 'msg',
-              cond: {
-                $and: [{
-                    $eq: [
-                      '$$msg.read',
-                      false
-                    ]
-                  },
-                  {
-                    $or: [{
-                      $eq: [
-                        '$$msg.to',
-                        new ObjectId(req.user.id)
-                      ]
-                    }, {
-                      $eq: [
-                        '$$msg.to',
-                        null
-                      ]
-                    }]
-                  }
+      }
+    },
+    {
+      $project: {
+        consultation: 1,
+        lastMsg: 1,
+        messages: {
+          $filter: {
+            input: '$messages',
+            as: 'msg',
+            cond: {
+              $and: [{
+                $eq: [
+                  '$$msg.read',
+                  false
                 ]
+              },
+              {
+                $or: [{
+                  $eq: [
+                    '$$msg.to',
+                    new ObjectId(req.user.id)
+                  ]
+                }, {
+                  $eq: [
+                    '$$msg.to',
+                    null
+                  ]
+                }]
               }
+              ]
             }
           }
         }
-      },
-      {
-        $project: {
+      }
+    },
+    {
+      $project: {
 
-          consultation: 1,
-          lastMsg: 1,
-          unreadCount: {
-            $size: '$messages'
-          }
-        }
-      },
-      {
-        $lookup: {
-          from: 'user',
-          localField: 'consultation.owner',
-          foreignField: '_id',
-          as: 'nurse'
-        }
-      },
-      {
-        $lookup: {
-          from: 'user',
-          localField: 'consultation.acceptedBy',
-          foreignField: '_id',
-          as: 'doctor'
-        }
-      },
-      {
-        $project: {
-          consultation: 1,
-          lastMsg: 1,
-          unreadCount: 1,
-          doctor: {
-            $arrayElemAt: ['$doctor', 0]
-          },
-          nurse: {
-            $arrayElemAt: ['$nurse', 0]
-          }
-
-        }
-      },
-      {
-        $project: {
-          consultation: 1,
-          lastMsg: 1,
-          unreadCount: 1,
-          'doctor.firstName': 1,
-          'doctor.lastName': 1,
-          'nurse.firstName': 1,
-          'nurse.lastName': 1
+        consultation: 1,
+        lastMsg: 1,
+        unreadCount: {
+          $size: '$messages'
         }
       }
+    },
+    {
+      $lookup: {
+        from: 'user',
+        localField: 'consultation.owner',
+        foreignField: '_id',
+        as: 'nurse'
+      }
+    },
+    {
+      $lookup: {
+        from: 'user',
+        localField: 'consultation.acceptedBy',
+        foreignField: '_id',
+        as: 'doctor'
+      }
+    },
+    {
+      $project: {
+        consultation: 1,
+        lastMsg: 1,
+        unreadCount: 1,
+        doctor: {
+          $arrayElemAt: ['$doctor', 0]
+        },
+        nurse: {
+          $arrayElemAt: ['$nurse', 0]
+        }
+
+      }
+    },
+    {
+      $project: {
+        consultation: 1,
+        lastMsg: 1,
+        unreadCount: 1,
+        'doctor.firstName': 1,
+        'doctor.lastName': 1,
+        'nurse.firstName': 1,
+        'nurse.lastName': 1
+      }
+    }
     ];
 
 
@@ -184,9 +184,9 @@ module.exports = {
 
   async acceptConsultation(req, res) {
     const consultation = await Consultation.updateOne({
-        _id: req.params.consultation,
-        status: 'pending'
-      })
+      _id: req.params.consultation,
+      status: 'pending'
+    })
       .set({
         status: 'active',
         acceptedBy: req.user.id,
@@ -282,18 +282,26 @@ module.exports = {
   async call(req, res) {
     try {
       // the consultation this call belongs to
+      console.log("Start call");
       const consultation = await Consultation.findOne({
         _id: req.params.consultation
       });
+      console.log("Got consultation", consultation.id);
       const callerSession = await openvidu.createSession({
         customSessionId: req.params.consultation
       });
+      console.log("Caller session", callerSession);
+
       const callerToken = await callerSession.generateToken();
+      console.log("Caller token", callerToken);
 
       const calleeSession = await openvidu.createSession({
         customSessionId: req.params.consultation
       });
+      console.log("callee session", calleeSession);
+
       const calleeToken = await calleeSession.generateToken();
+      console.log("callee token", calleeToken);
 
       // the current user
       const user = await User.findOne({
@@ -302,7 +310,7 @@ module.exports = {
 
 
       const calleeId = (req.user.id === consultation.owner) ? consultation.acceptedBy : consultation.owner;
-
+      console.log("Callee id", calleeId);
 
       // create a new message
       const msg = await Message.create({
@@ -346,9 +354,9 @@ module.exports = {
       });
 
       await Message.updateOne({
-          _id: req.params.message,
-          consultation: req.params.consultation
-        })
+        _id: req.params.message,
+        consultation: req.params.consultation
+      })
         .set({
           closedAt: new Date()
         });
@@ -381,9 +389,9 @@ module.exports = {
   async acceptCall(req, res) {
     try {
       await Message.updateOne({
-          _id: req.params.message,
-          consultation: req.params.consultation
-        })
+        _id: req.params.message,
+        consultation: req.params.consultation
+      })
         .set({
           acceptedAt: new Date()
         });
