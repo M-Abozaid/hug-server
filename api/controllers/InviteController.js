@@ -57,10 +57,21 @@ module.exports = {
 
     const url = `${process.env.PUBLIC_URL}?invite=${invite.inviteToken}`
 
-    notifyPatientBySms(req.body.phoneNumber, `Cliquer ici pour accéder à votre consultation en ligne ${url}`);
+    if(invite.emailAddress){
+      await sails.helpers.email.with({
+        to: invite.emailAddress,
+        subject: 'Invite',
+        text: `Cliquer ici pour accéder à votre consultation en ligne ${url}`,
+      })
+    }
+
+    if(invite.phoneNumber){
+
+      notifyPatientBySms(req.body.phoneNumber, `Cliquer ici pour accéder à votre consultation en ligne ${url}`);
+    }
 
     return res.json({
-      auccess: true,
+      success: true,
       invite
     });
     // const invite = {
@@ -85,4 +96,35 @@ module.exports = {
   },
 
 
+
+  async resend(req, res){
+    try {
+      const invite = await PublicInvite.findOne({id: req.params.invite})
+
+      const url = `${process.env.PUBLIC_URL}?invite=${invite.inviteToken}`
+
+      if(invite.emailAddress){
+        await sails.helpers.email.with({
+          to: invite.emailAddress,
+          subject: 'Invite',
+          text: `Cliquer ici pour accéder à votre consultation en ligne ${url}`,
+        })
+      }
+
+      if(invite.phoneNumber){
+
+        notifyPatientBySms(req.body.phoneNumber, `Cliquer ici pour accéder à votre consultation en ligne ${url}`);
+      }
+
+
+    return res.json({
+      success: true,
+      invite
+    });
+    } catch (error) {
+      console.log('error ', error)
+      res.send()
+    }
+
+  }
 };

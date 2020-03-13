@@ -12,15 +12,6 @@ const uuidv1 = require('uuid/v1');
 const openvidu = new OpenVidu(sails.config.OPENVIDU_URL, sails.config.OPENVIDU_SECRET);
 const fs = require('fs');
 
-const nodemailer = require('nodemailer');
-const transporter = nodemailer.createTransport({
-  host: 'smtp',
-  port: 25,
-  secure: false,
-  auth: {
-
-  }
-});
 
 const db = Consultation.getDatastore().manager;
 
@@ -31,127 +22,131 @@ module.exports = {
     }];
     if (req.user && req.user.role === 'doctor') {
       match = [{
-        acceptedBy: new ObjectId(req.user.id)
-      },
-      {
-        status: 'pending'
-      }
+          acceptedBy: new ObjectId(req.user.id)
+        },
+        {
+          status: 'pending'
+        }
       ];
     }
 
     const agg = [{
-      $match: {
-        $or: match
-      }
-    },
-    {
-      $project: {
-        consultation: '$$ROOT'
-      }
-    },
-    {
-      $lookup: {
-        from: 'message',
-        localField: '_id',
-        foreignField: 'consultation',
-        as: 'messages'
-      }
-    },
-    {
-      $project: {
-        consultation: 1,
-        lastMsg: {
-          $arrayElemAt: [
-            '$messages',
-            -1
-          ]
-        },
+        $match: {
+          $or: match
+        }
+      },
+      {
+        $project: {
+          consultation: '$$ROOT'
+        }
+      },
+      {
+        $lookup: {
+          from: 'message',
+          localField: '_id',
+          foreignField: 'consultation',
+          as: 'messages'
+        }
+      },
+      {
+        $project: {
+          consultation: 1,
+          lastMsg: {
+            $arrayElemAt: [
+              '$messages',
+              -1
+            ]
+          },
 
-        messages: 1
+          messages: 1
 
-      }
-    },
-    {
-      $project: {
-        consultation: 1,
-        lastMsg: 1,
-        messages: {
-          $filter: {
-            input: '$messages',
-            as: 'msg',
-            cond: {
-              $and: [{
-                $eq: [
-                  '$$msg.read',
-                  false
+        }
+      },
+      {
+        $project: {
+          consultation: 1,
+          lastMsg: 1,
+          messages: {
+            $filter: {
+              input: '$messages',
+              as: 'msg',
+              cond: {
+                $and: [{
+                    $eq: [
+                      '$$msg.read',
+                      false
+                    ]
+                  },
+                  {
+                    $or: [{
+                      $eq: [
+                        '$$msg.to',
+                        new ObjectId(req.user.id)
+                      ]
+                    }, {
+                      $eq: [
+                        '$$msg.to',
+                        null
+                      ]
+                    }]
+                  }
                 ]
-              },
-              {
-                $or: [{
-                  $eq: [
-                    '$$msg.to',
-                    new ObjectId(req.user.id)
-                  ]
-                }, {
-                  $eq: [
-                    '$$msg.to',
-                    null
-                  ]
-                }]
               }
-              ]
             }
           }
         }
-      }
-    },
-    {
-      $project: {
+      },
+      {
+        $project: {
 
-        consultation: 1,
-        lastMsg: 1,
-        unreadCount: {
-          $size: '$messages'
+          consultation: 1,
+          lastMsg: 1,
+          unreadCount: {
+            $size: '$messages'
+          }
+        }
+      },
+      {
+        $lookup: {
+          from: 'user',
+          localField: 'consultation.owner',
+          foreignField: '_id',
+          as: 'nurse'
+        }
+      },
+      {
+        $lookup: {
+          from: 'user',
+          localField: 'consultation.acceptedBy',
+          foreignField: '_id',
+          as: 'doctor'
+        }
+      },
+      {
+        $project: {
+          consultation: 1,
+          lastMsg: 1,
+          unreadCount: 1,
+          doctor: {
+            $arrayElemAt: ['$doctor', 0]
+          },
+          nurse: {
+            $arrayElemAt: ['$nurse', 0]
+          }
+
+        }
+      },
+      {
+        $project: {
+          consultation: 1,
+          lastMsg: 1,
+          unreadCount: 1,
+          'doctor.firstName': 1,
+          'doctor.lastName': 1,
+          'nurse.firstName': 1,
+          'nurse.lastName': 1
         }
       }
-    },
-    {
-      $lookup: {
-        from: 'user',
-        localField: 'consultation.owner',
-        foreignField: '_id',
-        as: 'nurse'
-      }
-    },
-    {
-      $lookup: {
-        from: 'user',
-        localField: 'consultation.acceptedBy',
-        foreignField: '_id',
-        as: 'doctor'
-      }
-    },
-    {
-      $project: {
-        consultation: 1,
-        lastMsg: 1,
-        unreadCount: 1,
-        doctor: { $arrayElemAt: ['$doctor', 0] },
-        nurse: { $arrayElemAt: ['$nurse', 0] }
-
-      }
-    },
-    {
-      $project: {
-        consultation: 1,
-        lastMsg: 1,
-        unreadCount: 1,
-        'doctor.firstName': 1,
-        'doctor.lastName': 1,
-        'nurse.firstName': 1,
-        'nurse.lastName': 1
-      }
-    }
     ];
 
 
@@ -189,9 +184,9 @@ module.exports = {
 
   async acceptConsultation(req, res) {
     const consultation = await Consultation.updateOne({
-      _id: req.params.consultation,
-      status: 'pending'
-    })
+        _id: req.params.consultation,
+        status: 'pending'
+      })
       .set({
         status: 'active',
         acceptedBy: req.user.id,
@@ -236,7 +231,9 @@ module.exports = {
 
       const closedAt = new Date();
 
-      const consultation = await Consultation.findOne({ id: req.params.consultation });
+      const consultation = await Consultation.findOne({
+        id: req.params.consultation
+      });
       if (!consultation || consultation.status !== 'active') {
         return res.notFound();
       }
@@ -349,9 +346,9 @@ module.exports = {
       });
 
       await Message.updateOne({
-        _id: req.params.message,
-        consultation: req.params.consultation
-      })
+          _id: req.params.message,
+          consultation: req.params.consultation
+        })
         .set({
           closedAt: new Date()
         });
@@ -384,9 +381,9 @@ module.exports = {
   async acceptCall(req, res) {
     try {
       await Message.updateOne({
-        _id: req.params.message,
-        consultation: req.params.consultation
-      })
+          _id: req.params.message,
+          consultation: req.params.consultation
+        })
         .set({
           acceptedAt: new Date()
         });
@@ -471,36 +468,26 @@ module.exports = {
       .upload({
         dirname: './.tmp',
         saveAs: filePath
-      }, function whenDone(err, uploadedFiles) {
+      }, async function whenDone(err, uploadedFiles) {
         if (err) {
           return res.status(500).send(err);
         } else {
 
-          const options = {
-            from: 'noreply@hcuge.ch',
-            to: 'aapozaid@gmail.com',
-            subject: 'Report',
-            text: 'PDF report ',
-            attachments: [{
-              fileName: 'Report.pdf',
-              path: uploadedFiles[0].fd
-            }]
-          };
+          try {
 
-          transporter.sendMail(options, (error, info) => {
-            if (error) {
-              // ...
+            await sails.helpers.email.with({
+              to: 'aapozaid@gmail.com',
+              subject: 'Report',
+              text: 'PDF report ',
+              attachments: [{
+                fileName: 'Report.pdf',
+                path: uploadedFiles[0].fd
+              }]
+            })
 
-              sails.log('error sending email ', error);
-              res.serverError();
-            } else {
-              // ...
-              sails.log('email send successfully ');
-              res.send(200);
-            }
-
-            // fs.unlinkSync(uploadedFiles[0].fd);
-          });
+          } catch (error) {
+            res.send(500)
+          }
 
         }
       });
