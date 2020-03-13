@@ -59,8 +59,9 @@ module.exports = {
 
   // used only for admin
   loginLocal(req, res) {
-
+    console.log("Try the local login");
     passport.authenticate('local', (err, user, info = {}) => {
+      console.log("Authenticate now", err, user);
       if ((err) || (!user)) {
         return res.json({
           message: info.message,
