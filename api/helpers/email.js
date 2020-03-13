@@ -3,6 +3,7 @@ const transporter = nodemailer.createTransport({
   host: 'smtp',
   port: 25,
   secure: false,
+  ignoreTLS:true,
   auth: {
 
   }
