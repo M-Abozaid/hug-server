@@ -35,8 +35,6 @@ module.exports.security = {
       'http://localhost:8080',
       'http://localhost:8100',
       'http://localhost:4200',
-      'http://192.168.1.9:3000',
-      'http://192.168.1.9:8100'
     ],
     allowCredentials: true,
     // allowAnyOriginWithCredentialsUnsafe: true,
