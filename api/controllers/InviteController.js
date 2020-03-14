@@ -206,6 +206,11 @@ module.exports = {
 
 
 
+  /**
+   * resend invite
+   * @param {*} req
+   * @param {*} res
+   */
   async resend(req, res){
     try {
       const invite = await PublicInvite.findOne({id: req.params.invite})
@@ -242,6 +247,7 @@ module.exports = {
 
       return res.status(200).send()
     } catch (error) {
+      sails.log('error deleting Invite ', error);
 
       return res.status(500).send()
     }
