@@ -46,6 +46,7 @@ module.exports.routes = {
   'POST /api/v1/support': 'SupportController.supportRequest',
   'POST /api/v1/invite': 'InviteController.invite',
   'POST /api/v1/invite/:invite/resend': 'InviteController.resend',
+  'POST /api/v1/invite/:invite/revoke': 'InviteController.revoke',
 
   '/logout': 'AuthController.logout'
 

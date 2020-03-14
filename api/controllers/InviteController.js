@@ -129,5 +129,19 @@ module.exports = {
       res.send()
     }
 
+  },
+
+  async revoke(req, res){
+
+    try {
+      await PublicInvite.destroyOne({id: req.params.invite})
+
+      return res.status(200).send()
+    } catch (error) {
+
+      return res.status(500).send()
+    }
+
   }
+
 };

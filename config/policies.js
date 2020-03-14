@@ -70,6 +70,7 @@ module.exports.policies = {
     '*':false,
     invite: ['isLoggedIn', 'isDoctor'],
     resend: ['isLoggedIn', 'isDoctor'],
+    revoke: ['isLoggedIn', 'isDoctor'],
   },
 
   PublicInviteController: {
