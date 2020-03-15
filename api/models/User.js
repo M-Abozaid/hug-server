@@ -31,7 +31,7 @@ module.exports = {
       type: 'string'
     },
     temporaryAccount: {
-      type: 'string'
+      type: 'boolean'
     },
     inviteToken: {
       model: 'PublicInvite',

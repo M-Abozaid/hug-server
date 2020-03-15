@@ -247,6 +247,15 @@ module.exports = {
 
     try {
 
+      const sendConsultationClosed = function (consultation) {
+        // emit consultation closed event with the consultation
+        sails.sockets.broadcast(consultation.owner, 'consultationClosed', {
+          data: {
+            consultation,
+            _id: consultation.id
+          }
+        });
+      };
 
       const closedAt = new Date();
 
@@ -255,6 +264,16 @@ module.exports = {
       });
       if (!consultation || consultation.status !== 'active') {
         return res.notFound();
+      }
+
+      if (consultation.invitationToken) {
+        console.log("DELETING CONSULTATION AS IT'S A CONSULTATION CREATED FROM INVITATION")
+        await Consultation.destroyOne({ id: consultation.id });
+        // emit consultation closed event with the consultation
+        sendConsultationClosed(consultation);
+        return res.status(200).json({
+          message: 'success'
+        });
       }
 
       const consultationCollection = db.collection('consultation');
@@ -279,13 +298,9 @@ module.exports = {
       }, { multi: true });
 
 
+
       // emit consultation closed event with the consultation
-      sails.sockets.broadcast(consultation.owner, 'consultationClosed', {
-        data: {
-          consultation,
-          _id: consultation.id
-        }
-      });
+      sendConsultationClosed(consultation);
 
       res.status(200);
       return res.json({
@@ -296,7 +311,6 @@ module.exports = {
       sails.log('error ', error);
     }
   },
-
 
   async call(req, res) {
     try {
