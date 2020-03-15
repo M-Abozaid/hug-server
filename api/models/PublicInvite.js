@@ -50,6 +50,10 @@ module.exports = {
       isIn: ['SENT', 'ACCEPTED', 'COMPLETE'],
       defaultsTo: "SENT",
     },
+    queue: {
+      model: 'queue',
+      required:true
+    },
   },
   customToJSON() {
     return _.omit(this, ['inviteToken'])

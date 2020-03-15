@@ -39,10 +39,8 @@ module.exports = {
       required: true
     },
     queue: {
-      // If null, the consultation appears as general queue. 
-      // If not null (ie: covid19), it will be displayed as a specific queue
-      type: 'string',
-      required: false
+      model: 'queue',
+      required:true
     },
     acceptedBy: {
       model: 'user'

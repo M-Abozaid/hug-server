@@ -170,6 +170,7 @@ module.exports = {
         consultationJson.firstName = invite.firstName ? invite.firstName : "No firstname";
         consultationJson.lastName = invite.lastName ? invite.lastName : "No lastname";
         consultationJson.gender = invite.gender ? invite.gender : "unknown";
+        consultationJson.queue = invite.queue;
       }
     }
 

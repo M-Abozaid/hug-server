@@ -76,5 +76,11 @@ module.exports.policies = {
   PublicInviteController: {
     '*':false,
     find: ['isLoggedIn', 'isDoctor'],
+  },
+
+  QueueController: {
+    '*':false,
+    find: ['isLoggedIn', 'isDoctor'],
+    create: ['isLoggedIn', 'isAdmin'],
   }
 };
