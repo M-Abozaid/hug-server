@@ -181,11 +181,7 @@ module.exports = {
       // If a consultation already exist, another one should not be created
       const existingConsultation = await Consultation.findOne({ invitationToken: req.body.invitationToken });
       if (existingConsultation) {
-        if (existingConsultation.status === 'pending') {
-          return res.json(existingConsultation);
-        } else {
-          return res.status(400).json();
-        }
+        return res.json(existingConsultation);
       }
       const invite = await PublicInvite.findOne({ inviteToken: req.body.invitationToken });
       if (invite) {
