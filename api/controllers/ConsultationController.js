@@ -116,6 +116,14 @@ module.exports = {
     },
     {
       $lookup: {
+        from: 'queue',
+        localField: 'consultation.queue',
+        foreignField: '_id',
+        as: 'queue'
+      }
+    },
+    {
+      $lookup: {
         from: 'user',
         localField: 'consultation.acceptedBy',
         foreignField: '_id',
@@ -132,6 +140,9 @@ module.exports = {
         },
         nurse: {
           $arrayElemAt: ['$nurse', 0]
+        },
+        queue: {
+          $arrayElemAt: ['$queue', 0]
         }
 
       }
@@ -144,7 +155,8 @@ module.exports = {
         'doctor.firstName': 1,
         'doctor.lastName': 1,
         'nurse.firstName': 1,
-        'nurse.lastName': 1
+        'nurse.lastName': 1,
+        'queue.name': 1,
       }
     }
     ];
