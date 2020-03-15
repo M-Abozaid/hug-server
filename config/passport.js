@@ -72,7 +72,7 @@ passport.use(new LocalStrategy({
     bcrypt.compare(password, user.password, (err, res) => {
       if (err) { return cb(err); }
 
-      if (!res) { return cb(null, false, { message: 'Invalid Password' }); }
+      if (!res) { return cb(null, false, { message: 'Email ou mot de passe incorrect' }); }
       const userDetails = {
         email: user.email,
         username: user.username,

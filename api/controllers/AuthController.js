@@ -62,8 +62,13 @@ module.exports = {
     console.log("Try the local login");
     passport.authenticate('local', (err, user, info = {}) => {
       console.log("Authenticate now", err, user);
-      if ((err) || (!user)) {
-        return res.json({
+      if(err){
+        return res.status(500).json({
+          message: info.message || 'Server Error',
+        });
+      }
+      if ( (!user)) {
+        return res.status(400).json({
           message: info.message,
           user
         });
