@@ -195,6 +195,7 @@ module.exports = {
       console.log(consultation);
       res.json(consultation);
     }).catch(err => {
+      console.log("ERROR WHILE CREATING CONSULTATION", err);
       let error = err && err.cause ? err.cause : err;
       res.status(400).json(error);
     })

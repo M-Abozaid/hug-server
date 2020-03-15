@@ -49,7 +49,7 @@ module.exports.sockets = {
   // (if left unset, Sails will try to connect to a redis via port 6379 on localhost)
   //
   // host: '127.0.0.1',
-  // port: 6379,
+  port: 32768,
   // db: 'sails',
   // pass: '<redis auth password>'
 
@@ -175,7 +175,7 @@ module.exports.sockets = {
   // 'static': undefined,
 
   // socket authentication
-  beforeConnect (handshake, proceed) {
+  beforeConnect(handshake, proceed) {
 
     // socket authentication
 
@@ -184,13 +184,12 @@ module.exports.sockets = {
         if (err) {
           sails.log('error ', err);
           return proceed(false);
-
         }
-
         const user = await User.findOne({
           id: decoded.id
         });
-        if(!user){
+
+        if (!user) {
           sails.log('error ', 'No user');
           return proceed(false)
         }

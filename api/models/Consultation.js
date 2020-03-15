@@ -40,7 +40,7 @@ module.exports = {
     },
     queue: {
       model: 'queue',
-      required:true
+      required: true
     },
     acceptedBy: {
       model: 'user'
@@ -61,9 +61,9 @@ module.exports = {
   async afterCreate(consultation, proceed) {
 
     const nurse = await User.findOne({ id: consultation.owner });
-
+    const queue = await Queue.findOne({ id: consultation.queue })
     sails.sockets.broadcast('doctors', 'newConsultation',
-      { event: 'newConsultation', data: { _id: consultation.id, unreadCount: 0, consultation, nurse } });
+      { event: 'newConsultation', data: { _id: consultation.id, unreadCount: 0, consultation, nurse, queue } });
     return proceed();
   },
 
