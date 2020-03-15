@@ -26,13 +26,13 @@ passport.use('invite', new CustomStrategy(
     // Do your custom user finding logic here, or set to false based on req object
 
     const invite = await PublicInvite.findOne({ inviteToken: req.body.inviteToken });
-    if(invite.status === 'SENT'){
-      await PublicInvite.updateOne({ inviteToken: req.body.inviteToken }).set({status : 'ACCEPTED'})
-    }
+
     if (!invite) {
       return callback({ inviteToken: "not-found" }, null);
     }
-
+    if(invite.status === 'SENT'){
+      await PublicInvite.updateOne({ inviteToken: req.body.inviteToken }).set({status : 'ACCEPTED'})
+    }
     const phoneNumber = invite.phoneNumber.replace("+", "00");
 
     const newUser = {
