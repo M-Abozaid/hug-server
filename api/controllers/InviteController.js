@@ -156,7 +156,8 @@ module.exports = {
         emailAddress: req.body.emailAddress,
         gender: req.body.gender,
         firstName: req.body.firstName,
-        lastName: req.body.lastName
+        lastName: req.body.lastName,
+        queue: req.body.queue
       }).fetch();
 
     } catch (e) {
