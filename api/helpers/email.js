@@ -3,11 +3,9 @@ const nodemailer = require('nodemailer');
 const mailerConfig = {
   host: process.env.MAIL_SMTP_HOST,
   port: parseInt(process.env.MAIL_SMTP_PORT),
+  secure: Boolean('MAIL_SMTP_SECURE' in process.env && process.env.MAIL_SMTP_SECURE === 'true'),
   auth: {},
 };
-if ('MAIL_SMTP_SECURE' in process.env) {
-  mailerConfig.secure = Boolean(process.env.MAIL_SMTP_SECURE);
-}
 if (process.env.MAIL_SMTP_USER) {
   mailerConfig.auth.user = process.env.MAIL_SMTP_USER;
 }
