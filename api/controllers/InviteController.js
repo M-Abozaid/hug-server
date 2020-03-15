@@ -141,7 +141,7 @@ function getSmsText(inviteUrl) {
  * @returns {string} - The invitation email content.
  */
 function getEmailText(inviteUrl) {
-  return `Cliquez ici pour accéder à votre vidéo consultation avec votre médecin HUG : <a href="${inviteUrl}" title="Consultation HUG@home en ligne">${inviteUrl}</a>`;
+  return `Cliquez ici pour accéder à votre vidéo consultation avec votre médecin HUG : ${inviteUrl}`;
 }
 
 module.exports = {
