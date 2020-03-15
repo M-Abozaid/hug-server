@@ -132,7 +132,7 @@ async function sendSmsWithSwisscom(phoneNumber, message) {
  * @returns {string} - The invitation SMS message.
  */
 function getSmsText(inviteUrl) {
-  return `Cliquer ici pour accéder à votre consultation en ligne : ${inviteUrl}`;
+  return `Cliquez ici pour accéder à votre vidéo consultation avec votre médecin HUG : ${inviteUrl}`;
 }
 
 /**
@@ -142,7 +142,7 @@ function getSmsText(inviteUrl) {
  * @returns {string} - The invitation email content.
  */
 function getEmailText(inviteUrl) {
-  return `Cliquer ici pour accéder à votre consultation en ligne : <a href="${inviteUrl}" title="Consultation HUG@home en ligne">${inviteUrl}</a>`;
+  return `Cliquez ici pour accéder à votre vidéo consultation avec votre médecin HUG : <a href="${inviteUrl}" title="Consultation HUG@home en ligne">${inviteUrl}</a>`;
 }
 
 module.exports = {
