@@ -1,13 +1,20 @@
 const nodemailer = require('nodemailer');
-const transporter = nodemailer.createTransport({
-  host: 'smtp',
-  port: 25,
-  secure: false,
-  ignoreTLS:true,
-  auth: {
 
-  }
-});
+const mailerConfig = {
+  host: process.env.MAIL_SMTP_HOST,
+  port: parseInt(process.env.MAIL_SMTP_PORT),
+  auth: {},
+};
+if ('MAIL_SMTP_SECURE' in process.env) {
+  mailerConfig.secure = Boolean(process.env.MAIL_SMTP_SECURE);
+}
+if (process.env.MAIL_SMTP_USER) {
+  mailerConfig.auth.user = process.env.MAIL_SMTP_USER;
+}
+if (process.env.MAIL_SMTP_PASSWORD) {
+  mailerConfig.auth.pass = process.env.MAIL_SMTP_PASSWORD;
+}
+const transporter = nodemailer.createTransport(mailerConfig);
 module.exports = {
 
 
@@ -51,7 +58,7 @@ module.exports = {
 
 
     const options = {
-      from: 'noreply@hcuge.ch',
+      from: process.env.MAIL_SMTP_SENDER,
       to: inputs.to,
       subject: inputs.subject,
       text: inputs.text,
@@ -65,9 +72,6 @@ module.exports = {
       }]
     }
 
-    if(process.env.NODE_ENV === 'development'){
-      return exits.success()
-    }
     transporter.sendMail(options, (error, info) => {
       if (error) {
         // ...
