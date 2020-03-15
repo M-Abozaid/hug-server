@@ -41,7 +41,6 @@ async function notifyPatientBySms(phoneNumber, message) {
  * @returns {void}
  */
 async function sendSmsWithOvh(phoneNumber, message) {
-  console.log(process.env);
   const ovhConfig = {
     endpoint: process.env.SMS_OVH_ENDPOINT,
     appKey: process.env.SMS_OVH_APP_KEY,

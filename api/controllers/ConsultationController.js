@@ -9,6 +9,7 @@ const {
   OpenVidu
 } = require('openvidu-node-client');
 const uuidv1 = require('uuid/v1');
+console.log("START MEDIA SERVER", sails.config.OPENVIDU_URL, sails.config.OPENVIDU_SECRET);
 const openvidu = new OpenVidu(sails.config.OPENVIDU_URL, sails.config.OPENVIDU_SECRET);
 const fs = require('fs');
 
