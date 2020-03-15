@@ -39,7 +39,7 @@ module.exports = {
     },
     queue: {
       model: 'queue',
-      required: true
+      required: false
     },
     acceptedBy: {
       model: 'user'
@@ -73,7 +73,7 @@ module.exports = {
     const consultation = await Consultation.findOne({ _id: criteria.where.id });
     await Message.destroy({ consultation: criteria.where.id });
     if (consultation.invitationToken) {
-      await PublicInvite.updateOne({ inviteToken: consultation.invitationToken }).set({status: 'SENT'});
+      await PublicInvite.updateOne({ inviteToken: consultation.invitationToken }).set({ status: 'SENT' });
     }
 
     sails.sockets.broadcast('doctors', 'consultationCanceled',
