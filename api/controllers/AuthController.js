@@ -57,8 +57,14 @@ module.exports = {
   // used only for admin
   loginLocal(req, res) {
     passport.authenticate('local', (err, user, info = {}) => {
-      if ((err) || (!user)) {
-        return res.json({
+      console.log("Authenticate now", err, user);
+      if(err){
+        return res.status(500).json({
+          message: info.message || 'Server Error',
+        });
+      }
+      if ( (!user)) {
+        return res.status(400).json({
           message: info.message,
           user
         });
@@ -68,7 +74,7 @@ module.exports = {
       //   return res.forbidden()
       // }
 
-      return res.send({
+      return res.status(200).send({
         message: info.message,
         user
       });

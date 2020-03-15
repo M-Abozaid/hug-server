@@ -21,8 +21,7 @@ module.exports = {
       required: true
     },
     birthDate: {
-      type: 'string',
-      required: true
+      type: 'string'
     },
     IMADTeam: {
       type: 'string',
