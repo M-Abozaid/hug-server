@@ -68,7 +68,7 @@ passport.use(new LocalStrategy({
 }, ((email, password, cb) => {
   User.findOne({ email }, (err, user) => {
     if (err) { return cb(err); }
-    if (!user) { return cb(null, false, { message: 'email not found' }); }
+    if (!user) { return cb(null, false, { message: 'Email ou mot de passe incorrect' }); }
     bcrypt.compare(password, user.password, (err, res) => {
       if (err) { return cb(err); }
 

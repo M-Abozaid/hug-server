@@ -78,7 +78,7 @@ module.exports = {
       //   return res.forbidden()
       // }
 
-      return res.send({
+      return res.status(200).send({
         message: info.message,
         user
       });
