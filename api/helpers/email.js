@@ -54,6 +54,10 @@ module.exports = {
   fn: async function (inputs, exits) {
 
 
+    if(process.env.NODE_ENV === 'development'){
+      return exits.success()
+    }
+
 
     const options = {
       from: process.env.MAIL_SMTP_SENDER,

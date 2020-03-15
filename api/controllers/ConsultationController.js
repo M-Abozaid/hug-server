@@ -272,13 +272,7 @@ module.exports = {
       }
 
       if (consultation.invitationToken) {
-        console.log("DELETING CONSULTATION AS IT'S A CONSULTATION CREATED FROM INVITATION")
-        await Consultation.destroyOne({ id: consultation.id });
-        // emit consultation closed event with the consultation
-        sendConsultationClosed(consultation);
-        return res.status(200).json({
-          message: 'success'
-        });
+        await PublicInvite.destroyOne({ inviteToken: consultation.invitationToken })
       }
 
       const consultationCollection = db.collection('consultation');
