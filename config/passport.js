@@ -161,13 +161,13 @@ if (process.env.NODE_ENV !== 'development') {
         let user = await User.findOne({ email: profile[process.env.EMAIL_FIELD] });
 
         if (!user) {
-          // user = await User.create({
-          //   email: profile[process.env.EMAIL_FIELD],
-          //   firstName: profile[process.env.FIRSTNAME_FIELD],
-          //   lastName: profile[process.env.LASTNAME_FIELD],
-          //   role: sails.config.globals.ROLE_DOCTOR
-          // }).fetch();
-          return cb(new Error('User not found'))
+          user = await User.create({
+            email: profile[process.env.EMAIL_FIELD],
+            firstName: profile[process.env.FIRSTNAME_FIELD],
+            lastName: profile[process.env.LASTNAME_FIELD],
+            role: sails.config.globals.ROLE_DOCTOR
+          }).fetch();
+          // return cb(new Error('User not found'))
         }
 
         // remove unnecessary fields
