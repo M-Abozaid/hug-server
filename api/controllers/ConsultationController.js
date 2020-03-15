@@ -146,6 +146,10 @@ module.exports = {
         'nurse.firstName': 1,
         'nurse.lastName': 1
       }
+    },{
+      $skip: parseInt(req.query.skip) || 0
+    },{
+      $limit: parseInt(req.query.limit) || 500
     }
     ];
 
