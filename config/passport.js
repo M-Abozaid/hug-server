@@ -30,13 +30,13 @@ passport.use('invite', new CustomStrategy(
     if (!invite) {
       return callback({ inviteToken: "not-found" }, null);
     }
-    if(invite.status === 'SENT'){
-      await PublicInvite.updateOne({ inviteToken: req.body.inviteToken }).set({status : 'ACCEPTED'})
+    if (invite.status === 'SENT') {
+      await PublicInvite.updateOne({ inviteToken: req.body.inviteToken }).set({ status: 'ACCEPTED' })
     }
     const phoneNumber = invite.phoneNumber.replace("+", "00");
 
     const newUser = {
-      username: phoneNumber,
+      username: invite.id,
       email: "",
       firstName: "",
       lastName: "",

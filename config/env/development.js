@@ -21,8 +21,8 @@
 
 module.exports = {
 
-  OPENVIDU_URL : process.env.OPENVIDU_URL,//'https://localhost:4443', // 'https://192.168.43.167:4443'//'https://kurento-hugathome.dev.oniabsis.com:443'//'https://' + location.hostname + ':4443/';
-  OPENVIDU_SECRET : 'MY_SECRET',
+  OPENVIDU_URL: process.env.OPENVIDU_URL,//'https://localhost:4443', // 'https://192.168.43.167:4443'//'https://kurento-hugathome.dev.oniabsis.com:443'//'https://' + location.hostname + ':4443/';
+  OPENVIDU_SECRET: process.env.OPENVIDU_SECRET,
 
 
 

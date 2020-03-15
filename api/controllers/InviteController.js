@@ -18,14 +18,14 @@ async function notifyPatientBySms(phoneNumber, message) {
   }
 
   if ('SMS_OVH_ENDPOINT' in process.env
-      && 'SMS_OVH_APP_KEY' in process.env
-      && 'SMS_OVH_APP_SECRET' in process.env
-      && 'SMS_OVH_APP_CONSUMER_KEY' in process.env) {
+    && 'SMS_OVH_APP_KEY' in process.env
+    && 'SMS_OVH_APP_SECRET' in process.env
+    && 'SMS_OVH_APP_CONSUMER_KEY' in process.env) {
     console.log(`Sending an SMS to ${phoneNumber} through OVH`);
     sendSmsWithOvh(phoneNumber, message);
   } else if ('SMS_SWISSCOM_ACCOUNT' in process.env
-      && 'SMS_SWISSCOM_PASSWORD' in process.env
-      && 'SMS_SWISSCOM_SENDER' in process.env) {
+    && 'SMS_SWISSCOM_PASSWORD' in process.env
+    && 'SMS_SWISSCOM_SENDER' in process.env) {
     console.log(`Sending an SMS to ${phoneNumber} through Swisscom`);
     sendSmsWithSwisscom(phoneNumber, message);
   } else {
@@ -132,7 +132,7 @@ async function sendSmsWithSwisscom(phoneNumber, message) {
  * @returns {string} - The invitation SMS message.
  */
 function getSmsText(inviteUrl) {
-  return `Cliquer ici pour accéder à votre consultation en ligne : ${inviteUrl}`;
+  return `Cliquez ici pour accéder à votre vidéo consultation avec votre médecin HUG : ${inviteUrl}`;
 }
 
 /**
@@ -142,14 +142,13 @@ function getSmsText(inviteUrl) {
  * @returns {string} - The invitation email content.
  */
 function getEmailText(inviteUrl) {
-  return `Cliquer ici pour accéder à votre consultation en ligne : <a href="${inviteUrl}" title="Consultation HUG@home en ligne">${inviteUrl}</a>`;
+  return `Cliquez ici pour accéder à votre vidéo consultation avec votre médecin HUG : ${inviteUrl}`;
 }
 
 module.exports = {
   async invite(req, res) {
     let invite = null;
-
-
+    console.log("create invite now");
     try {
       invite = await PublicInvite.create({
         phoneNumber: req.body.phoneNumber,
@@ -161,6 +160,7 @@ module.exports = {
       }).fetch();
 
     } catch (e) {
+      console.log("error", e);
       return res.status(500).json({
         error: true
       });
@@ -212,9 +212,9 @@ module.exports = {
    * @param {*} req
    * @param {*} res
    */
-  async resend(req, res){
+  async resend(req, res) {
     try {
-      const invite = await PublicInvite.findOne({id: req.params.invite})
+      const invite = await PublicInvite.findOne({ id: req.params.invite })
       const url = `${process.env.PUBLIC_URL}?invite=${invite.inviteToken}`
 
       if (invite.emailAddress) {
@@ -230,10 +230,10 @@ module.exports = {
       }
 
 
-    return res.json({
-      success: true,
-      invite
-    });
+      return res.json({
+        success: true,
+        invite
+      });
     } catch (error) {
       console.log('error ', error)
       res.send()
@@ -241,10 +241,10 @@ module.exports = {
 
   },
 
-  async revoke(req, res){
+  async revoke(req, res) {
 
     try {
-      await PublicInvite.destroyOne({id: req.params.invite})
+      await PublicInvite.destroyOne({ id: req.params.invite })
 
       return res.status(200).send()
     } catch (error) {

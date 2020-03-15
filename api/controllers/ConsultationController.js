@@ -116,6 +116,14 @@ module.exports = {
     },
     {
       $lookup: {
+        from: 'queue',
+        localField: 'consultation.queue',
+        foreignField: '_id',
+        as: 'queue'
+      }
+    },
+    {
+      $lookup: {
         from: 'user',
         localField: 'consultation.acceptedBy',
         foreignField: '_id',
@@ -132,6 +140,9 @@ module.exports = {
         },
         nurse: {
           $arrayElemAt: ['$nurse', 0]
+        },
+        queue: {
+          $arrayElemAt: ['$queue', 0]
         }
 
       }
@@ -144,7 +155,8 @@ module.exports = {
         'doctor.firstName': 1,
         'doctor.lastName': 1,
         'nurse.firstName': 1,
-        'nurse.lastName': 1
+        'nurse.lastName': 1,
+        'queue.name': 1,
       }
     },{
       $skip: parseInt(req.query.skip) || 0
@@ -165,9 +177,14 @@ module.exports = {
     let consultationJson = req.body;
 
     if (req.body.invitationToken) {
-      const existingConsultation = await Consultation.findOne({ invitationToken: req.body.invitationToken, status: "pending" });
+      // If a consultation already exist, another one should not be created
+      const existingConsultation = await Consultation.findOne({ invitationToken: req.body.invitationToken });
       if (existingConsultation) {
-        return res.json(existingConsultation);
+        if (existingConsultation.status === 'pending') {
+          return res.json(existingConsultation);
+        } else {
+          return res.status(400).json();
+        }
       }
       const invite = await PublicInvite.findOne({ inviteToken: req.body.invitationToken });
       if (invite) {
@@ -182,6 +199,7 @@ module.exports = {
       console.log(consultation);
       res.json(consultation);
     }).catch(err => {
+      console.log("ERROR WHILE CREATING CONSULTATION", err);
       let error = err && err.cause ? err.cause : err;
       res.status(400).json(error);
     })
@@ -233,6 +251,15 @@ module.exports = {
 
     try {
 
+      const sendConsultationClosed = function (consultation) {
+        // emit consultation closed event with the consultation
+        sails.sockets.broadcast(consultation.owner, 'consultationClosed', {
+          data: {
+            consultation,
+            _id: consultation.id
+          }
+        });
+      };
 
       const closedAt = new Date();
 
@@ -241,6 +268,16 @@ module.exports = {
       });
       if (!consultation || consultation.status !== 'active') {
         return res.notFound();
+      }
+
+      if (consultation.invitationToken) {
+        console.log("DELETING CONSULTATION AS IT'S A CONSULTATION CREATED FROM INVITATION")
+        await Consultation.destroyOne({ id: consultation.id });
+        // emit consultation closed event with the consultation
+        sendConsultationClosed(consultation);
+        return res.status(200).json({
+          message: 'success'
+        });
       }
 
       const consultationCollection = db.collection('consultation');
@@ -265,13 +302,9 @@ module.exports = {
       }, { multi: true });
 
 
+
       // emit consultation closed event with the consultation
-      sails.sockets.broadcast(consultation.owner, 'consultationClosed', {
-        data: {
-          consultation,
-          _id: consultation.id
-        }
-      });
+      sendConsultationClosed(consultation);
 
       res.status(200);
       return res.json({
@@ -282,7 +315,6 @@ module.exports = {
       sails.log('error ', error);
     }
   },
-
 
   async call(req, res) {
     try {

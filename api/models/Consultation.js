@@ -40,7 +40,7 @@ module.exports = {
     },
     queue: {
       model: 'queue',
-      required:true
+      required: true
     },
     acceptedBy: {
       model: 'user'
@@ -58,20 +58,29 @@ module.exports = {
 
   },
 
+
   async afterCreate(consultation, proceed) {
 
     const nurse = await User.findOne({ id: consultation.owner });
-
+    const queue = await Queue.findOne({ id: consultation.queue })
     sails.sockets.broadcast('doctors', 'newConsultation',
-      { event: 'newConsultation', data: { _id: consultation.id, unreadCount: 0, consultation, nurse } });
+      { event: 'newConsultation', data: { _id: consultation.id, unreadCount: 0, consultation, nurse, queue } });
     return proceed();
   },
 
 
   async beforeDestroy(criteria, proceed) {
+    console.log("DELETE CONSULTATION", criteria);
+    const consultation = await Consultation.findOne({ _id: criteria.where.id });
+    if (consultation.invitationToken) {
+      await PublicInvite.destroyOne({ inviteToken: consultation.invitationToken });
 
+      const user = await User.findOne(consultation.owner);
+      if (user.temporaryAccount) {
+        await User.destroyOne({ id: user.id });
+      }
+    }
     await Message.destroy({ consultation: criteria.where.id });
-
 
     sails.sockets.broadcast('doctors', 'consultationCanceled',
       { event: 'consultationCanceled', data: { _id: criteria.where.id, consultation: criteria.where } });
