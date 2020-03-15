@@ -38,14 +38,12 @@ module.exports = {
 
   loginInvite(req, res) {
     passport.authenticate('invite', (err, user) => {
-      console.log("GOT", err, user);
       if ((err) || (!user)) {
         return res.status(401).send({
           err
         });
       }
 
-      console.log("GENERATING USER TOKEN", user);
       user.token = jwt.sign(user, sails.config.globals.APP_SECRET);
 
       return res.json({
@@ -53,15 +51,12 @@ module.exports = {
       });
 
     })(req, res, (err) => {
-      console.log('Error with LOGIN INVITE', err);
     });
   },
 
   // used only for admin
   loginLocal(req, res) {
-    console.log("Try the local login");
     passport.authenticate('local', (err, user, info = {}) => {
-      console.log("Authenticate now", err, user);
       if ((err) || (!user)) {
         return res.json({
           message: info.message,

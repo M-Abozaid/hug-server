@@ -33,7 +33,6 @@ passport.use('invite', new CustomStrategy(
     if (invite.status === 'SENT') {
       await PublicInvite.updateOne({ inviteToken: req.body.inviteToken }).set({ status: 'ACCEPTED' })
     }
-    const phoneNumber = invite.phoneNumber.replace("+", "00");
 
     const newUser = {
       username: invite.id,
@@ -48,15 +47,10 @@ passport.use('invite', new CustomStrategy(
       inviteToken: invite.id,
     }
 
-    let user = await User.findOne({ username: phoneNumber });
-    if (user) {
-      console.log("FIND USER ", { id: user.id })
-      user = await User.updateOne(user.id).set({ inviteToken: invite.id });
-      console.log("UPdated");
-    } else {
+    let user = await User.findOne({ username: invite.id });
+    if (!user) {
       user = await User.create(newUser).fetch();
     }
-
 
     callback(null, user)
   }

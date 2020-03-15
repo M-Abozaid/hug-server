@@ -20,7 +20,6 @@ async function generateToken() {
     .update(buffer)
     .digest("hex");
 
-  console.log(token);
   return token;
 }
 
@@ -52,7 +51,7 @@ module.exports = {
     },
     queue: {
       model: 'queue',
-      required:true
+      required: true
     },
   },
   customToJSON() {
