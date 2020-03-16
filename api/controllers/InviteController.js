@@ -246,6 +246,7 @@ module.exports = {
           text: getEmailText(url),
         })
       } catch (error) {
+        await PublicInvite.destroyOne({ id: invite.id })
         return res.status(500).json({
           error: true,
           message: 'Error sending email'
@@ -257,6 +258,7 @@ module.exports = {
       try {
         await notifyPatientBySms(req.body.phoneNumber, getSmsText(url));
       } catch (error) {
+        await PublicInvite.destroyOne({ id: invite.id })
         return res.status(500).json({
           error: true,
           message: 'Error sending SMS'
