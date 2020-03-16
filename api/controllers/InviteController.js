@@ -7,7 +7,7 @@
 
 
 
-async function notifyPatientBySms(phoneNumber, message) {
+function notifyPatientBySms(phoneNumber, message) {
   if (!phoneNumber || phoneNumber.length === 0) {
     console.error('The phone number is mandatory to send an SMS');
     return;
@@ -22,12 +22,12 @@ async function notifyPatientBySms(phoneNumber, message) {
     && 'SMS_OVH_APP_SECRET' in process.env
     && 'SMS_OVH_APP_CONSUMER_KEY' in process.env) {
     console.log(`Sending an SMS to ${phoneNumber} through OVH`);
-    sendSmsWithOvh(phoneNumber, message);
+    return sendSmsWithOvh(phoneNumber, message);
   } else if ('SMS_SWISSCOM_ACCOUNT' in process.env
     && 'SMS_SWISSCOM_PASSWORD' in process.env
     && 'SMS_SWISSCOM_SENDER' in process.env) {
     console.log(`Sending an SMS to ${phoneNumber} through Swisscom`);
-    sendSmsWithSwisscom(phoneNumber, message);
+    return sendSmsWithSwisscom(phoneNumber, message);
   } else {
     console.error('No SMS gateway configured');
   }
@@ -40,7 +40,7 @@ async function notifyPatientBySms(phoneNumber, message) {
  * @param {string} message
  * @returns {void}
  */
-async function sendSmsWithOvh(phoneNumber, message) {
+function sendSmsWithOvh(phoneNumber, message) {
   const ovhConfig = {
     endpoint: process.env.SMS_OVH_ENDPOINT,
     appKey: process.env.SMS_OVH_APP_KEY,
@@ -52,22 +52,30 @@ async function sendSmsWithOvh(phoneNumber, message) {
 
   console.log('Sending SMS...');
 
-  ovh.request('GET', '/sms', (err, serviceName) => {
-    if (err) {
-      console.log(err, serviceName);
-      return;
-    }
+  return new Promise((resolve, reject)=>{
+    ovh.request('GET', '/sms', (err, serviceName) => {
+      if (err) {
+        console.log(err, serviceName);
+        return reject(err);
+      }
 
-    // Send a simple SMS with a short number using your serviceName
-    ovh.request('POST', `/sms/${serviceName}/jobs/`, {
-      sender: process.env.SMS_OVH_SENDER,
-      message,
-      senderForResponse: false,
-      receivers: [phoneNumber]
-    }, (errsend, result) => {
-      console.error(errsend, result);
+      // Send a simple SMS with a short number using your serviceName
+      ovh.request('POST', `/sms/${serviceName}/jobs/`, {
+        sender: process.env.SMS_OVH_SENDER,
+        message,
+        senderForResponse: false,
+        receivers: [phoneNumber]
+      }, (errsend, result) => {
+        console.error(errsend, result);
+        if(errsend){
+         return reject(errsend)
+        }
+        return resolve()
+      });
     });
-  });
+
+  })
+
 }
 
 /**
@@ -77,7 +85,7 @@ async function sendSmsWithOvh(phoneNumber, message) {
  * @param {string} message - The short message to send.
  * @returns {void}
  */
-async function sendSmsWithSwisscom(phoneNumber, message) {
+function sendSmsWithSwisscom(phoneNumber, message) {
   const https = require('https')
 
   const payload = {
@@ -90,38 +98,46 @@ async function sendSmsWithSwisscom(phoneNumber, message) {
     short_message: message
   };
 
-  const request = https.request(
-    `https://messagingproxy.swisscom.ch:4300/rest/1.0.0/submit_sm/${process.env.SMS_SWISSCOM_ACCOUNT}`,
-    {
-      method: 'POST',
-      auth: `${process.env.SMS_SWISSCOM_ACCOUNT}:${process.env.SMS_SWISSCOM_PASSWORD}`,
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    },
-    (res) => {
-      let rawData = '';
-      res.setEncoding('utf8');
-      res.on('data', (chunk) => { rawData += chunk; });
-      res.on('end', () => {
-        try {
-          const parsedData = JSON.parse(rawData);
-          console.log(parsedData);
-          if ('message_id' in parsedData) {
-            return;
-          }
-          console.error(parsedData);
-        } catch (e) {
-          console.error(e.message);
+  return new Promise((resolve, reject)=>{
+    const request = https.request(
+      `https://messagingproxy.swisscom.ch:4300/rest/1.0.0/submit_sm/${process.env.SMS_SWISSCOM_ACCOUNT}`,
+      {
+        method: 'POST',
+        auth: `${process.env.SMS_SWISSCOM_ACCOUNT}:${process.env.SMS_SWISSCOM_PASSWORD}`,
+        headers: {
+          'Content-Type': 'application/json'
         }
-      });
-    }
-  );
-  request.on('error', (e) => {
-    console.error(e.message);
-  });
-  request.write(JSON.stringify(payload));
-  request.end();
+      },
+      (res) => {
+        let rawData = '';
+        res.setEncoding('utf8');
+        res.on('data', (chunk) => { rawData += chunk; });
+        res.on('end', () => {
+          try {
+            const parsedData = JSON.parse(rawData);
+            console.log(parsedData);
+            if ('message_id' in parsedData) {
+              resolve()
+              return;
+            }
+            console.error(parsedData);
+            reject(parsedData)
+          } catch (e) {
+            console.error(e.message);
+            reject(e)
+          }
+        });
+      }
+    );
+    request.on('error', (e) => {
+      console.error(e.message);
+      reject(e)
+    });
+    request.write(JSON.stringify(payload));
+    request.end();
+
+  })
+
 }
 
 /**
@@ -144,10 +160,65 @@ function getEmailText(inviteUrl) {
   return `Cliquez ici pour accéder à votre vidéo consultation avec votre médecin HUG : ${inviteUrl}`;
 }
 
+/**
+ *
+ * returns array of errors
+ *
+ * @param {object} invite
+ */
+function validateInviteRequest(invite){
+  const errors = []
+  if(!invite.phoneNumber && !invite.emailAddress){
+    errors.push({ message: 'emailAddress or phoneNumber are required'})
+  }
+
+  if(!invite.gender){
+    errors.push({ message: 'gender is required'})
+
+  }
+  if(invite.gender){
+    if(!['male','female'].includes(invite.gender)){
+      errors.push({message:'gender must be either male or female'})
+    }
+  }
+  if(!invite.firstName){
+    errors.push({ message: 'firstName is required'})
+
+  }
+  if(!invite.lastName){
+    errors.push({ message: 'lastName is required'})
+
+  }
+  if(!invite.queue){
+    errors.push({ message: 'queue is required'})
+  }
+
+
+  return errors
+}
+
 module.exports = {
   async invite(req, res) {
     let invite = null;
     console.log("create invite now");
+
+    const errors = validateInviteRequest(req.body)
+    if(errors.length){
+      return res.status(400).json(errors)
+    }
+
+    const queue = await Queue.findOne({ or : [
+      { name: req.body.queue },
+      { id: req.body.queue }
+    ]})
+
+    if(!queue){
+      return res.status(400).json({
+        error: true,
+        message: `queue ${req.body.queue} doesn't exist`
+      })
+    }
+
     try {
       invite = await PublicInvite.create({
         phoneNumber: req.body.phoneNumber,
@@ -155,7 +226,7 @@ module.exports = {
         gender: req.body.gender,
         firstName: req.body.firstName,
         lastName: req.body.lastName,
-        queue: req.body.queue
+        queue: queue.id
       }).fetch();
 
     } catch (e) {
@@ -168,15 +239,29 @@ module.exports = {
     const url = `${process.env.PUBLIC_URL}?invite=${invite.inviteToken}`
 
     if (invite.emailAddress) {
-      await sails.helpers.email.with({
-        to: invite.emailAddress,
-        subject: 'Invite',
-        text: getEmailText(url),
-      })
+      try {
+        await sails.helpers.email.with({
+          to: invite.emailAddress,
+          subject: 'Invite',
+          text: getEmailText(url),
+        })
+      } catch (error) {
+        return res.status(500).json({
+          error: true,
+          message: 'Error sending email'
+        });
+      }
     }
 
     if (invite.phoneNumber) {
-      notifyPatientBySms(req.body.phoneNumber, getSmsText(url));
+      try {
+        await notifyPatientBySms(req.body.phoneNumber, getSmsText(url));
+      } catch (error) {
+        return res.status(500).json({
+          error: true,
+          message: 'Error sending SMS'
+        });
+      }
     }
 
     return res.json({
