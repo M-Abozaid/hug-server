@@ -155,6 +155,7 @@ module.exports = {
         unreadCount: 1,
         'doctor.firstName': 1,
         'doctor.lastName': 1,
+        'doctor.phoneNumber': 1,
         'nurse.firstName': 1,
         'nurse.lastName': 1,
         'queue.name': 1,
@@ -223,7 +224,8 @@ module.exports = {
         _id: consultation.id,
         doctor: {
           firstName: req.user.firstName,
-          lastName: req.user.lastName
+          lastName: req.user.lastName,
+          phoneNumber: req.user.phoneNumber ? req.user.phoneNumber : ''
         }
       }
     });
@@ -233,7 +235,8 @@ module.exports = {
         _id: consultation.id,
         doctor: {
           firstName: req.user.firstName,
-          lastName: req.user.lastName
+          lastName: req.user.lastName,
+          phoneNumber: req.user.phoneNumber ? req.user.phoneNumber : ''
         }
       }
     });
