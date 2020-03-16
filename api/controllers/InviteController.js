@@ -117,21 +117,20 @@ function sendSmsWithSwisscom(phoneNumber, message) {
             const parsedData = JSON.parse(rawData);
             console.log(parsedData);
             if ('message_id' in parsedData) {
-              resolve()
-              return;
+              return resolve();
             }
             console.error(parsedData);
-            reject(parsedData)
+            return reject(parsedData)
           } catch (e) {
             console.error(e.message);
-            reject(e)
+            return reject(e)
           }
         });
       }
     );
     request.on('error', (e) => {
       console.error(e.message);
-      reject(e)
+      return reject(e)
     });
     request.write(JSON.stringify(payload));
     request.end();
