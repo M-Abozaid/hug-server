@@ -390,22 +390,24 @@ module.exports = {
       })
         .set({
           closedAt: new Date()
-        });
+        })
 
-      // call rejected by nurse
-      if (req.user.id === consultation.owner) {
+        const message = await Message.findOne({id: req.params.message})
+
         sails.sockets.broadcast(consultation.acceptedBy, 'rejectCall', {
           data: {
-            consultation
+            consultation,
+            message
           }
         });
-      } else if (req.user.id === consultation.acceptedBy) {
+
         sails.sockets.broadcast(consultation.owner, 'rejectCall', {
           data: {
-            consultation
+            consultation,
+            message
           }
         });
-      }
+
 
       res.json({
         status: 200
@@ -419,6 +421,10 @@ module.exports = {
 
   async acceptCall(req, res) {
     try {
+      const consultation = await Consultation.findOne({
+        _id: req.params.consultation
+      });
+
       await Message.updateOne({
         _id: req.params.message,
         consultation: req.params.consultation
@@ -426,6 +432,23 @@ module.exports = {
         .set({
           acceptedAt: new Date()
         });
+
+        const message = await Message.findOne({id: req.params.message})
+        sails.sockets.broadcast(consultation.acceptedBy, 'acceptCall', {
+          data: {
+            consultation,
+            message
+          }
+        });
+
+
+        sails.sockets.broadcast(consultation.owner, 'acceptCall', {
+          data: {
+            consultation,
+            message
+          }
+        });
+
 
       res.json({
         status: 200

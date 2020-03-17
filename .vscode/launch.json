@@ -15,7 +15,7 @@
         "APP_SECRET":"2dfsd21",
         "NODE_ENV":"development",
         "ATTACHMENTS_DIR":"/home/muhammed/space/web/hug-at-home/server/attachments",
-        "OPENVIDU_URL": "https://192.168.1.9:4443"
+        "OPENVIDU_URL": "https://localhost:4443"
       }
     },
     {
