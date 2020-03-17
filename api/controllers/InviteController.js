@@ -128,13 +128,13 @@ function sendSmsWithSwisscom(phoneNumber, message) {
         });
       }
     );
+    try {
     request.on('error', (e) => {
       console.error(e.message);
       return reject(e)
     });
     console.log('Siss come auth header  ', `${process.env.SMS_SWISSCOM_ACCOUNT}:${process.env.SMS_SWISSCOM_PASSWORD}`)
     console.log('SISSCOME URI',  `https://messagingproxy.swisscom.ch:4300/rest/1.0.0/submit_sm/${process.env.SMS_SWISSCOM_ACCOUNT}`)
-    try {
       console.log('SWISSCOM JSON PAYLOAD..............')
       console.log(JSON.stringify(payload))
       request.write(JSON.stringify(payload));
@@ -142,7 +142,7 @@ function sendSmsWithSwisscom(phoneNumber, message) {
     } catch (error) {
 
       console.log('error write to request ', error)
-      reject(error)
+      return reject(error)
     }
 
 
@@ -271,6 +271,7 @@ module.exports = {
       try {
         await notifyPatientBySms(req.body.phoneNumber, getSmsText(url));
       } catch (error) {
+        console.log('ERROR SENDING SMS>>>>>>>> ', error)
         await PublicInvite.destroyOne({ id: invite.id })
         return res.status(500).json({
           error: true,
