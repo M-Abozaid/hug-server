@@ -133,7 +133,7 @@ function sendSmsWithSwisscom(phoneNumber, message) {
       return reject(e)
     });
     console.log('Siss come auth header  ', `${process.env.SMS_SWISSCOM_ACCOUNT}:${process.env.SMS_SWISSCOM_PASSWORD}`)
-    console.log('SISSCOME URI',  `https://messagingproxy.swisscom.ch:4300/rest/1.0.0/submit_sm/${process.env.SMS_SWISSCOM_ACCOUNT}`,)
+    console.log('SISSCOME URI',  `https://messagingproxy.swisscom.ch:4300/rest/1.0.0/submit_sm/${process.env.SMS_SWISSCOM_ACCOUNT}`)
     console.log('SWISSCOM JSON PAYLOAD..............')
     console.log(JSON.stringify(payload))
     request.write(JSON.stringify(payload));
