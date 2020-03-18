@@ -89,7 +89,7 @@ function sendSmsWithSwisscom(phoneNumber, message) {
   const https = require('https')
 
   const payload = {
-    destination_addr: phoneNumber.replace(/[^\+0-9\+]/g, ''),
+    destination_addr: phoneNumber.replace(/[^0-9\+]/g, ''),
     dest_addr_ton: 1,
     dest_addr_npi: 1,
     source_addr: process.env.SMS_SWISSCOM_SENDER,
