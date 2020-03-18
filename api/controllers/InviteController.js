@@ -52,7 +52,7 @@ function sendSmsWithOvh(phoneNumber, message) {
 
   console.log('Sending SMS...');
 
-  return new Promise((resolve, reject)=>{
+  return new Promise((resolve, reject) => {
     ovh.request('GET', '/sms', (err, serviceName) => {
       if (err) {
         console.log(err, serviceName);
@@ -67,8 +67,8 @@ function sendSmsWithOvh(phoneNumber, message) {
         receivers: [phoneNumber]
       }, (errsend, result) => {
         console.error(errsend, result);
-        if(errsend){
-         return reject(errsend)
+        if (errsend) {
+          return reject(errsend)
         }
         return resolve()
       });
@@ -98,7 +98,7 @@ function sendSmsWithSwisscom(phoneNumber, message) {
     short_message: message
   };
 
-  return new Promise((resolve, reject)=>{
+  return new Promise((resolve, reject) => {
     const request = https.request(
       `https://messagingproxy.swisscom.ch:4300/rest/1.0.0/submit_sm/${process.env.SMS_SWISSCOM_ACCOUNT}`,
       {
@@ -116,7 +116,7 @@ function sendSmsWithSwisscom(phoneNumber, message) {
           try {
             const parsedData = JSON.parse(rawData);
             console.log(parsedData);
-            if ('message_id' in parsedData) {
+            if ('message_ids' in parsedData) {
               return resolve();
             }
             console.error(parsedData);
@@ -128,23 +128,6 @@ function sendSmsWithSwisscom(phoneNumber, message) {
         });
       }
     );
-    try {
-    request.on('error', (e) => {
-      console.error(e.message);
-      return reject(e)
-    });
-    console.log('Siss come auth header  ', `${process.env.SMS_SWISSCOM_ACCOUNT}:${process.env.SMS_SWISSCOM_PASSWORD}`)
-    console.log('SISSCOME URI',  `https://messagingproxy.swisscom.ch:4300/rest/1.0.0/submit_sm/${process.env.SMS_SWISSCOM_ACCOUNT}`)
-      console.log('SWISSCOM JSON PAYLOAD..............')
-      console.log(JSON.stringify(payload))
-      request.write(JSON.stringify(payload));
-      request.end();
-    } catch (error) {
-
-      console.log('error write to request ', error)
-      return reject(error)
-    }
-
 
   })
 
@@ -176,31 +159,31 @@ function getEmailText(inviteUrl) {
  *
  * @param {object} invite
  */
-function validateInviteRequest(invite){
+function validateInviteRequest(invite) {
   const errors = []
-  if(!invite.phoneNumber && !invite.emailAddress){
-    errors.push({ message: 'emailAddress or phoneNumber are required'})
+  if (!invite.phoneNumber && !invite.emailAddress) {
+    errors.push({ message: 'emailAddress or phoneNumber are required' })
   }
 
-  if(!invite.gender){
-    errors.push({ message: 'gender is required'})
+  if (!invite.gender) {
+    errors.push({ message: 'gender is required' })
 
   }
-  if(invite.gender){
-    if(!['male','female'].includes(invite.gender)){
-      errors.push({message:'gender must be either male or female'})
+  if (invite.gender) {
+    if (!['male', 'female'].includes(invite.gender)) {
+      errors.push({ message: 'gender must be either male or female' })
     }
   }
-  if(!invite.firstName){
-    errors.push({ message: 'firstName is required'})
+  if (!invite.firstName) {
+    errors.push({ message: 'firstName is required' })
 
   }
-  if(!invite.lastName){
-    errors.push({ message: 'lastName is required'})
+  if (!invite.lastName) {
+    errors.push({ message: 'lastName is required' })
 
   }
-  if(!invite.queue){
-    errors.push({ message: 'queue is required'})
+  if (!invite.queue) {
+    errors.push({ message: 'queue is required' })
   }
 
 
@@ -213,16 +196,18 @@ module.exports = {
     console.log("create invite now");
 
     const errors = validateInviteRequest(req.body)
-    if(errors.length){
+    if (errors.length) {
       return res.status(400).json(errors)
     }
 
-    const queue = await Queue.findOne({ or : [
-      { name: req.body.queue },
-      { id: req.body.queue }
-    ]})
+    const queue = await Queue.findOne({
+      or: [
+        { name: req.body.queue },
+        { id: req.body.queue }
+      ]
+    })
 
-    if(!queue){
+    if (!queue) {
       return res.status(400).json({
         error: true,
         message: `queue ${req.body.queue} doesn't exist`
@@ -256,7 +241,7 @@ module.exports = {
           text: getEmailText(url),
         })
       } catch (error) {
-        if(!invite.phoneNumber){
+        if (!invite.phoneNumber) {
           await PublicInvite.destroyOne({ id: invite.id })
           return res.status(500).json({
             error: true,
