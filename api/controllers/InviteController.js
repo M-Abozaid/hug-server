@@ -89,7 +89,7 @@ function sendSmsWithSwisscom(phoneNumber, message) {
   const https = require('https')
 
   const payload = {
-    destination_addr: phoneNumber,
+    destination_addr: phoneNumber.replace(" ", ""),
     dest_addr_ton: 1,
     dest_addr_npi: 1,
     source_addr: process.env.SMS_SWISSCOM_SENDER,
@@ -113,9 +113,11 @@ function sendSmsWithSwisscom(phoneNumber, message) {
         res.setEncoding('utf8');
         res.on('data', (chunk) => { rawData += chunk; });
         res.on('end', () => {
+          console.log("Will get raw data");
+          console.log("raw data", rawData);
           try {
             const parsedData = JSON.parse(rawData);
-            console.log(parsedData);
+            console.log("GOT SWISSCOM DATA", parsedData);
             if ('message_ids' in parsedData) {
               return resolve();
             }
@@ -129,6 +131,22 @@ function sendSmsWithSwisscom(phoneNumber, message) {
       }
     );
 
+    try {
+      request.on('error', (e) => {
+        console.error("ERROR", e.message);
+        return reject(e)
+      });
+      console.log('Siss come auth header  ', `${process.env.SMS_SWISSCOM_ACCOUNT}:${process.env.SMS_SWISSCOM_PASSWORD}`)
+      console.log('SISSCOME URI', `https://messagingproxy.swisscom.ch:4300/rest/1.0.0/submit_sm/${process.env.SMS_SWISSCOM_ACCOUNT}`)
+      console.log('SWISSCOM JSON PAYLOAD..............')
+      console.log(JSON.stringify(payload))
+      request.write(JSON.stringify(payload));
+      request.end();
+    } catch (error) {
+
+      console.log('error write to request ', error)
+      return reject(error)
+    }
   })
 
 }
