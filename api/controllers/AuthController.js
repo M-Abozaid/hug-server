@@ -12,7 +12,7 @@ const bcrypt = require('bcrypt');
 const { samlStrategy } = require('../../config/passport');
 const jwt = require('jsonwebtoken');
 
-const SMS_CODE_LIFESPAN = 1*60
+const SMS_CODE_LIFESPAN = 5*60
 function generateVerificationCode(){
   let possible = '0123456789'
   let string = ''
