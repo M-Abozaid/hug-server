@@ -8,7 +8,6 @@
 
 const bodyParser = require('body-parser');
 const passport = require('passport');
-const bcrypt = require('bcrypt');
 const { samlStrategy } = require('../../config/passport');
 const jwt = require('jsonwebtoken');
 
