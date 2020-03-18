@@ -189,7 +189,7 @@ module.exports = {
 
       if (invite.phoneNumber) {
         await sails.helpers.sms.with({
-          phoneNumber: req.body.phoneNumber,
+          phoneNumber: invite.phoneNumber,
           message: getSmsText(url)
         })
       }

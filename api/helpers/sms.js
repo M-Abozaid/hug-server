@@ -171,6 +171,11 @@ module.exports = {
         return exits.success()
       } else {
         console.error('No SMS gateway configured');
+        if(process.env.NODE_ENV === 'development'){
+          console.log('SENDING SMS ', message, ' to ', phoneNumber )
+
+          exits.success()
+        }
       }
     } catch (error) {
       exits.error(error)
