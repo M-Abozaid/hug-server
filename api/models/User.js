@@ -30,6 +30,9 @@ module.exports = {
     password: {
       type: 'string'
     },
+    smsVerificationCode: {
+      type: 'string'
+    },
     temporaryAccount: {
       type: 'boolean'
     },
@@ -48,7 +51,7 @@ module.exports = {
   },
 
   customToJSON() {
-    return _.omit(this, ['password'])
+    return _.omit(this, ['password', 'smsVerificationCode'])
   },
   beforeCreate: async function (user, cb) {
     try {

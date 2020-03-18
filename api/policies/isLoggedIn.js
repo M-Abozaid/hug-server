@@ -10,6 +10,10 @@ module.exports = function (req, res, proceed) {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
+    if(decoded.singleFactor){
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
 
     const user = await User.findOne({
       id: decoded.id

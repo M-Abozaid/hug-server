@@ -8,10 +8,19 @@
 
 const bodyParser = require('body-parser');
 const passport = require('passport');
-
+const bcrypt = require('bcrypt');
 const { samlStrategy } = require('../../config/passport');
 const jwt = require('jsonwebtoken');
 
+const SMS_CODE_LIFESPAN = 1*60
+function generateVerificationCode(){
+  let possible = '0123456789'
+  let string = ''
+  for (let i = 0; i < 6; i++) {
+    string += possible.charAt(Math.floor(Math.random() * possible.length))
+  }
+  return string
+}
 
 module.exports = {
 
@@ -56,14 +65,14 @@ module.exports = {
 
   // used only for admin
   loginLocal(req, res) {
-    passport.authenticate('local', (err, user, info = {}) => {
+    passport.authenticate('local', async (err, user, info = {}) => {
       console.log("Authenticate now", err, user);
       if(err){
         return res.status(500).json({
           message: info.message || 'Server Error',
         });
       }
-      if ( (!user)) {
+      if ((!user)) {
         return res.status(400).json({
           message: info.message,
           user
@@ -73,6 +82,110 @@ module.exports = {
       // if (user.role !== 'admin' && process.env.NODE_ENV !== 'development') {
       //   return res.forbidden()
       // }
+
+      if(user.role === 'doctor'){
+        const localLoginDetails = {
+          id: user.id,
+          localLoginToken:true,
+          singleFactor:true,
+        }
+        const localLoginToken = jwt.sign(localLoginDetails, sails.config.globals.APP_SECRET);
+
+        let verificationCode;
+        if(user.smsVerificationCode){
+          try {
+            const decoded = jwt.verify(user.smsVerificationCode, sails.config.globals.APP_SECRET);
+            verificationCode = decoded.code
+          } catch (error) {
+            console.error(error)
+
+          }
+        }
+        verificationCode = verificationCode || generateVerificationCode();
+        // const salt = await bcrypt.genSalt(10)
+        // const hash = await bcrypt.hash(verificationCode, salt)
+        const smsToken = jwt.sign({code :verificationCode}, sails.config.globals.APP_SECRET, {expiresIn: SMS_CODE_LIFESPAN});
+
+        await User.updateOne({id: user.id}).set({smsVerificationCode: smsToken})
+
+        await sails.helpers.sms.with({
+          phoneNumber: user.phoneNumber,
+          message: `Your verification code is ${verificationCode}.
+          This code will expire in ${SMS_CODE_LIFESPAN/60} minutes`
+        });
+
+        return res.status(200).json({
+          localLoginToken,
+          user: user.id
+        });
+
+      }else{
+        if(user.smsVerificationCode){
+          delete user.smsVerificationCode;
+        }
+
+        return res.status(200).send({
+          message: info.message,
+          user
+        });
+      }
+
+    })(req, res, (err) => {
+      console.log('Error with LOGIN ', err);
+    });
+  },
+
+  // used only for admin
+  loginSms(req, res) {
+    passport.authenticate('sms', async (err, user, info = {}) => {
+      console.log("Authenticate now", err, user);
+      if(err){
+        return res.status(500).json({
+          message: info.message || 'Server Error',
+        });
+      }
+      if ((!user)) {
+        return res.status(400).json({
+          message: info.message,
+          user
+        });
+      }
+
+      await User.updateOne({id: user.id}).set({smsVerificationCode: ''})
+
+
+        const localLoginDetails = {
+          id: user.id,
+          smsToken:true,
+          singleFactor:true,
+        }
+        const smsLoginToken = jwt.sign(localLoginDetails, sails.config.globals.APP_SECRET);
+        return res.status(200).json({
+          smsLoginToken,
+          user: user.id
+        });
+
+
+    })(req, res, (err) => {
+      console.log('Error with LOGIN ', err);
+    });
+  },
+
+
+  login2FA(req, res) {
+    passport.authenticate('2FA', async (err, user, info = {}) => {
+      console.log("Authenticate now", err, user);
+      if(err){
+        return res.status(500).json({
+          message: info.message || 'Server Error',
+        });
+      }
+      if ((!user)) {
+        return res.status(400).json({
+          message: info.message,
+          user
+        });
+      }
 
       return res.status(200).send({
         message: info.message,
@@ -84,6 +197,7 @@ module.exports = {
       console.log('Error with LOGIN ', err);
     });
   },
+
   logout(req, res) {
     req.logout();
     res.redirect('/');

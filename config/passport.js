@@ -56,6 +56,91 @@ passport.use('invite', new CustomStrategy(
   }
 ))
 
+passport.use('sms', new CustomStrategy(
+  async function (req, cb) {
+
+    const user = await User.findOne({id: req.body.user});
+    if (!user) { return cb(null, false, { message: 'User not found' }); }
+    jwt.verify(user.smsVerificationCode, sails.config.globals.APP_SECRET, async (err, decoded) => {
+      if (err) {
+        if(err.name === "TokenExpiredError"){
+          return cb(null, false, { message: 'Expired code' });
+        }
+        console.error('error ', err);
+        return cb(null, false, { message: 'Invalid token' });
+      }
+
+
+      if(decoded.code !== req.body.smsVerificationCode){
+        return cb(null, false, { message: 'Invalid verification code' });
+      }
+
+      return cb(null, user, { message: 'SMS Login Successful' });
+
+    })
+    // bcrypt.compare(req.body.smsVerificationCode, user.smsVerificationCode, (err, res) => {
+    //   if (err) { return cb(err); }
+
+    //   if (!res) { return cb(null, false, { message: 'Invalid token' }); }
+
+    //   return cb(null, user, { message: 'SMS Login Successful' });
+    // });
+  }
+))
+
+passport.use('2FA', new CustomStrategy(
+  async function (req, cb) {
+
+    const user = await User.findOne({id: req.body.user});
+    if (!user) { return cb(null, false, { message: 'User not found' }); }
+
+    jwt.verify(req.body.localLoginToken, sails.config.globals.APP_SECRET, async (err, decoded) => {
+      if (err) {
+        if(err.name === "TokenExpiredError"){
+          return cb(null, false, { message: 'Expired token' });
+        }
+        console.error('error ', err);
+        return cb(null, false, { message: 'Invalid Token' });
+      }
+
+
+      if(decoded.id !==  user.id){
+        return cb(null, false, { message: 'Invalid Token' });
+      }
+
+    jwt.verify(req.body.smsLoginToken, sails.config.globals.APP_SECRET, async (err, decoded) => {
+      if (err) {
+        if(err.name === "TokenExpiredError"){
+          return cb(null, false, { message: 'Expired token' });
+        }
+        console.error('error ', err);
+        return cb(null, false, { message: 'Invalid Token' });
+      }
+
+
+      if(decoded.id !==  user.id){
+        return cb(null, false, { message: 'Invalid Token' });
+      }
+
+      const userDetails = {
+        email: user.email,
+        username: user.username,
+        id: user.id,
+        role: user.role,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        phoneNumber: user.phoneNumber
+      };
+      const token = jwt.sign(userDetails, sails.config.globals.APP_SECRET);
+      userDetails.token = token;
+
+      return cb(null, userDetails, { message: '2FA Login Successful' });
+    })
+
+    })
+
+  }
+))
 passport.use(new LocalStrategy({
   usernameField: 'email',
   passportField: 'password'
@@ -73,10 +158,12 @@ passport.use(new LocalStrategy({
         id: user.id,
         role: user.role,
         firstName: user.firstName,
-        lastName: user.lastName
+        lastName: user.lastName,
+        phoneNumber: user.phoneNumber
       };
       const token = jwt.sign(userDetails, sails.config.globals.APP_SECRET);
       userDetails.token = token;
+      userDetails.smsVerificationCode = user.smsVerificationCode
       return cb(null, userDetails, { message: 'Login Successful' });
     });
   });

@@ -40,6 +40,8 @@ module.exports.routes = {
   'GET /api/v1/login-cert': 'AuthController.loginCert',
   'POST /api/v1/login-invite': 'AuthController.loginInvite',
   'GET /api/v1/login-saml': 'AuthController.loginSaml',
+  'POST /api/v1/login-sms': 'AuthController.loginSms',
+  'POST /api/v1/login-2fa': 'AuthController.login2FA',
   'GET /api/v1/user': 'AuthController.getUser',
   'GET /api/v1/user/ip': 'UserController.ip',
   'GET /api/v1/metadata': 'AuthController.metadata',
