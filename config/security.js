@@ -35,6 +35,7 @@ module.exports.security = {
       'http://localhost:8080',
       'http://localhost:8100',
       'http://localhost:4200',
+      ...((process.env.ALLOW_ORIGINS && process.env.ALLOW_ORIGINS.split(',')) || []),
     ],
     allowCredentials: true,
     // allowAnyOriginWithCredentialsUnsafe: true,
