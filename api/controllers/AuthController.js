@@ -107,11 +107,17 @@ module.exports = {
 
         await User.updateOne({id: user.id}).set({smsVerificationCode: smsToken})
 
-        await sails.helpers.sms.with({
-          phoneNumber: user.phoneNumber,
-          message: `Your verification code is ${verificationCode}.
-          This code will expire in ${SMS_CODE_LIFESPAN/60} minutes`
-        });
+        try {
+          await sails.helpers.sms.with({
+            phoneNumber: user.phoneNumber,
+            message: `Votre code de vérification est ${verificationCode}.
+            Ce code est utilisable ${SMS_CODE_LIFESPAN/60} minutes`
+          })
+        } catch (err) {
+          return res.status(500).json({
+            message: "Echec d'envoi du SMS"
+          })
+        }
 
         return res.status(200).json({
           localLoginToken,
