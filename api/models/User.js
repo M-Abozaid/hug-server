@@ -43,6 +43,9 @@ module.exports = {
     phoneNumber: {
       type: 'string'
     },
+    authPhoneNumber: {
+      type: 'string'
+    },
     // Add a reference to Consultation
     consultations: {
       collection: 'consultation',

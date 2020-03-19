@@ -129,7 +129,8 @@ passport.use('2FA', new CustomStrategy(
         role: user.role,
         firstName: user.firstName,
         lastName: user.lastName,
-        phoneNumber: user.phoneNumber
+        phoneNumber: user.phoneNumber,
+        authPhoneNumber: user.authPhoneNumber
       };
       const token = jwt.sign(userDetails, sails.config.globals.APP_SECRET);
       userDetails.token = token;
@@ -159,7 +160,8 @@ passport.use(new LocalStrategy({
         role: user.role,
         firstName: user.firstName,
         lastName: user.lastName,
-        phoneNumber: user.phoneNumber
+        phoneNumber: user.phoneNumber,
+        authPhoneNumber: user.authPhoneNumber
       };
       const token = jwt.sign(userDetails, sails.config.globals.APP_SECRET);
       userDetails.token = token;
