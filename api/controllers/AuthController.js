@@ -110,8 +110,7 @@ module.exports = {
         try {
           await sails.helpers.sms.with({
             phoneNumber: user.authPhoneNumber,
-            message: `Votre code de vérification est ${verificationCode}.
-            Ce code est utilisable ${SMS_CODE_LIFESPAN/60} minutes`
+            message: `Votre code de vérification est ${verificationCode}. Ce code est utilisable ${SMS_CODE_LIFESPAN/60} minutes`
           })
         } catch (err) {
           return res.status(500).json({
