@@ -37,6 +37,7 @@ module.exports.routes = {
   'post /api/v1/consultation/:consultation/send-report': 'ConsultationController.sendReport',
   'get /api/v1/consultation/:consultation/attachment/:attachment': 'ConsultationController.attachment',
   'POST /api/v1/consultation/:consultation/feedback': 'ConsultationController.feedback',
+  'GET /api/v1/consultation/:consultation/invite': 'InviteController.findByConsultation',
   'POST /api/v1/login-local': 'AuthController.loginLocal',
   'GET /api/v1/login-cert': 'AuthController.loginCert',
   'POST /api/v1/login-invite': 'AuthController.loginInvite',

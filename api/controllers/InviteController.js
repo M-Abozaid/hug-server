@@ -218,6 +218,29 @@ module.exports = {
       return res.status(500).send()
     }
 
+  },
+
+  /**
+   * Finds the public invite linked to a consultation
+   */
+  async findByConsultation(req, res) {
+    req.params.consultation;
+
+    const consultation = await Consultation.findOne({
+      id: req.params.consultation
+    });
+    if (!consultation) {
+      return res.notFound();
+    }
+
+    const publicinvite = await PublicInvite.findOne({
+      inviteToken: consultation.invitationToken
+    });
+    if (!publicinvite) {
+      return res.notFound();
+    }
+
+    res.json(publicinvite);
   }
 
 };
