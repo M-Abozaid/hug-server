@@ -12,6 +12,7 @@
     "bcrypt": "^3.0.8",
     "body-parser": "^1.19.0",
     "clamscan": "^1.0.3",
+    "dotenv": "^8.2.0",
     "grunt": "^1.0.4",
     "install": "^0.12.2",
     "jsonwebtoken": "^8.5.1",
