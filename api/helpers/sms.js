@@ -84,7 +84,7 @@ function sendSmsWithSwisscom(phoneNumber, message) {
           try {
             const parsedData = JSON.parse(rawData);
             console.log("GOT SWISSCOM DATA", parsedData);
-            if ('message_ids' in parsedData) {
+            if ('message_ids' in parsedData || 'message_id' in parsedData) {
               return resolve();
             }
             console.error(parsedData);
