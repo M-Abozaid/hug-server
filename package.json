@@ -26,7 +26,6 @@
     "passport-saml": "^1.1.0",
     "passport-trusted-header": "^1.1.0",
     "sails": "^1.2.3",
-    "sails-hook-dotenv": "^0.1.1",
     "sails-hook-grunt": "^4.0.1",
     "sails-hook-orm": "^2.1.1",
     "sails-hook-sockets": "^2.0.0",
