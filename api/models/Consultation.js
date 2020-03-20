@@ -53,6 +53,14 @@ module.exports = {
     },
     closedAt: {
       type: 'number'
+    },
+    userRating: {
+      type: 'string',
+      required: false
+    },
+    userComment: {
+      type: 'string',
+      required: false
     }
 
   },

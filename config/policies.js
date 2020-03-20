@@ -52,7 +52,8 @@ module.exports.policies = {
     sendReport: ['isLoggedIn', 'isDoctor', 'isConsultationOwner'],
     call: ['isLoggedIn', 'isConsultationOwner'],
     rejectCall: ['isLoggedIn', 'isConsultationOwner'],
-    acceptCall: ['isLoggedIn', 'isConsultationOwner']
+    acceptCall: ['isLoggedIn', 'isConsultationOwner'],
+    feedback: ['isLoggedIn', 'isNurseOrPatient'],
   },
   AuthController: {
     loginLocal: true,

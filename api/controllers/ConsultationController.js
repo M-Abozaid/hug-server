@@ -554,6 +554,21 @@ module.exports = {
         }
       });
 
+  },
+
+  async feedback(req, res) {
+    try {
+      await Consultation.updateOne({
+        id: req.body.consultationId,
+      }).set({
+        userRating: req.body.rating,
+        userComment: req.body.comment,
+      });
+
+      res.json({ status: 200 });
+    } catch (error) {
+      return res.status(500).json(error);
+    }
   }
 
 };
