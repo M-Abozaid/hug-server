@@ -556,13 +556,28 @@ module.exports = {
 
   },
 
-  async feedback(req, res) {
+  async patientFeedback(req, res) {
     try {
       await Consultation.updateOne({
         id: req.body.consultationId,
       }).set({
-        userRating: req.body.rating,
-        userComment: req.body.comment,
+        patientRating: req.body.rating,
+        patientComment: req.body.comment,
+      });
+
+      res.json({ status: 200 });
+    } catch (error) {
+      return res.status(500).json(error);
+    }
+  },
+
+  async doctorFeedback(req, res) {
+    try {
+      await Consultation.updateOne({
+        id: req.body.consultationId,
+      }).set({
+        doctorRating: req.body.rating,
+        doctorComment: req.body.comment,
       });
 
       res.json({ status: 200 });

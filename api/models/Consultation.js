@@ -54,11 +54,19 @@ module.exports = {
     closedAt: {
       type: 'number'
     },
-    userRating: {
+    patientRating: {
       type: 'string',
       required: false
     },
-    userComment: {
+    patientComment: {
+      type: 'string',
+      required: false
+    },
+    doctorRating: {
+      type: 'string',
+      required: false
+    },
+    doctorComment: {
       type: 'string',
       required: false
     }
