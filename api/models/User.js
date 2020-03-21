@@ -52,6 +52,7 @@ module.exports = {
       via: 'owner'
     },
     allowedQueues:{
+      // columnType: 'array',
       collection:'queue'
     }
   },

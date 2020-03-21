@@ -6,7 +6,23 @@
  */
 
 
-
+/**
+ * Promisify sails.sockets.join
+ *
+ * @param {object} req
+ * @param {string} room
+ */
+function joinP(req, room){
+  console.log('join ', room)
+  return new Promise((resolve, reject)=>{
+    sails.sockets.join(req, room, (err) => {
+      if (err) {
+        return reject(err)
+      }
+      return resolve()
+    });
+  })
+}
 module.exports = {
 
   async subscribe (req, res) {
@@ -14,22 +30,30 @@ module.exports = {
       return res.badRequest();
     }
 
-    const user = await User.findOne({ id: req.user.id });
-    if (!user) {return res.forbidden();}
-    if (user.role !== 'doctor') {
+
+    if (!req.user) {return res.forbidden();}
+    if (req.user.role !== 'doctor') {
       return res.forbidden();
     }
 
-    sails.sockets.join(req, 'doctors', (err) => {
-      if (err) {
-        return res.serverError(err);
-      }
+
+    let queues = req.user.allowedQueues && req.user.allowedQueues.map(q=>q.id)
+    if(!queues || !queues.length){
+      queues = (await Queue.find()).map(q=>q.id)
+    }
+    try {
+
+      await Promise.all(queues.map(q=> joinP(req, q.toString())))
+    } catch (err) {
+      return res.serverError(err);
+
+    }
 
       res.status(200);
       return res.json({
         message: 'Subscribed to doctors!'
       });
-    });
+
   }
 
 };

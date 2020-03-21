@@ -32,7 +32,10 @@ module.exports.policies = {
     login: true,
     ip: ['isLoggedIn'],
     '*': false,
-    create: ['isLoggedIn', 'isAdmin']
+    create: ['isLoggedIn', 'isAdmin'],
+    addDoctorToQueue: ['isLoggedIn', 'isAdmin'],
+    removeDoctorFromQueue: ['isLoggedIn', 'isAdmin'],
+    getDoctorQueues: ['isLoggedIn', 'isAdmin'],
   },
   MessageController: {
     '*': false,
@@ -85,7 +88,7 @@ module.exports.policies = {
 
   QueueController: {
     '*':false,
-    find: ['isLoggedIn', 'isDoctor'],
+    find: ['isLoggedIn', 'isDoctorOrAdmin'],
     create: ['isLoggedIn', 'isAdmin'],
   }
 };

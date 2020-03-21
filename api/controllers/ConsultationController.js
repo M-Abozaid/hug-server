@@ -245,7 +245,7 @@ module.exports = {
         }
       }
     });
-    sails.sockets.broadcast('doctors', 'consultationAccepted', {
+    sails.sockets.broadcast(consultation.queue, 'consultationAccepted', {
       data: {
         consultation,
         _id: consultation.id,
