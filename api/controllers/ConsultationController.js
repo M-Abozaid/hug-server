@@ -16,6 +16,16 @@ const fs = require('fs');
 
 const db = Consultation.getDatastore().manager;
 
+const sendConsultationClosed = function (consultation) {
+  // emit consultation closed event with the consultation
+  sails.sockets.broadcast(consultation.owner, 'consultationClosed', {
+    data: {
+      consultation,
+      _id: consultation.id
+    }
+  });
+};
+
 module.exports = {
   async consultationOverview(req, res) {
     let match = [{
@@ -247,19 +257,11 @@ module.exports = {
     });
   },
 
+
   async closeConsultation(req, res) {
 
     try {
 
-      const sendConsultationClosed = function (consultation) {
-        // emit consultation closed event with the consultation
-        sails.sockets.broadcast(consultation.owner, 'consultationClosed', {
-          data: {
-            consultation,
-            _id: consultation.id
-          }
-        });
-      };
 
       const closedAt = new Date();
 
@@ -274,7 +276,13 @@ module.exports = {
         await PublicInvite.destroyOne({ inviteToken: consultation.invitationToken })
       }
 
+
+
+      // save info for stats
+
+
       const consultationCollection = db.collection('consultation');
+
       // mark consultation as closed and set closedAtISO for mongodb ttl
       const { result } = await consultationCollection.update({ _id: new ObjectId(req.params.consultation) }, {
         $set: {
