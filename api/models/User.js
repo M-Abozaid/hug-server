@@ -50,6 +50,9 @@ module.exports = {
     consultations: {
       collection: 'consultation',
       via: 'owner'
+    },
+    allowedQueues:{
+      collection:'queue'
     }
   },
 
