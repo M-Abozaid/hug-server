@@ -32,6 +32,7 @@ module.exports = {
       owner: new ObjectId(req.user.id)
     }];
     if (req.user && req.user.role === 'doctor') {
+
       match = [{
         acceptedBy: new ObjectId(req.user.id)
       },
@@ -39,6 +40,11 @@ module.exports = {
         status: 'pending'
       }
       ];
+    }
+    //filter the queue of the user
+    if (req.user.allowedQueues && req.user.allowedQueues.length > 0) {
+      let queues = req.user.allowedQueues.map(queue => new ObjectId(queue.id));
+      match[1].queue = { $in: queues };
     }
 
     const agg = [{
@@ -170,9 +176,9 @@ module.exports = {
         'nurse.lastName': 1,
         'queue.name': 1,
       }
-    },{
+    }, {
       $skip: parseInt(req.query.skip) || 0
-    },{
+    }, {
       $limit: parseInt(req.query.limit) || 500
     }
     ];
@@ -400,21 +406,21 @@ module.exports = {
           closedAt: new Date()
         })
 
-        const message = await Message.findOne({id: req.params.message})
+      const message = await Message.findOne({ id: req.params.message })
 
-        sails.sockets.broadcast(consultation.acceptedBy, 'rejectCall', {
-          data: {
-            consultation,
-            message
-          }
-        });
+      sails.sockets.broadcast(consultation.acceptedBy, 'rejectCall', {
+        data: {
+          consultation,
+          message
+        }
+      });
 
-        sails.sockets.broadcast(consultation.owner, 'rejectCall', {
-          data: {
-            consultation,
-            message
-          }
-        });
+      sails.sockets.broadcast(consultation.owner, 'rejectCall', {
+        data: {
+          consultation,
+          message
+        }
+      });
 
 
       res.json({
@@ -441,21 +447,21 @@ module.exports = {
           acceptedAt: new Date()
         });
 
-        const message = await Message.findOne({id: req.params.message})
-        sails.sockets.broadcast(consultation.acceptedBy, 'acceptCall', {
-          data: {
-            consultation,
-            message
-          }
-        });
+      const message = await Message.findOne({ id: req.params.message })
+      sails.sockets.broadcast(consultation.acceptedBy, 'acceptCall', {
+        data: {
+          consultation,
+          message
+        }
+      });
 
 
-        sails.sockets.broadcast(consultation.owner, 'acceptCall', {
-          data: {
-            consultation,
-            message
-          }
-        });
+      sails.sockets.broadcast(consultation.owner, 'acceptCall', {
+        data: {
+          consultation,
+          message
+        }
+      });
 
 
       res.json({

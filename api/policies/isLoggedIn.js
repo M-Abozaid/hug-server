@@ -17,8 +17,7 @@ module.exports = function (req, res, proceed) {
 
     const user = await User.findOne({
       id: decoded.id
-    });
-
+    }).populate('allowedQueues');
     if (!user) {
       sails.log('error ', 'No user');
       return res.status(401).json({ error: "Unauthorized" });
