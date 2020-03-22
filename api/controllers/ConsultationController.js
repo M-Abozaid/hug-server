@@ -38,6 +38,8 @@ module.exports = {
       },
       {
         status: 'pending'
+      },{
+        inviteDoctor: new ObjectId(req.user.id)
       }
       ];
     }
@@ -206,6 +208,7 @@ module.exports = {
         consultationJson.lastName = invite.lastName ? invite.lastName : "No lastname";
         consultationJson.gender = invite.gender ? invite.gender : "unknown";
         consultationJson.queue = invite.queue;
+        consultationJson.inviteDoctor = invite.owner;
       }
     }
 
@@ -245,7 +248,7 @@ module.exports = {
         }
       }
     });
-    sails.sockets.broadcast(consultation.queue, 'consultationAccepted', {
+    sails.sockets.broadcast(consultation.queue || consultation.inviteDoctor, 'consultationAccepted', {
       data: {
         consultation,
         _id: consultation.id,

@@ -77,7 +77,7 @@ module.exports.policies = {
   },
   InviteController:{
     '*':false,
-    invite: ['isLoggedIn', 'isDoctor'],
+    invite: ['isLoggedIn', 'isDoctor', 'setPublicInviteOwner'],
     resend: ['isLoggedIn', 'isDoctor'],
     revoke: ['isLoggedIn', 'isDoctor'],
     findByConsultation: ['isLoggedIn', 'isDoctor'],

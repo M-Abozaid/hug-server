@@ -50,8 +50,12 @@ module.exports = {
       defaultsTo: "SENT",
     },
     queue: {
-      model: 'queue',
-      required: true
+      model: 'queue'
+    },
+    // the doctor who sent the invite
+    owner: {
+      model: 'user',
+      required: false
     },
   },
   customToJSON() {
