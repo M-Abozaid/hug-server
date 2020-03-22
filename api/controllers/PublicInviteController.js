@@ -13,15 +13,30 @@ module.exports = {
         console.log("getting public invites")
         const publicInviteCollection = db.collection('publicInvite');
         let publicInvites;
+
+
+        let queues = [];
         if (req.user.allowedQueues && req.user.allowedQueues.length > 0) {
-            let queues = req.user.allowedQueues.map(queue => queue.id);
-            publicInvites = await PublicInvite.find({queue:queues});         
-            return res.json(publicInvites);
+            queues = req.user.allowedQueues.map(q => q.id);
+        } else if (req.user.viewAllQueues) {
+            queues = await Queue.find({});
+            queues = queues.map(q => q.id);
         }
-        //if the user have no queue by default he can see alls invite
-        else {
-            publicInvites = await PublicInvite.find({});
-            return res.json(publicInvites);
-        }
+
+
+        publicInvites = await PublicInvite.find({
+            where: {
+                or: [
+                    {
+                        invitedBy: req.user.id
+                    }, {
+                        queue: queues
+                    }
+                ]
+            }
+        })
+
+
+        return res.json(publicInvites)
     }
 };
