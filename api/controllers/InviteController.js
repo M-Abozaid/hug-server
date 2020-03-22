@@ -55,9 +55,6 @@ function validateInviteRequest(invite) {
     errors.push({ message: 'lastName is required' })
 
   }
-  if (!invite.queue) {
-    errors.push({ message: 'queue is required' })
-  }
 
 
   return errors
@@ -73,14 +70,18 @@ module.exports = {
       return res.status(400).json(errors)
     }
 
-    const queue = await Queue.findOne({
-      or: [
-        { name: req.body.queue },
-        { id: req.body.queue }
-      ]
-    })
+    let queue;
+    if(req.body.queue){
+      queue = await Queue.findOne({
+        or: [
+          { name: req.body.queue },
+          { id: req.body.queue }
+        ]
+      })
+    }
 
-    if (!queue) {
+
+    if (req.body.queue && !queue) {
       return res.status(400).json({
         error: true,
         message: `queue ${req.body.queue} doesn't exist`
@@ -88,14 +89,19 @@ module.exports = {
     }
 
     try {
-      invite = await PublicInvite.create({
+      const inviteData = {
         phoneNumber: req.body.phoneNumber,
         emailAddress: req.body.emailAddress,
         gender: req.body.gender,
         firstName: req.body.firstName,
         lastName: req.body.lastName,
-        queue: queue.id
-      }).fetch();
+        invitedBy: req.body.invitedBy
+      }
+      if(queue){
+        inviteData.queue = queue.id
+      }
+
+      invite = await PublicInvite.create(inviteData).fetch();
 
     } catch (e) {
       console.log("error", e);

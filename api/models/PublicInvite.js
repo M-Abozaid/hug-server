@@ -53,7 +53,7 @@ module.exports = {
       model: 'queue'
     },
     // the doctor who sent the invite
-    owner: {
+    invitedBy: {
       model: 'user',
       required: false
     },

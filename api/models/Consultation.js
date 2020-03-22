@@ -71,7 +71,7 @@ module.exports = {
       required: false
     },
     // the doctor who sent the invite
-    inviteDoctor: {
+    invitedBy: {
       model: 'user',
       required: false
     },
@@ -83,7 +83,7 @@ module.exports = {
 
     const nurse = await User.findOne({ id: consultation.owner });
     const queue = await Queue.findOne({ id: consultation.queue })
-    sails.sockets.broadcast(consultation.queue || consultation.inviteDoctor , 'newConsultation',
+    sails.sockets.broadcast(consultation.queue || consultation.invitedBy , 'newConsultation',
       { event: 'newConsultation', data: { _id: consultation.id, unreadCount: 0, consultation, nurse, queue } });
     return proceed();
   },
@@ -97,7 +97,7 @@ module.exports = {
       await PublicInvite.updateOne({ inviteToken: consultation.invitationToken }).set({ status: 'SENT' });
     }
 
-    sails.sockets.broadcast(consultation.queue || consultation.inviteDoctor, 'consultationCanceled',
+    sails.sockets.broadcast(consultation.queue || consultation.invitedBy, 'consultationCanceled',
       { event: 'consultationCanceled', data: { _id: criteria.where.id, consultation: criteria.where } });
     return proceed();
   }

@@ -38,8 +38,15 @@ module.exports = {
 
 
     let queues = req.user.allowedQueues && req.user.allowedQueues.map(q=>q.id)
-    if(!queues || !queues.length){
+    if(req.user.viewAllQueues){
+
       queues = (await Queue.find()).map(q=>q.id)
+    }
+    if(!queues || !queues.length){
+      res.status(200);
+      return res.json({
+        message: 'Subscribed to doctors! No queues '
+      });
     }
     try {
 

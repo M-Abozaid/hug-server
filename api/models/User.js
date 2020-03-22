@@ -54,6 +54,10 @@ module.exports = {
     allowedQueues:{
       // columnType: 'array',
       collection:'queue'
+    },
+    viewAllQueues:{
+      type: 'boolean',
+      defaultsTo: false,
     }
   },
 

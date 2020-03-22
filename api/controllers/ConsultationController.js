@@ -35,18 +35,29 @@ module.exports = {
 
       match = [{
         acceptedBy: new ObjectId(req.user.id)
-      },
-      {
-        status: 'pending'
       },{
-        inviteDoctor: new ObjectId(req.user.id)
+        invitedBy: new ObjectId(req.user.id)
       }
       ];
     }
+
+    if(req.user.viewAllQueues){
+      match.push(
+        {
+          status: 'pending',
+        },
+      )
+    }else
     //filter the queue of the user
     if (req.user.allowedQueues && req.user.allowedQueues.length > 0) {
       let queues = req.user.allowedQueues.map(queue => new ObjectId(queue.id));
-      match[1].queue = { $in: queues };
+
+      match.push(
+        {
+          status: 'pending',
+          queue : { $in: queues }
+        },
+      )
     }
 
     const agg = [{
@@ -208,7 +219,7 @@ module.exports = {
         consultationJson.lastName = invite.lastName ? invite.lastName : "No lastname";
         consultationJson.gender = invite.gender ? invite.gender : "unknown";
         consultationJson.queue = invite.queue;
-        consultationJson.inviteDoctor = invite.owner;
+        consultationJson.invitedBy = invite.invitedBy;
       }
     }
 
@@ -248,7 +259,7 @@ module.exports = {
         }
       }
     });
-    sails.sockets.broadcast(consultation.queue || consultation.inviteDoctor, 'consultationAccepted', {
+    sails.sockets.broadcast(consultation.queue || consultation.invitedBy, 'consultationAccepted', {
       data: {
         consultation,
         _id: consultation.id,

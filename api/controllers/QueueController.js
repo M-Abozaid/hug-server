@@ -13,9 +13,11 @@ module.exports = {
             return res.json(req.user.allowedQueues);
         }
         //if the user have no queue by default he can see alls
-        else {
+        else  if(req.user.viewAllQueues) {
             var queues = await Queue.find({});
             return res.json(queues);
+        }else{
+          return res.json([]);
         }
     }
 };

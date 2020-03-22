@@ -48,7 +48,7 @@ module.exports.policies = {
   ConsultationController: {
     '*': false,
     consultationOverview: ['isLoggedIn'],
-    acceptConsultation: ['isLoggedIn', 'isDoctor'],
+    acceptConsultation: ['isLoggedIn', 'isDoctor', 'isAssignedTo'],
     closeConsultation: ['isLoggedIn', 'isDoctor', 'isConsultationOwner'],
     create: ['isLoggedIn', 'isNurseOrPatient', 'setConsultationOwner'],
     destroy: ['isLoggedIn', 'isNurseOrPatient'],
