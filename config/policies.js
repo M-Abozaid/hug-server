@@ -32,6 +32,7 @@ module.exports.policies = {
     login: true,
     ip: ['isLoggedIn'],
     '*': false,
+    find: ['isLoggedIn', 'isAdmin'],
     create: ['isLoggedIn', 'isAdmin'],
     addDoctorToQueue: ['isLoggedIn', 'isAdmin'],
     removeDoctorFromQueue: ['isLoggedIn', 'isAdmin'],

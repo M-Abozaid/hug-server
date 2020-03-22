@@ -287,6 +287,8 @@ module.exports = {
       // save info for stats
 
 
+
+
       const consultationCollection = db.collection('consultation');
 
       // mark consultation as closed and set closedAtISO for mongodb ttl

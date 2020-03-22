@@ -45,7 +45,7 @@ module.exports.routes = {
   'GET /api/v1/login-saml': 'AuthController.loginSaml',
   'POST /api/v1/login-sms': 'AuthController.loginSms',
   'POST /api/v1/login-2fa': 'AuthController.login2FA',
-  'GET /api/v1/user': 'AuthController.getUser',
+  'GET /api/v1/current-user': 'AuthController.getUser',
   'GET /api/v1/user/ip': 'UserController.ip',
   'POST /api/v1/user/:user/allowed-queues': 'UserController.addDoctorToQueue',
   'DELETE /api/v1/user/:user/allowed-queues': 'UserController.removeDoctorFromQueue',
