@@ -59,11 +59,11 @@ passport.use('invite', new CustomStrategy(
 passport.use('sms', new CustomStrategy(
   async function (req, cb) {
 
-    const user = await User.findOne({id: req.body.user});
+    const user = await User.findOne({ id: req.body.user });
     if (!user) { return cb(null, false, { message: 'User not found' }); }
     jwt.verify(user.smsVerificationCode, sails.config.globals.APP_SECRET, async (err, decoded) => {
       if (err) {
-        if(err.name === "TokenExpiredError"){
+        if (err.name === "TokenExpiredError") {
           return cb(null, false, { message: 'Expired code' });
         }
         console.error('error ', err);
@@ -71,7 +71,7 @@ passport.use('sms', new CustomStrategy(
       }
 
 
-      if(decoded.code !== req.body.smsVerificationCode){
+      if (decoded.code !== req.body.smsVerificationCode) {
         return cb(null, false, { message: 'Invalid verification code' });
       }
 
@@ -91,12 +91,12 @@ passport.use('sms', new CustomStrategy(
 passport.use('2FA', new CustomStrategy(
   async function (req, cb) {
 
-    const user = await User.findOne({id: req.body.user});
+    const user = await User.findOne({ id: req.body.user });
     if (!user) { return cb(null, false, { message: 'User not found' }); }
 
     jwt.verify(req.body.localLoginToken, sails.config.globals.APP_SECRET, async (err, decoded) => {
       if (err) {
-        if(err.name === "TokenExpiredError"){
+        if (err.name === "TokenExpiredError") {
           return cb(null, false, { message: 'Expired token' });
         }
         console.error('error ', err);
@@ -104,39 +104,39 @@ passport.use('2FA', new CustomStrategy(
       }
 
 
-      if(decoded.id !==  user.id){
+      if (decoded.id !== user.id) {
         return cb(null, false, { message: 'Invalid Token' });
       }
 
-    jwt.verify(req.body.smsLoginToken, sails.config.globals.APP_SECRET, async (err, decoded) => {
-      if (err) {
-        if(err.name === "TokenExpiredError"){
-          return cb(null, false, { message: 'Expired token' });
+      jwt.verify(req.body.smsLoginToken, sails.config.globals.APP_SECRET, async (err, decoded) => {
+        if (err) {
+          if (err.name === "TokenExpiredError") {
+            return cb(null, false, { message: 'Expired token' });
+          }
+          console.error('error ', err);
+          return cb(null, false, { message: 'Invalid Token' });
         }
-        console.error('error ', err);
-        return cb(null, false, { message: 'Invalid Token' });
-      }
 
 
-      if(decoded.id !==  user.id){
-        return cb(null, false, { message: 'Invalid Token' });
-      }
+        if (decoded.id !== user.id) {
+          return cb(null, false, { message: 'Invalid Token' });
+        }
 
-      const userDetails = {
-        email: user.email,
-        username: user.username,
-        id: user.id,
-        role: user.role,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        phoneNumber: user.phoneNumber,
-        authPhoneNumber: user.authPhoneNumber
-      };
-      const token = jwt.sign(userDetails, sails.config.globals.APP_SECRET);
-      userDetails.token = token;
+        const userDetails = {
+          email: user.email,
+          username: user.username,
+          id: user.id,
+          role: user.role,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          phoneNumber: user.phoneNumber,
+          authPhoneNumber: user.authPhoneNumber
+        };
+        const token = jwt.sign(userDetails, sails.config.globals.APP_SECRET);
+        userDetails.token = token;
 
-      return cb(null, userDetails, { message: '2FA Login Successful' });
-    })
+        return cb(null, userDetails, { message: '2FA Login Successful' });
+      })
 
     })
 
@@ -146,7 +146,7 @@ passport.use(new LocalStrategy({
   usernameField: 'email',
   passportField: 'password'
 }, ((email, password, cb) => {
-  User.findOne({ email }, (err, user) => {
+  User.findOne({ email: email.toLowerCase() }, (err, user) => {
     if (err) { return cb(err); }
     if (!user) { return cb(null, false, { message: 'Email ou mot de passe incorrect' }); }
     bcrypt.compare(password, user.password, (err, res) => {
@@ -163,6 +163,7 @@ passport.use(new LocalStrategy({
         phoneNumber: user.phoneNumber,
         authPhoneNumber: user.authPhoneNumber
       };
+
       const token = jwt.sign(userDetails, sails.config.globals.APP_SECRET);
       userDetails.token = token;
       userDetails.smsVerificationCode = user.smsVerificationCode
