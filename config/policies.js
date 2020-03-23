@@ -70,7 +70,8 @@ module.exports.policies = {
     login2FA: true,
     metadata: true,
     getUser: ['isLoggedIn'],
-    samlCallback: true
+    samlCallback: true,
+    getConfig: true,
   },
   SupportController: {
     supportRequest: ['isLoggedIn'],

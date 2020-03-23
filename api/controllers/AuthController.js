@@ -64,6 +64,13 @@ module.exports = {
 
   // used only for admin
   loginLocal(req, res) {
+    if (!process.env.LOGIN_METHOD || (process.env.LOGIN_METHOD !== 'password' && process.env.LOGIN_METHOD !== 'both')) {
+      console.log('Password login is disabled');
+      return res.status(500).json({
+        message: 'Password login is disabled',
+      });
+    }
+
     passport.authenticate('local', async (err, user, info = {}) => {
       console.log("Authenticate now", err, user);
       if(err){
@@ -141,6 +148,13 @@ module.exports = {
 
   // used only for admin
   loginSms(req, res) {
+    if (!process.env.LOGIN_METHOD || (process.env.LOGIN_METHOD !== 'password' && process.env.LOGIN_METHOD !== 'both')) {
+      console.log('Password login is disabled');
+      return res.status(500).json({
+        message: 'Password login is disabled',
+      });
+    }
+
     passport.authenticate('sms', async (err, user, info = {}) => {
       console.log("Authenticate now", err, user);
       if(err){
@@ -177,6 +191,13 @@ module.exports = {
 
 
   login2FA(req, res) {
+    if (!process.env.LOGIN_METHOD || (process.env.LOGIN_METHOD !== 'password' && process.env.LOGIN_METHOD !== 'both')) {
+      console.log('Password login is disabled');
+      return res.status(500).json({
+        message: 'Password login is disabled',
+      });
+    }
+
     passport.authenticate('2FA', async (err, user, info = {}) => {
       console.log("Authenticate now", err, user);
       if(err){
@@ -218,6 +239,13 @@ module.exports = {
   },
 
   loginSaml(req, res) {
+    if (!process.env.LOGIN_METHOD || (process.env.LOGIN_METHOD !== 'saml' && process.env.LOGIN_METHOD !== 'both')) {
+      console.log('SAML login is disabled');
+      return res.status(500).json({
+        message: 'SAML login is disabled',
+      });
+    }
+
     passport.authenticate('saml', { failureRedirect: '/app/login' })(req, res, (err) => {
       console.log('Error with SAML ', err);
       // res.serverError();
@@ -232,6 +260,13 @@ module.exports = {
 
 
   samlCallback(req, res) {
+    if (!process.env.LOGIN_METHOD || (process.env.LOGIN_METHOD !== 'saml' && process.env.LOGIN_METHOD !== 'both')) {
+      console.log('SAML login is disabled');
+      return res.status(500).json({
+        message: 'SAML login is disabled',
+      });
+    }
+
     bodyParser.urlencoded({ extended: false })(req, res, () => {
       passport.authenticate('saml', (err, user, info = {}) => {
 
@@ -268,5 +303,11 @@ module.exports = {
 
   metadata(req, res) {
     res.send(samlStrategy.generateServiceProviderMetadata(process.env.SAML_CERT, process.env.SAML_CERT));
+  },
+
+  getConfig(req, res) {
+    res.json({
+      method: process.env.LOGIN_METHOD ? process.env.LOGIN_METHOD : 'both',
+    })
   }
 };
