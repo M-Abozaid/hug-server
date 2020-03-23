@@ -61,7 +61,7 @@ module.exports = {
   async afterCreate (message, proceed) {
 
     const consultation = await Consultation.findOne({id: message.consultation})
-    sails.sockets.broadcast(message.to || consultation.queue, 'newMessage', { data: message });
+    sails.sockets.broadcast(message.to || consultation.queue || consultation.invitedBy, 'newMessage', { data: message });
 
     if (message.type === 'audioCall' || message.type === 'videoCall') {
       sails.sockets.broadcast(message.from, 'newMessage', { data: message });
