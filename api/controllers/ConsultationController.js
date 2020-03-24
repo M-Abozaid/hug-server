@@ -301,10 +301,13 @@ module.exports = {
 
 
 
+      const callMessages = await messageCollection.find({ consultation: new ObjectId(req.params.consultation), type:{in:['videoCall', 'audioCall']}})
+
       // save info for stats
+      await AnonymousMessage.createEach(callMessages)
 
 
-
+      await AnonymousConsultation.create(consultation)
 
       const consultationCollection = db.collection('consultation');
 
