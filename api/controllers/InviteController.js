@@ -239,6 +239,10 @@ module.exports = {
       return res.notFound();
     }
 
+    if(consultation.invitationToken){
+      return res.notFound();
+
+    }
     const publicinvite = await PublicInvite.findOne({
       inviteToken: consultation.invitationToken
     });
