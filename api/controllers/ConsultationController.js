@@ -42,9 +42,12 @@ module.exports = {
     }
 
     if(req.user.viewAllQueues){
+      let queues =  (await Queue.find({})).map(queue => new ObjectId(queue.id));
       match.push(
         {
           status: 'pending',
+          queue : { $in: queues }
+
         },
       )
     }else
