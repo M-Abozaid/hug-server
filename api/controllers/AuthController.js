@@ -89,7 +89,9 @@ module.exports = {
       //   return res.forbidden()
       // }
 
-      if(user.role === 'doctor'){
+      if(user.role === 'doctor'
+      //|| user.role === 'admin'
+      ){
         const localLoginDetails = {
           id: user.id,
           localLoginToken:true,
