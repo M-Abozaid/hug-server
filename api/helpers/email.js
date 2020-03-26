@@ -26,17 +26,17 @@ module.exports = {
       type: 'string',
       required: true
     },
-    subject:{
+    subject: {
       type: 'string',
 
       required: true
     },
-    text:{
+    text: {
       type: 'string',
       required: true
     },
-    attachments:{
-      type:'ref'
+    attachments: {
+      type: 'ref'
     }
 
   },
@@ -54,7 +54,8 @@ module.exports = {
   fn: async function (inputs, exits) {
 
 
-    if(process.env.NODE_ENV === 'development'){
+    if (process.env.NODE_ENV === 'development') {
+      console.log("Email not sent because of development env", inputs)
       return exits.success()
     }
 
@@ -67,7 +68,7 @@ module.exports = {
 
     };
 
-    if(inputs.attachments){
+    if (inputs.attachments) {
       options.attachments = [{
         fileName: 'Report.pdf',
         path: uploadedFiles[0].fd

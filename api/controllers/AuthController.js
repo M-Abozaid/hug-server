@@ -11,8 +11,9 @@ const passport = require('passport');
 const { samlStrategy } = require('../../config/passport');
 const jwt = require('jsonwebtoken');
 
-const SMS_CODE_LIFESPAN = 5*60
-function generateVerificationCode(){
+
+const SMS_CODE_LIFESPAN = 5 * 60
+function generateVerificationCode() {
   let possible = '0123456789'
   let string = ''
   for (let i = 0; i < 6; i++) {
@@ -62,9 +63,98 @@ module.exports = {
     });
   },
 
+  async forgotPassword(req, res) {
+
+    const emailRegex = new RegExp(`${req.body.email}`, 'i');
+    const db = sails.getDatastore().manager;
+    const resetPasswordToken = jwt.sign({ email: req.body.email.toLowerCase() }, sails.config.globals.APP_SECRET, { expiresIn: SMS_CODE_LIFESPAN });
+
+    // Always return succes directly, so an attacker could not guess if the email exists or not...
+    res.json({
+      success: true
+    });
+
+
+    const user = await db.collection('user').findOne({
+      email: {
+        '$regex': emailRegex
+      }
+    });
+
+    if (user) {
+      await db.collection('user').update({
+        email: {
+          '$regex': emailRegex
+        }
+      }, {
+        $set: {
+          resetPasswordToken
+        }
+      });
+
+      const url = `${process.env.DOCTOR_URL}/app/reset-password?token=${resetPasswordToken}`;
+
+      await sails.helpers.email.with({
+        to: user.email,
+        subject: 'Mot de passe oublié',
+        text: `Vous nous avez indiqué que vous avez oublié votre mot de passe. Merci de cliquer sur le lien suivant afin de changer votre mot de passe ${url}. Ce lien ne fonctionnera que 5 minutes.`,
+      });
+    }
+  },
+
+  async resetPassword(req, res) {
+    const passwordFormat = new RegExp("^(((?=.*[a-z])(?=.*[A-Z]))|((?=.*[a-z])(?=.*[0-9]))|((?=.*[A-Z])(?=.*[0-9])))(?=.{6,})");
+
+    if (!req.body.token) {
+      return res.status(400).json({
+        message: "token-missing"
+      });
+    }
+
+    if (!passwordFormat.test(req.body.password)) {
+      return res.status(400).json({
+        message: "password-too-weak"
+      });
+    }
+
+    try {
+      //const decoded = jwt.verify(req.body.token, sails.config.globals.APP_SECRET);
+
+      const password = await User.generatePassword(req.body.password);
+
+      const user = await User.updateOne({
+        resetPasswordToken: req.body.token
+      }).set({
+        password,
+        resetPasswordToken: ''
+      });
+      console.log("GOT USER", user);
+
+      if (!user) {
+        throw new Exception("token-expired");
+      }
+
+    } catch (err) {
+      console.log("ERROR", err);
+      if (err.name == 'TokenExpiredError') {
+        return res.status(400).json({
+          message: "token-expired"
+        });
+      } else {
+        return res.status(400).json({
+          message: "unknown"
+        });
+      }
+    }
+
+    res.json({
+      success: true
+    });
+  },
+
   // used only for admin
   loginLocal(req, res) {
-    if (!process.env.LOGIN_METHOD || (process.env.LOGIN_METHOD !== 'password' && process.env.LOGIN_METHOD !== 'both')) {
+    if (!process.env.LOGIN_METHOD || (process.env.LOGIN_METHOD !== 'password' && process.env.LOGIN_METHOD !== 'both')) {
       console.log('Password login is disabled');
       return res.status(500).json({
         message: 'Password login is disabled',
@@ -73,7 +163,7 @@ module.exports = {
 
     passport.authenticate('local', async (err, user, info = {}) => {
       console.log("Authenticate now", err, user);
-      if(err){
+      if (err) {
         return res.status(500).json({
           message: info.message || 'Server Error',
         });
@@ -89,18 +179,18 @@ module.exports = {
       //   return res.forbidden()
       // }
 
-      if(user.role === 'doctor'
-      //|| user.role === 'admin'
-      ){
+      if (process.env.NODE_ENV !== 'development' && user.role === 'doctor'
+        //|| user.role === 'admin'
+      ) {
         const localLoginDetails = {
           id: user.id,
-          localLoginToken:true,
-          singleFactor:true,
+          localLoginToken: true,
+          singleFactor: true,
         }
         const localLoginToken = jwt.sign(localLoginDetails, sails.config.globals.APP_SECRET);
 
         let verificationCode;
-        if(user.smsVerificationCode){
+        if (user.smsVerificationCode) {
           try {
             const decoded = jwt.verify(user.smsVerificationCode, sails.config.globals.APP_SECRET);
             verificationCode = decoded.code
@@ -112,14 +202,14 @@ module.exports = {
         verificationCode = verificationCode || generateVerificationCode();
         // const salt = await bcrypt.genSalt(10)
         // const hash = await bcrypt.hash(verificationCode, salt)
-        const smsToken = jwt.sign({code :verificationCode}, sails.config.globals.APP_SECRET, {expiresIn: SMS_CODE_LIFESPAN});
+        const smsToken = jwt.sign({ code: verificationCode }, sails.config.globals.APP_SECRET, { expiresIn: SMS_CODE_LIFESPAN });
 
-        await User.updateOne({id: user.id}).set({smsVerificationCode: smsToken})
+        await User.updateOne({ id: user.id }).set({ smsVerificationCode: smsToken })
 
         try {
           await sails.helpers.sms.with({
             phoneNumber: user.authPhoneNumber,
-            message: `Votre code de vérification est ${verificationCode}. Ce code est utilisable ${SMS_CODE_LIFESPAN/60} minutes`
+            message: `Votre code de vérification est ${verificationCode}. Ce code est utilisable ${SMS_CODE_LIFESPAN / 60} minutes`
           })
         } catch (err) {
           return res.status(500).json({
@@ -132,8 +222,8 @@ module.exports = {
           user: user.id
         });
 
-      }else{
-        if(user.smsVerificationCode){
+      } else {
+        if (user.smsVerificationCode) {
           delete user.smsVerificationCode;
         }
 
@@ -150,7 +240,7 @@ module.exports = {
 
   // used only for admin
   loginSms(req, res) {
-    if (!process.env.LOGIN_METHOD || (process.env.LOGIN_METHOD !== 'password' && process.env.LOGIN_METHOD !== 'both')) {
+    if (!process.env.LOGIN_METHOD || (process.env.LOGIN_METHOD !== 'password' && process.env.LOGIN_METHOD !== 'both')) {
       console.log('Password login is disabled');
       return res.status(500).json({
         message: 'Password login is disabled',
@@ -159,7 +249,7 @@ module.exports = {
 
     passport.authenticate('sms', async (err, user, info = {}) => {
       console.log("Authenticate now", err, user);
-      if(err){
+      if (err) {
         return res.status(500).json({
           message: info.message || 'Server Error',
         });
@@ -171,19 +261,19 @@ module.exports = {
         });
       }
 
-      await User.updateOne({id: user.id}).set({smsVerificationCode: ''})
+      await User.updateOne({ id: user.id }).set({ smsVerificationCode: '' })
 
 
-        const localLoginDetails = {
-          id: user.id,
-          smsToken:true,
-          singleFactor:true,
-        }
-        const smsLoginToken = jwt.sign(localLoginDetails, sails.config.globals.APP_SECRET);
-        return res.status(200).json({
-          smsLoginToken,
-          user: user.id
-        });
+      const localLoginDetails = {
+        id: user.id,
+        smsToken: true,
+        singleFactor: true,
+      }
+      const smsLoginToken = jwt.sign(localLoginDetails, sails.config.globals.APP_SECRET);
+      return res.status(200).json({
+        smsLoginToken,
+        user: user.id
+      });
 
 
     })(req, res, (err) => {
@@ -193,7 +283,7 @@ module.exports = {
 
 
   login2FA(req, res) {
-    if (!process.env.LOGIN_METHOD || (process.env.LOGIN_METHOD !== 'password' && process.env.LOGIN_METHOD !== 'both')) {
+    if (!process.env.LOGIN_METHOD || (process.env.LOGIN_METHOD !== 'password' && process.env.LOGIN_METHOD !== 'both')) {
       console.log('Password login is disabled');
       return res.status(500).json({
         message: 'Password login is disabled',
@@ -202,7 +292,7 @@ module.exports = {
 
     passport.authenticate('2FA', async (err, user, info = {}) => {
       console.log("Authenticate now", err, user);
-      if(err){
+      if (err) {
         return res.status(500).json({
           message: info.message || 'Server Error',
         });
@@ -241,7 +331,7 @@ module.exports = {
   },
 
   loginSaml(req, res) {
-    if (!process.env.LOGIN_METHOD || (process.env.LOGIN_METHOD !== 'saml' && process.env.LOGIN_METHOD !== 'both')) {
+    if (!process.env.LOGIN_METHOD || (process.env.LOGIN_METHOD !== 'saml' && process.env.LOGIN_METHOD !== 'both')) {
       console.log('SAML login is disabled');
       return res.status(500).json({
         message: 'SAML login is disabled',
@@ -262,7 +352,7 @@ module.exports = {
 
 
   samlCallback(req, res) {
-    if (!process.env.LOGIN_METHOD || (process.env.LOGIN_METHOD !== 'saml' && process.env.LOGIN_METHOD !== 'both')) {
+    if (!process.env.LOGIN_METHOD || (process.env.LOGIN_METHOD !== 'saml' && process.env.LOGIN_METHOD !== 'both')) {
       console.log('SAML login is disabled');
       return res.status(500).json({
         message: 'SAML login is disabled',

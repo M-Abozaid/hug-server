@@ -40,6 +40,8 @@ module.exports.routes = {
   'POST /api/v1/consultation/:consultation/doctorFeedback': 'ConsultationController.doctorFeedback',
   'GET /api/v1/consultation/:consultation/invite': 'InviteController.findByConsultation',
   'POST /api/v1/login-local': 'AuthController.loginLocal',
+  'POST /api/v1/forgot-password': 'AuthController.forgotPassword',
+  'POST /api/v1/reset-password': 'AuthController.resetPassword',
   'GET /api/v1/login-cert': 'AuthController.loginCert',
   'POST /api/v1/login-invite': 'AuthController.loginInvite',
   'GET /api/v1/login-saml': 'AuthController.loginSaml',

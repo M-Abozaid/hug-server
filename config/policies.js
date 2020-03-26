@@ -75,6 +75,8 @@ module.exports.policies = {
     loginSms: true,
     login2FA: true,
     metadata: true,
+    forgotPassword: true,
+    resetPassword: true,
     getUser: ['isLoggedIn'],
     samlCallback: true,
     getConfig: true,
@@ -82,8 +84,8 @@ module.exports.policies = {
   SupportController: {
     supportRequest: ['isLoggedIn'],
   },
-  InviteController:{
-    '*':false,
+  InviteController: {
+    '*': false,
     invite: ['isLoggedIn', 'isDoctor', 'setPublicInviteOwner'],
     resend: ['isLoggedIn', 'isDoctor'],
     revoke: ['isLoggedIn', 'isDoctor'],
@@ -91,12 +93,12 @@ module.exports.policies = {
   },
 
   PublicInviteController: {
-    '*':false,
+    '*': false,
     find: ['isLoggedIn', 'isDoctorOrAdmin'],
   },
 
   QueueController: {
-    '*':false,
+    '*': false,
     find: ['isLoggedIn', 'isDoctorOrAdmin'],
     create: ['isLoggedIn', 'isAdmin'],
   }

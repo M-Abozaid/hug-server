@@ -6,6 +6,7 @@
  */
 const bcrypt = require('bcrypt');
 
+
 module.exports = {
   attributes: {
     username: {
@@ -40,6 +41,10 @@ module.exports = {
       model: 'PublicInvite',
       required: false
     },
+    resetPasswordToken: {
+      type: 'string',
+      required: false
+    },
     phoneNumber: {
       type: 'string'
     },
@@ -51,14 +56,30 @@ module.exports = {
       collection: 'consultation',
       via: 'owner'
     },
-    allowedQueues:{
+    allowedQueues: {
       // columnType: 'array',
-      collection:'queue'
+      collection: 'queue'
     },
-    viewAllQueues:{
+    viewAllQueues: {
       type: 'boolean',
       defaultsTo: false,
     }
+  },
+
+  generatePassword(clearPassword) {
+    return new Promise((resolve, reject) => {
+      bcrypt.genSalt(10, (err, salt) => {
+        console.log("SALT GENERATED", salt);
+        if (err) { reject(err) }
+        bcrypt.hash(clearPassword, salt, (err, hash) => {
+          console.log("PASSWORD ENCRYPTED", hash);
+          crypted = hash;
+          if (err) { reject(err) }
+          resolve(hash);
+        });
+      });
+    })
+
   },
 
   customToJSON() {

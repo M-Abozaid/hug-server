@@ -49,7 +49,7 @@ module.exports.sockets = {
   // (if left unset, Sails will try to connect to a redis via port 6379 on localhost)
   //
   // host: '127.0.0.1',
-  // port: 32768,
+  port: 32768,
   // db: 'sails',
   // pass: '<redis auth password>'
 
