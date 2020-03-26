@@ -78,12 +78,23 @@ module.exports = {
 
   },
 
+  async beforeCreate(consultation, cb) {
+    if (!consultation.queue && process.env.DEFAULT_QUEUE_ID) {
+      const defaultQueue = await Queue.findOne({ id: process.env.DEFAULT_QUEUE_ID });
+      if (defaultQueue) {
+        console.log("Assigning the default queue to the consultation as no queue is set");
+        consultation.queue = defaultQueue.id;
+      }
+    }
+    cb();
+  },
+
 
   async afterCreate(consultation, proceed) {
 
     const nurse = await User.findOne({ id: consultation.owner });
     const queue = await Queue.findOne({ id: consultation.queue })
-    sails.sockets.broadcast(consultation.queue || consultation.invitedBy , 'newConsultation',
+    sails.sockets.broadcast(consultation.queue || consultation.invitedBy, 'newConsultation',
       { event: 'newConsultation', data: { _id: consultation.id, unreadCount: 0, consultation, nurse, queue } });
     return proceed();
   },
