@@ -48,7 +48,7 @@ module.exports.routes = {
   'GET /api/v1/current-user': 'AuthController.getUser',
   'GET /api/v1/config': 'AuthController.getConfig',
   'GET /api/v1/user/ip': 'UserController.ip',
-  'POST /api/v1/user/:user/allowed-queues': 'UserController.addDoctorToQueue',
+  // 'POST /api/v1/user/:user/allowed-queues': 'UserController.addDoctorToQueue',
   'DELETE /api/v1/user/:user/allowed-queues': 'UserController.removeDoctorFromQueue',
   'GET /api/v1/user/:user/allowed-queues': 'UserController.getDoctorQueues',
   'GET /api/v1/metadata': 'AuthController.metadata',

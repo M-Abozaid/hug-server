@@ -130,7 +130,8 @@ passport.use('2FA', new CustomStrategy(
           firstName: user.firstName,
           lastName: user.lastName,
           phoneNumber: user.phoneNumber,
-          authPhoneNumber: user.authPhoneNumber
+          authPhoneNumber: user.authPhoneNumber,
+          viewAllQueues: user.viewAllQueues
         };
         const token = jwt.sign(userDetails, sails.config.globals.APP_SECRET);
         userDetails.token = token;
@@ -161,7 +162,8 @@ passport.use(new LocalStrategy({
         firstName: user.firstName,
         lastName: user.lastName,
         phoneNumber: user.phoneNumber,
-        authPhoneNumber: user.authPhoneNumber
+        authPhoneNumber: user.authPhoneNumber,
+        viewAllQueues: user.viewAllQueues
       };
 
       const token = jwt.sign(userDetails, sails.config.globals.APP_SECRET);
@@ -262,9 +264,9 @@ if (process.env.NODE_ENV !== 'development') {
 
         // remove unnecessary fields
         user = (({
-          firstName, lastName, id, role
+          firstName, lastName, id, role, viewAllQueues
         }) => ({
-          firstName, lastName, id, role
+          firstName, lastName, id, role, viewAllQueues
         }))(user);
 
 

@@ -42,9 +42,12 @@ module.exports = {
     }
 
     if(req.user.viewAllQueues){
+      let queues =  (await Queue.find({})).map(queue => new ObjectId(queue.id));
       match.push(
         {
           status: 'pending',
+          queue : { $in: queues }
+
         },
       )
     }else
@@ -298,12 +301,28 @@ module.exports = {
 
 
 
-      // save info for stats
-
-
-
-
+      const messageCollection = db.collection('message');
       const consultationCollection = db.collection('consultation');
+
+      const callMessagesCursor = await messageCollection.find({ consultation: new ObjectId(req.params.consultation), type: {$in: ['videoCall', 'audioCall']}})
+
+      const callMessages = await callMessagesCursor.toArray();
+      // save info for stats
+      await AnonymousCall.createEach(callMessages.map(m=> {
+        delete m._id
+      }))
+
+      if(!consultation.queue){
+        consultation.queue = null
+      }
+
+      const anonymousConsultation = {...consultation}
+      delete anonymousConsultation.firstName;
+      delete anonymousConsultation.lastName;
+      delete anonymousConsultation.birthDate;
+      delete anonymousConsultation.invitationToken;
+
+      await AnonymousConsultation.create(anonymousConsultation)
 
       // mark consultation as closed and set closedAtISO for mongodb ttl
       const { result } = await consultationCollection.update({ _id: new ObjectId(req.params.consultation) }, {
@@ -316,7 +335,6 @@ module.exports = {
 
 
 
-      const messageCollection = db.collection('message');
       // set consultationClosedAtISO for mongodb ttl index
       await messageCollection.update({ consultation: new ObjectId(req.params.consultation) }, {
         $set: {
