@@ -21,7 +21,6 @@ csv_file_path="liste.csv"
 
 
 
-
 ## letters is used to indicate what caraters can be used in password
 letters = string.ascii_letters + string.digits
 
@@ -146,6 +145,7 @@ with open(csv_file_path, newline='') as content:
                 genpassword = None
         else:
             password = None
+            genpassword = None
 
         r = accounts(email)
 
@@ -164,7 +164,7 @@ with open(csv_file_path, newline='') as content:
             ## Create user
             if password:
                 d["password"] = password
-            else:
+            elif genpassword:
                 d["password"] = genpassword
                 password = genpassword
             s = r.createAccount(d)
