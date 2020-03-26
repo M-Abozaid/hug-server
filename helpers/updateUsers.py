@@ -18,12 +18,12 @@ import bcrypt, string, random
 import re
 
 csv_file_path="liste.csv"
-api_token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImluZm9AaWFic2lzLmNvbSIsInVzZXJuYW1lIjoiaW5mb0BpYWJzaXMuY29tIiwiaWQiOiI1ZTZlMDU2OTA1NmRkMTUyMDg5OTI4NzIiLCJyb2xlIjoiYWRtaW4iLCJmaXJzdE5hbWUiOiJBZG1pbiIsImxhc3ROYW1lIjoiSUFCU0lTIiwiaWF0IjoxNTg0MjY4NzczfQ.8GItFBopfmThaWjvv-BivgeLMX40k3ZoP-ysJJfsqvM'
-api_id = '5e6e0569056dd15208992872'
-api_url_base = 'https://dev-medecin-hug-at-home.oniabsis.com/api/v1'
+
+
+
 
 ## letters is used to indicate what caraters can be used in password
-letters = string.ascii_letters + string.digits + string.punctuation
+letters = string.ascii_letters + string.digits
 
 class queues():
 
@@ -107,6 +107,9 @@ def hashPassword(password):
     p = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
     return p.decode()
 
+def genPassword():
+    return''.join(random.choice(letters) for i in range(10))
+
 q = queues()
 
 with open(csv_file_path, newline='') as content:
@@ -131,28 +134,46 @@ with open(csv_file_path, newline='') as content:
             }
 
         ## Replace only if password is set
-        
-        if not password == "" and not password == " ":
-            d["password"] = hashPassword(password)
-
         if email == "":
             continue
+        elif not "hcuge.ch" in email:
+            email = email.lower()
+            d["email"] = d["email"].lower()
+            if password == "" or password == " ":
+                genpassword = genPassword()
+                password = None
+            else:
+                genpassword = None
         else:
-            r = accounts(email)
+            password = None
 
-        ## Update or Create user
+        r = accounts(email)
+
+
         if r.returnAccountInfo():
+            ## Update User
+            if password:
+                d["password"] = hashPassword(password)
             s = r.updateAccount(d)
-            print(str(s) + " : ### UPDATE " + email)
+
+            if password:
+                print(str(s) + " : ### UPDATE " + d["email"] + " / " + password)
+            else:
+                print(str(s) + " : ### UPDATE " + d["email"])
         else:
-            if not "hcuge.ch" in email:
-                try: d["password"]
-                except:
-                    password = ''.join(random.choice(letters) for i in range(stringLength))
-                    d["password"] = hashPassword(password)
-            
+            ## Create user
+            if password:
+                d["password"] = password
+            else:
+                d["password"] = genpassword
+                password = genpassword
             s = r.createAccount(d)
-            print(str(s) + " : ### CREATE " + email + " / " + password)
+
+            if password:
+                print(str(s) + " : ### CREATE " + d["email"] + " / " + password)
+            else:
+                print(str(s) + " : ### CREATE " + d["email"])
+
             r.refreshAccountInfo()
 
         ## Update Queues
