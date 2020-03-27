@@ -12,95 +12,13 @@ Current limitations:
 """
 
 
-import json, requests, csv
-from datetime import datetime
-import bcrypt, string, random
-import re
+from lib.lib import *
 
 csv_file_path="liste.csv"
 
 
-
 ## letters is used to indicate what caraters can be used in password
 letters = string.ascii_letters + string.digits
-
-class queues():
-
-    def __init__(self):
-        self.headers = {'Content-Type': 'application/json',
-           'id': api_id,
-           'x-access-token': api_token}
-        
-        self.data = self.getQueues()
-
-    def getQueues(self):
-
-        api_url = api_url_base + '/queue'
-        response = requests.get(api_url, headers=self.headers)
-
-        if response.status_code == 200:
-            return json.loads(response.content.decode('utf-8'))
-        else:
-            return None
-
-    def returnQueues(self):
-        return self.data
-
-    def returnID(self, name):
-        for i in self.data:
-            if i["name"] == name:
-                return i["id"]
-        else:
-            return None
-
-
-class accounts():
-
-    def __init__(self, email):
-        self.headers = {'Content-Type': 'application/json',
-           'id': api_id,
-           'x-access-token': api_token}
-        self.email = email
-        self.data = self.getAccountInfo(filter='role=doctor&email='+self.email)
-
-
-    def getAccountInfo(self, filter):
-        
-        api_url = api_url_base + '/user?' + filter
-        response = requests.get(api_url, headers=self.headers)
-
-        if response.status_code == 200:
-            return json.loads(response.content.decode('utf-8'))
-        else:
-            return None
-
-    def refreshAccountInfo(self):
-        self.data = self.getAccountInfo(filter='role=doctor&email='+self.email)
-
-    def returnAccountInfo(self):
-        return self.data
-
-    def countAccount(self):
-        return self.data.count('')
-    
-    def createAccount(self,data):
-        api_url = api_url_base + '/user'
-        response = requests.post(api_url, headers=self.headers, json=data)
-        return response.status_code
-
-    def updateAccount(self,data):
-        d = self.returnAccountInfo()
-        api_url = api_url_base + '/user/' + d[0]['id']
-        response = requests.put(api_url, headers=self.headers, data=json.dumps(data))
-        return response.status_code
-
-    def addToQueue(self,queueID):
-        d = self.returnAccountInfo()
-        api_url = api_url_base + '/user/' + d[0]['id'] + '/allowed-queues'
-        data = {"queue": queueID}
-        response = requests.post(api_url, headers=self.headers, data=json.dumps(data))
-        return response.status_code
-
 
 def hashPassword(password):
     p = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
@@ -109,18 +27,23 @@ def hashPassword(password):
 def genPassword():
     return''.join(random.choice(letters) for i in range(10))
 
+def cleanValues(value):
+    value = re.sub("^[\s]*", "", value)
+    value = re.sub("[\s]*$", "", value)
+    return value
+
 q = queues()
 
 with open(csv_file_path, newline='') as content:
     table = csv.reader(content, delimiter=',', quotechar='|')
     for row in table:
-        lastname = row[0]
-        firstname = row[1]
-        email = row[2]
-        authPhoneNumber = row[3]
-        phoneNumber = row[4]
-        password = row[5]
-        queues = row[6]
+        lastname = cleanValues(row[0])
+        firstname = cleanValues(row[1])
+        email = cleanValues(row[2])
+        authPhoneNumber = cleanValues(row[3])
+        phoneNumber = cleanValues(row[4])
+        password = cleanValues(row[5])
+        queues = cleanValues(row[6])
 
         d = {
             "role": "doctor",
