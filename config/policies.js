@@ -56,7 +56,7 @@ module.exports.policies = {
     consultationOverview: ['isLoggedIn'],
     acceptConsultation: ['isLoggedIn', 'isDoctor', 'isAssignedTo'],
     closeConsultation: ['isLoggedIn', 'isDoctor', 'isConsultationOwner'],
-    create: ['isLoggedIn'],
+    create: ['isLoggedIn', 'isNurseOrPatient', 'setConsultationOwner'],
     destroy: ['isLoggedIn', 'isNurseOrPatient'],
     uploadFile: ['isLoggedIn', 'setMessageDestination'],
     attachment: ['isLoggedIn', 'isConsultationOwner'],
