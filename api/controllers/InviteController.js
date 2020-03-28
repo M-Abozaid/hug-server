@@ -6,7 +6,7 @@
  */
 
 const schedule = require('node-schedule');
-
+const moment = require('moment')
 
 /**
  * Creates the invitation SMS text to be sent to a patient.
@@ -27,6 +27,18 @@ function getSmsText(inviteUrl) {
 function getInviteReminderSmsText(inviteUrl) {
   return `You have an invite scheduled in an hour `;
 }
+
+/**
+ *
+ *
+ * @param {string} inviteUrl - The URL of the invitation.
+ * @returns {string} - The invitation SMS message.
+ */
+function getScheduledInviteText(inviteUrl, scheduledFor) {
+  return `Votre consultation est planifiée pour le ${moment(scheduledFor).format('d MMMM, HH:mm')}, voici le lien pour votre consultation ${inviteUrl}`;
+}
+
+
 
 
 
@@ -132,7 +144,7 @@ module.exports = {
         await sails.helpers.email.with({
           to: invite.emailAddress,
           subject: 'Votre lien de consultation',
-          text: getEmailText(url),
+          text: invite.scheduledFor? getScheduledInviteText():getEmailText(url),
         })
       } catch (error) {
         if (!invite.phoneNumber) {
@@ -150,7 +162,7 @@ module.exports = {
       try {
         await sails.helpers.sms.with({
           phoneNumber: req.body.phoneNumber,
-          message: getSmsText(url)
+          message: invite.scheduledFor? getScheduledInviteText(): getSmsText(url)
         })
 
       } catch (error) {
