@@ -123,12 +123,12 @@ module.exports = {
       const password = await User.generatePassword(req.body.password);
 
       const user =  await User.findOne({resetPasswordToken: req.body.token});
-       await User.updateOne({
+      await User.updateOne({
         resetPasswordToken: req.body.token
       }).set({
         password,
         resetPasswordToken: ''
-      }).fet;
+      })
       console.log("GOT USER", user);
 
       if (!user) {
