@@ -45,6 +45,9 @@ module.exports.policies = {
     remove: ['isLoggedIn', 'isAdmin'],
     replace: ['isLoggedIn', 'isAdmin'],
   },
+  countController:{
+    count: ['isLoggedIn', 'isAdmin'],
+  },
   MessageController: {
     '*': false,
     create: ['isLoggedIn', 'setMessageDestination'],
@@ -84,10 +87,11 @@ module.exports.policies = {
   },
   InviteController:{
     '*':false,
-    invite: ['isLoggedIn', 'isDoctor', 'setPublicInviteOwner'],
+    invite: ['isLoggedIn', 'isDoctorOrAdmin', 'setPublicInviteOwner'],
     resend: ['isLoggedIn', 'isDoctor'],
     revoke: ['isLoggedIn', 'isDoctor'],
     findByConsultation: ['isLoggedIn', 'isDoctor'],
+    findByToken: true,
   },
 
   PublicInviteController: {

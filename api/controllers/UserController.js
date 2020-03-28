@@ -42,7 +42,28 @@ module.exports = {
     const user = await User.findOne({id:req.params.user}).populate('allowedQueues');
 
     return res.status(200).json(user.allowedQueues)
-  }
+  },
+
+
+  // async count(req, res){
+  //   let count
+  //   if(req.query.where){
+
+  //     try {
+  //       count = await User.count( {where: JSON.parse(req.query.where)})
+  //     } catch (error) {
+  //       return res.status(400).json({
+  //         success: false,
+  //         error
+  //       })
+  //     }
+  //   }else{
+  //     count = await User.count( {})
+  //   }
+  //   return res.status(200).json({
+  //     count
+  //   })
+  // }
 
 };
 

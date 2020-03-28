@@ -44,8 +44,9 @@ module.exports.http = {
 
     passportInit    : require('passport').initialize(),
     passportSession : require('passport').session(),
-
+    paginate: require('../api/middlewares/count'),
     order: [
+      'paginate',
       'cookieParser',
       'session',
       'passportInit',
