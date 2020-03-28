@@ -178,7 +178,7 @@ module.exports = {
     if(invite.scheduledFor){
       schedule.scheduleJob(new Date(invite.scheduledFor) - 60*60*1000, async function(){
         await sails.helpers.sms.with({
-          phoneNumber: req.user.authPhoneNumber,
+          phoneNumber: req.body.phoneNumber,
           message: getInviteReminderSmsText()
         })
       })
