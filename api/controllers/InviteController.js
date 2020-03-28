@@ -5,6 +5,8 @@
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
 
+const schedule = require('node-schedule');
+
 
 /**
  * Creates the invitation SMS text to be sent to a patient.
@@ -15,6 +17,18 @@
 function getSmsText(inviteUrl) {
   return `Cliquez ici pour accéder à votre vidéo consultation avec votre médecin HUG : ${inviteUrl}`;
 }
+
+/**
+ *
+ *
+ * @param {string} inviteUrl - The URL of the invitation.
+ * @returns {string} - The invitation SMS message.
+ */
+function getInviteReminderSmsText(inviteUrl) {
+  return `You have an invite scheduled in an hour `;
+}
+
+
 
 /**
  * Creates the invitation email content to be sent to a patient.
@@ -95,7 +109,8 @@ module.exports = {
         gender: req.body.gender,
         firstName: req.body.firstName,
         lastName: req.body.lastName,
-        invitedBy: req.body.invitedBy
+        invitedBy: req.body.invitedBy,
+        scheduledFor: req.body.scheduledFor? new Date(req.body.scheduledFor): undefined
       }
       if(queue){
         inviteData.queue = queue.id
@@ -146,6 +161,15 @@ module.exports = {
           message: 'Error sending SMS'
         });
       }
+    }
+
+    if(invite.scheduledFor){
+      schedule.scheduleJob(new Date(invite.scheduledFor) - 60*60*1000, async function(){
+        await sails.helpers.sms.with({
+          phoneNumber: req.user.authPhoneNumber,
+          message: getInviteReminderSmsText()
+        })
+      })
     }
 
     return res.json({
@@ -251,6 +275,21 @@ module.exports = {
     }
 
     res.json(publicinvite);
-  }
+  },
 
+
+    /**
+   * Finds the public invite By token
+   */
+  async findByToken(req, res) {
+
+    const publicinvite = await PublicInvite.findOne({
+      inviteToken: req.params.invitationToken
+    });
+    if (!publicinvite) {
+      return res.notFound();
+    }
+
+    res.json(publicinvite);
+  }
 };

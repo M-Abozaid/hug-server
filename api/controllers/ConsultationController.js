@@ -218,6 +218,13 @@ module.exports = {
       }
       const invite = await PublicInvite.findOne({ inviteToken: req.body.invitationToken });
       if (invite) {
+        if(invite.scheduledFor){
+            if(invite.scheduledFor - Date.now() > 10 * 60 * 1000){
+              console.log('can create consultation yet')
+              return res.status(401).json({success: false, message: 'Too early for consultation'})
+            }
+        }
+
         consultationJson.firstName = invite.firstName ? invite.firstName : "No firstname";
         consultationJson.lastName = invite.lastName ? invite.lastName : "No lastname";
         consultationJson.gender = invite.gender ? invite.gender : "unknown";

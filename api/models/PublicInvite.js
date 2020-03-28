@@ -52,6 +52,9 @@ module.exports = {
     queue: {
       model: 'queue'
     },
+    scheduledFor: {
+      type: 'number'
+    },
     // the doctor who sent the invite
     invitedBy: {
       model: 'user',
