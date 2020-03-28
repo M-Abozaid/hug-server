@@ -131,7 +131,7 @@ module.exports = {
       console.log("GOT USER", user);
 
       if (!user) {
-        throw new Exception("token-expired");
+        throw new Error("token-expired");
       }
 
     } catch (err) {
