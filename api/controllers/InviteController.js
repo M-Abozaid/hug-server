@@ -224,7 +224,7 @@ module.exports = {
       if (invite.emailAddress) {
         await sails.helpers.email.with({
           to: invite.emailAddress,
-          subject: 'Invite',
+          subject: 'Votre lien de consultation',
           text: getEmailText(url),
         })
       }
