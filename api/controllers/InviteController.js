@@ -144,7 +144,7 @@ module.exports = {
         await sails.helpers.email.with({
           to: invite.emailAddress,
           subject: 'Votre lien de consultation',
-          text: invite.scheduledFor? getScheduledInviteText():getEmailText(url),
+          text: invite.scheduledFor? getScheduledInviteText(invite.scheduledFor, url):getEmailText(url),
         })
       } catch (error) {
         if (!invite.phoneNumber) {
@@ -162,7 +162,7 @@ module.exports = {
       try {
         await sails.helpers.sms.with({
           phoneNumber: req.body.phoneNumber,
-          message: invite.scheduledFor? getScheduledInviteText(): getSmsText(url)
+          message: invite.scheduledFor? getScheduledInviteText(invite.scheduledFor, url): getSmsText(url)
         })
 
       } catch (error) {
