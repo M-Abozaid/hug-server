@@ -26,6 +26,7 @@ module.exports.routes = {
   'get /api/v1/subscribe-to-doctors': 'SubscribeToDoctorsController.subscribe',
   'post /api/v1/consultation/:consultation/read-messages': 'MessageController.readMessages',
   'get /api/v1/consultations-overview': 'ConsultationController.consultationOverview',
+  'get /api/v1/consultations-csv': 'ConsultationController.consultationsCSV',
   'post /api/v1/consultation': 'ConsultationController.create',
   'post /api/v1/consultation/:consultation/accept': 'ConsultationController.acceptConsultation',
   // 'delete /api/v1/consultation/:consultation': 'ConsultationController.destroy',

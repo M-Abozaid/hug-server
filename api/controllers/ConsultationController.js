@@ -12,7 +12,9 @@ const uuidv1 = require('uuid/v1');
 console.log("START MEDIA SERVER", sails.config.OPENVIDU_URL, sails.config.OPENVIDU_SECRET);
 const openvidu = new OpenVidu(sails.config.OPENVIDU_URL, sails.config.OPENVIDU_SECRET);
 const fs = require('fs');
+const Json2csvParser = require("json2csv").Parser;
 
+const _ = require('@sailshq/lodash');
 
 const db = Consultation.getDatastore().manager;
 
@@ -26,26 +28,28 @@ const sendConsultationClosed = function (consultation) {
   });
 };
 
-const columns =
-[{colName:'Invitation envoyée le', key:'inviteCreatedAt'},
-{colName:'Invitation envoyée par', key:''},
-{colName:'Consultation planifiée le', key:''},
-{colName:'File d\'attente', key:''},
-{colName:'Patient consultation demandée à', key:''},
-{colName:'IMAD equipe', key:''},
-{colName:'IMAD infirmier', key:''},
-{colName:'Consultation prise en charge par', key:''},
-{colName:'Consultation clôturée le', key:''},
-{colName:'Total messages envoyé par le docteur', key:''},
-{colName:'Total messages envoyé par le patient', key:''},
-{colName:'Total appel avec réponse', key:''},
-{colName:'Total appel sans réponse', key:''},
-{colName:'Moyenne durée appel', key:''},
+const columns = [
+  {colName:'Invitation envoyée le', key:'inviteCreatedAt'},
+  {colName:'Invitation envoyée par', key:'invitedBy.name'},
+  {colName:'Consultation planifiée le', key:'inviteScheduledFor'},
+  {colName:'File d\'attente', key:'queue.name'},
+  {colName:'Patient consultation demandée à', key:'consultationCreatedAt'},
+  {colName:'IMAD equipe', key:'IMADTeam'},
+  {colName:'IMAD infirmier', key:'owner.name'},
+  {colName:'Consultation prise en charge par', key:'acceptedBy.name'},
+  {colName:'Consultation clôturée le', key:'closedAt'},
+  {colName:'Total messages envoyé par le docteur', key:'doctorTextMessagesCount'},
+  {colName:'Total messages envoyé par le patient', key:'patientTextMessagesCount'},
+  {colName:'Total appel avec réponse', key:'successfulCallsCount'},
+  {colName:'Total appel sans réponse', key:'missedCallsCount'},
+  {colName:'Moyenne durée appel', key:'averageCallDuration'},
+  {colName:'Patient taux satisfaction', key:'patientRating'},
+  {colName:'Patient satisfaction message', key:'patientComment'},
+  {colName:'Docteur taux satisfaction', key:'doctorRating'},
+  {colName:'Docteur satisfaction message', key:'doctorComment'}
+]
 
-{colName:'Patient taux satisfaction', key:''},
-{colName:'Patient satisfaction message', key:''},
-{colName:'Docteur taux satisfaction', key:''},
-{colName:'Docteur satisfaction message', key:''}]
+
 
 async function saveAnonymousDetails(consultation){
 
@@ -716,6 +720,33 @@ module.exports = {
     } catch (error) {
       return res.status(500).json(error);
     }
+  },
+
+
+  async consultationsCSV(req, res){
+
+    const consultations = await AnonymousConsultation.find().populate('acceptedBy').populate('queue').populate('owner');
+    const mappedConsultations = consultations.map(consultation=>{
+      if(consultation.owner){
+        consultation.owner.name = consultation.owner.firstName + ' ' + consultation.owner.lastName;
+      }
+      if(consultation.acceptedBy){
+        consultation.acceptedBy.name = consultation.acceptedBy.firstName + ' ' + consultation.acceptedBy.lastName;
+      }
+      const mappedConsultation = {}
+      columns.forEach(col=>{
+        mappedConsultation[col.colName] = _.get(consultation, col.key)
+      })
+      return mappedConsultation
+    })
+
+    const parser = new Json2csvParser({ fields : columns.map(c=> c.colName) }, { encoding: "utf-8" });
+    const csv = parser.parse(mappedConsultations);
+    res.set({ "Content-Disposition": 'attachment; filename="consultations_summary.csv"' });
+    res.send(csv);
+
+
   }
 
 };
+
