@@ -71,11 +71,14 @@ async function saveAnonymousDetails(consultation){
     doctorComment:  consultation.doctorComment,
 
   }
-  const invite = await PublicInvite.findOne({ id: consultation.invite })
-  if(invite){
-    anonymousConsultation.inviteScheduledFor = invite.scheduledFor;
-    anonymousConsultation.invitedBy = invite.invitedBy;
-    anonymousConsultation.inviteCreatedAt = invite.createdAt;
+  if(consultation.invite){
+
+    const invite = await PublicInvite.findOne({ id: consultation.invite })
+    if(invite){
+      anonymousConsultation.inviteScheduledFor = invite.scheduledFor;
+      anonymousConsultation.invitedBy = invite.invitedBy;
+      anonymousConsultation.inviteCreatedAt = invite.createdAt;
+    }
   }
 
   const doctorTextMessagesCount = await Message.count({from: consultation.acceptedBy, consultation: consultation.id, type:'text'})
@@ -377,7 +380,12 @@ module.exports = {
         return res.notFound();
       }
 
-      await saveAnonymousDetails(consultation)
+      try {
+
+        await saveAnonymousDetails(consultation)
+      } catch (error) {
+        console.error("Error Saving anonymous details ", error)
+      }
 
       if (consultation.invitationToken) {
         await PublicInvite.destroyOne({ inviteToken: consultation.invitationToken })
