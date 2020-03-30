@@ -27,25 +27,25 @@ const sendConsultationClosed = function (consultation) {
 };
 
 const columns =
-[{colName:'Consultation invite time', key:'inviteCreatedAt'},
-{colName:'Doctor who sent invite', key:''},
-{colName:'Consultation meeting time', key:''},
-{colName:'Queue name', key:''},
-{colName:'Patient request consultation time', key:''},
-{colName:'IMAD team', key:''},
-{colName:'IMAD nurse name', key:''},
-{colName:'Doctor who take the consultation', key:''},
-{colName:'Consultation close time', key:''},
-{colName:'Number of text message send by doctor', key:''},
-{colName:'Number of text message send by patient', key:''},
-{colName:'Number of success call made by doctor', key:''},
-{colName:'Number of failed call made by doctor', key:''},
-{colName:'Call duration average', key:''},
+[{colName:'Invitation envoyée le', key:'inviteCreatedAt'},
+{colName:'Invitation envoyée par', key:''},
+{colName:'Consultation planifiée le', key:''},
+{colName:'File d\'attente', key:''},
+{colName:'Patient consultation demandée à', key:''},
+{colName:'IMAD equipe', key:''},
+{colName:'IMAD infirmier', key:''},
+{colName:'Consultation prise en charge par', key:''},
+{colName:'Consultation clôturée le', key:''},
+{colName:'Total messages envoyé par le docteur', key:''},
+{colName:'Total messages envoyé par le patient', key:''},
+{colName:'Total appel avec réponse', key:''},
+{colName:'Total appel sans réponse', key:''},
+{colName:'Moyenne durée appel', key:''},
 
-{colName:'Patient satisfaction rate', key:''},
+{colName:'Patient taux satisfaction', key:''},
 {colName:'Patient satisfaction message', key:''},
-{colName:'Doctor satisfaction rate', key:''},
-{colName:'Doctor satisfaction message', key:''}]
+{colName:'Docteur taux satisfaction', key:''},
+{colName:'Docteur satisfaction message', key:''}]
 
 async function saveAnonymousDetails(consultation){
 
