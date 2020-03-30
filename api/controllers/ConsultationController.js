@@ -31,7 +31,6 @@ const columns =
 {colName:'Doctor who sent invite', key:''},
 {colName:'Consultation meeting time', key:''},
 {colName:'Queue name', key:''},
-{colName:'Consultation', key:''},
 {colName:'Patient request consultation time', key:''},
 {colName:'IMAD team', key:''},
 {colName:'IMAD nurse name', key:''},
@@ -42,7 +41,7 @@ const columns =
 {colName:'Number of success call made by doctor', key:''},
 {colName:'Number of failed call made by doctor', key:''},
 {colName:'Call duration average', key:''},
-{colName:'Satisfaction', key:''},
+
 {colName:'Patient satisfaction rate', key:''},
 {colName:'Patient satisfaction message', key:''},
 {colName:'Doctor satisfaction rate', key:''},
