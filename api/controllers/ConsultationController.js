@@ -317,6 +317,7 @@ module.exports = {
       // save info for stats
       await AnonymousCall.createEach(callMessages.map(m=> {
         delete m._id
+        return m
       }))
 
       if(!consultation.queue){
