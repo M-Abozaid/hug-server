@@ -26,6 +26,77 @@ const sendConsultationClosed = function (consultation) {
   });
 };
 
+const columns =
+[{colName:'Consultation invite time', key:'inviteCreatedAt'},
+{colName:'Doctor who sent invite', key:''},
+{colName:'Consultation meeting time', key:''},
+{colName:'Queue name', key:''},
+{colName:'Consultation', key:''},
+{colName:'Patient request consultation time', key:''},
+{colName:'IMAD team', key:''},
+{colName:'IMAD nurse name', key:''},
+{colName:'Doctor who take the consultation', key:''},
+{colName:'Consultation close time', key:''},
+{colName:'Number of text message send by doctor', key:''},
+{colName:'Number of text message send by patient', key:''},
+{colName:'Number of success call made by doctor', key:''},
+{colName:'Number of failed call made by doctor', key:''},
+{colName:'Call duration average', key:''},
+{colName:'Satisfaction', key:''},
+{colName:'Patient satisfaction rate', key:''},
+{colName:'Patient satisfaction message', key:''},
+{colName:'Doctor satisfaction rate', key:''},
+{colName:'Doctor satisfaction message', key:''}]
+
+async function saveAnonymousDetails(consultation){
+
+  // consultation = await Consultation.findOne({id:'5e81e3838475f6352ef40aec'})
+  const anonymousConsultation = {
+
+    consultationId: consultation.id,
+    IMADTeam: consultation.IMADTeam,
+    acceptedAt: consultation.acceptedAt,
+    closedAt: consultation.closedAt || Date.now(),
+    consultationCreatedAt: consultation.createdAt,
+    queue: consultation.queue,
+    owner: consultation.owner,
+    acceptedBy: consultation.acceptedBy,
+
+    patientRating:  consultation.patientRating,
+    patientComment: consultation.patientComment,
+    doctorRating: consultation.doctorRating,
+    doctorComment:  consultation.doctorComment,
+
+  }
+  const invite = await PublicInvite.findOne({ id: consultation.invite })
+  if(invite){
+    anonymousConsultation.inviteScheduledFor = invite.scheduledFor;
+    anonymousConsultation.invitedBy = invite.invitedBy;
+    anonymousConsultation.inviteCreatedAt = invite.createdAt;
+  }
+
+  const doctorTextMessagesCount = await Message.count({from: consultation.acceptedBy, consultation: consultation.id, type:'text'})
+  const patientTextMessagesCount = await Message.count({from: consultation.owner, consultation: consultation.id, type:'text'})
+  const missedCallsCount = await Message.count({consultation: consultation.id, type:{in:['videoCall', 'audioCall']}, acceptedAt:0 })
+  const successfulCalls = await Message.find({consultation: consultation.id, type:{in:['videoCall', 'audioCall']}, acceptedAt:{'!=':0} })
+
+  const callDurations = successfulCalls.map(c=> c.closedAt - c.acceptedAt)
+  const sum = callDurations.reduce((a, b) => a + b, 0);
+  const averageCallDuration = (sum / callDurations.length) || 0;
+
+
+  anonymousConsultation.doctorTextMessagesCount = doctorTextMessagesCount
+  anonymousConsultation.patientTextMessagesCount = patientTextMessagesCount
+  anonymousConsultation.missedCallsCount = missedCallsCount
+  anonymousConsultation.successfulCallsCount = successfulCalls.length
+  anonymousConsultation.averageCallDuration = averageCallDuration
+
+  console.log('anonymous consultation ',anonymousConsultation )
+  await AnonymousConsultation.create(anonymousConsultation)
+
+
+}
+// saveAnonymousDetails()
 module.exports = {
   async consultationOverview(req, res) {
     let match = [{
@@ -230,6 +301,7 @@ module.exports = {
         consultationJson.gender = invite.gender ? invite.gender : "unknown";
         consultationJson.queue = invite.queue;
         consultationJson.invitedBy = invite.invitedBy;
+        consultationJson.invite = invite.id;
       }
     }
 
@@ -302,6 +374,8 @@ module.exports = {
         return res.notFound();
       }
 
+      await saveAnonymousDetails(consultation)
+
       if (consultation.invitationToken) {
         await PublicInvite.destroyOne({ inviteToken: consultation.invitationToken })
       }
@@ -311,12 +385,12 @@ module.exports = {
       const messageCollection = db.collection('message');
       const consultationCollection = db.collection('consultation');
 
-      const callMessagesCursor = await messageCollection.find({ consultation: new ObjectId(req.params.consultation), type: {$in: ['videoCall', 'audioCall']}})
+      const callMessages = await Message.find({ consultation: req.params.consultation, type: {in: ['videoCall', 'audioCall']}})
 
-      const callMessages = await callMessagesCursor.toArray();
+      // const callMessages = await callMessagesCursor.toArray();
       // save info for stats
-      await AnonymousCall.createEach(callMessages.map(m=> {
-        delete m._id
+      await AnonymousCall.createEach(callMessages.map(m=>{
+        delete m.id;
         return m
       }))
 
@@ -324,13 +398,6 @@ module.exports = {
         consultation.queue = null
       }
 
-      const anonymousConsultation = {...consultation}
-      delete anonymousConsultation.firstName;
-      delete anonymousConsultation.lastName;
-      delete anonymousConsultation.birthDate;
-      delete anonymousConsultation.invitationToken;
-
-      await AnonymousConsultation.create(anonymousConsultation)
 
       // mark consultation as closed and set closedAtISO for mongodb ttl
       const { result } = await consultationCollection.update({ _id: new ObjectId(req.params.consultation) }, {
@@ -617,10 +684,15 @@ module.exports = {
       await Consultation.updateOne({
         id: req.body.consultationId,
       }).set({
-        patientRating: req.body.rating,
+        patientRating: req.body.rating || '',
         patientComment: req.body.comment,
       });
-
+      await AnonymousConsultation.updateOne({
+        consultationId: req.body.consultationId,
+      }).set({
+        patientRating: req.body.rating || '',
+        patientComment: req.body.comment,
+      });
       res.json({ status: 200 });
     } catch (error) {
       return res.status(500).json(error);
@@ -632,10 +704,15 @@ module.exports = {
       await Consultation.updateOne({
         id: req.body.consultationId,
       }).set({
-        doctorRating: req.body.rating,
+        doctorRating: req.body.rating || '',
         doctorComment: req.body.comment,
       });
-
+      await AnonymousConsultation.updateOne({
+        consultationId: req.body.consultationId,
+      }).set({
+        doctorRating: req.body.rating || '',
+        doctorComment: req.body.comment,
+      });
       res.json({ status: 200 });
     } catch (error) {
       return res.status(500).json(error);

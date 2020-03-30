@@ -6,9 +6,7 @@
  */
 
 module.exports = {
-
   attributes: {
-
     IMADTeam: {
       type: 'string'
     },
@@ -45,10 +43,37 @@ module.exports = {
       type: 'string',
       required: false
     },
-    consultationCreatedAt:{
-      type:'number'
+    consultationCreatedAt: {
+      type: 'number'
+    },
+    consultationId: {
+      type: 'string'
+    },
+    doctorTextMessagesCount: {
+      type: 'number'
+    },
+    patientTextMessagesCount: {
+      type: 'number'
+    },
+    successfulCallsCount: {
+      type: 'number'
+    },
+    missedCallsCount: {
+      type: 'number'
+    },
+    averageCallDuration: {
+      type: 'number'
+    },
+    inviteScheduledFor: {
+      type: 'number'
+    },
+    invitedBy: {
+      model: 'user',
+      required: false
+    },
+    inviteCreatedAt: {
+      type: 'number'
     }
-  },
+  }
 
-};
-
+}

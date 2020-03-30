@@ -122,7 +122,7 @@ module.exports = {
         gender: req.body.gender,
         firstName: req.body.firstName,
         lastName: req.body.lastName,
-        invitedBy: req.body.invitedBy,
+        invitedBy: req.user.id,
         scheduledFor: req.body.scheduledFor? new Date(req.body.scheduledFor): undefined
       }
       if(queue){

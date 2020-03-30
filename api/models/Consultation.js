@@ -75,7 +75,10 @@ module.exports = {
       model: 'user',
       required: false
     },
-
+    invite: {
+      model: 'PublicInvite',
+      required: false
+    },
   },
 
   async beforeCreate(consultation, cb) {
