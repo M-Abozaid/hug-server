@@ -8,38 +8,54 @@
 module.exports = {
 
 
-  async ip (req, res) {
+  async ip(req, res) {
 
 
-    res.json({ip: req.ip})
+    res.json({ ip: req.ip })
   },
 
-  async addDoctorToQueue(req, res){
+  async addDoctorToQueue(req, res) {
 
-    if(!req.body.queue){
-      return res.status(400).json({message: 'queue is required'})
+    if (!req.body.queue) {
+      return res.status(400).json({ message: 'queue is required' })
     }
 
-    await User.addToCollection(req.params.user, 'allowedQueues',req.body.queue);
+    await User.addToCollection(req.params.user, 'allowedQueues', req.body.queue);
 
-    return res.status(200).json({success:true})
+    return res.status(200).json({ success: true })
   },
 
-  async removeDoctorFromQueue(req, res){
+  async removeDoctorFromQueue(req, res) {
 
-    if(!req.body.queue){
-      return res.status(400).json({message: 'queue is required'})
+    if (!req.body.queue) {
+      return res.status(400).json({ message: 'queue is required' })
     }
 
-    await User.removeFromCollection(req.params.user, 'allowedQueues',req.body.queue);
+    try {
+      let userAndQueueExist = await User.findOne({ id: req.params.user}).populate('allowedQueues', { id:req.body.queue }) ;
 
-    return res.status(200).json({success:true})
+      if (!userAndQueueExist) {
+        res.status(404)
+        return res.json({ message: 'User not found' });
+      }
+      else if(userAndQueueExist.allowedQueues.length==0){
+        res.status(404)
+        return res.json({ message: 'Queue not found' });
+      }
+
+      await User.removeFromCollection(req.params.user, 'allowedQueues', req.body.queue);
+
+      return res.status(200).json({ success: true });
+
+    } catch (err) {
+      return res.badRequest(err);
+    }
   },
 
-  async getDoctorQueues(req, res){
+  async getDoctorQueues(req, res) {
 
 
-    const user = await User.findOne({id:req.params.user}).populate('allowedQueues');
+    const user = await User.findOne({ id: req.params.user }).populate('allowedQueues');
 
     return res.status(200).json(user.allowedQueues)
   },
