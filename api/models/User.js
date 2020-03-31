@@ -63,6 +63,9 @@ module.exports = {
     viewAllQueues: {
       type: 'boolean',
       defaultsTo: false,
+    },
+    departement: {
+      type: 'string'
     }
   },
 
