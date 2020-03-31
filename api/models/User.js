@@ -64,7 +64,7 @@ module.exports = {
       type: 'boolean',
       defaultsTo: false,
     },
-    departement: {
+    department: {
       type: 'string'
     }
   },
