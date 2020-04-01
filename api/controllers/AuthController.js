@@ -162,13 +162,16 @@ module.exports = {
       });
     }
 
+    const isAdmin = await User.count({email: req.body.email, role:'admin'})
     if(req.body._version){
       await  User.updateOne({email: req.body.email, role: {in:['doctor','admin']} } ).set({doctorClientVersion: req.body._version})
     }else{
-      await  User.updateOne({email: req.body.email }).set({doctorClientVersion: 'invalid'})
-      return res.status(400).json({
-        message: "Le cache de votre navigateur n'est pas à jour, vous devez le raffraichir avec CTRL+F5 !",
-      });
+      if(!isAdmin){
+        await  User.updateOne({email: req.body.email }).set({doctorClientVersion: 'invalid'})
+        return res.status(400).json({
+          message: "Le cache de votre navigateur n'est pas à jour, vous devez le raffraichir avec CTRL+F5 !",
+        });
+      }
     }
 
     passport.authenticate('local', async (err, user, info = {}) => {
