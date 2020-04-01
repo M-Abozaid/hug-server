@@ -331,11 +331,55 @@ module.exports = {
 
   getUser(req, res) {
 
-    const token = jwt.sign(req.user, sails.config.globals.APP_SECRET);
-    req.user.token = token;
-    res.json({
-      user: req.user
-    });
+    if (!req.headers['x-access-token'] && !req.query.token) { return res.status(401).json({ error: "Unauthorized" }); }
+    jwt.verify(req.headers['x-access-token'] || req.query.token, sails.config.globals.APP_SECRET, async (err, decoded) => {
+      if (err) {
+        console.error('error ', err);
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      if(decoded.singleFactor){
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      try {
+
+
+        if(req.query._version){
+          await  User.updateOne({email: decoded.email, role: {in:['doctor','admin']} } ).set({doctorClientVersion: req.query._version})
+        }else{
+          return res.status(400).json({
+            message: "Le cache de votre navigateur n'est pas à jour, vous devez le raffraichir avec CTRL+F5 !",
+          });
+        }
+
+
+        const user = await User.findOne({
+          id: decoded.id
+        })
+
+        if(!user){
+          console.error('No user from a valid token ')
+          res.status(500).json({message:'UNKNOWN ERROR'})
+        }
+
+        if(user.role === 'doctor' || user.role === 'admin'){
+          if(!user.doctorClientVersion){
+            return res.status(401).json({ error: "Unauthorized App version needs to be updated" });
+          }
+        }
+
+        const token = jwt.sign(user, sails.config.globals.APP_SECRET);
+        user.token = token;
+        res.json({
+          user
+        });
+      } catch (error) {
+        console.error(error)
+        res.status(500).json({message:'UNKNOWN ERROR'})
+
+      }
+    })
 
   },
 

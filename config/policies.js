@@ -81,7 +81,7 @@ module.exports.policies = {
     metadata: true,
     forgotPassword: true,
     resetPassword: true,
-    getUser: ['isLoggedIn'],
+    getUser: true,
     samlCallback: true,
     getConfig: true,
   },
