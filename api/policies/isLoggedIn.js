@@ -14,18 +14,17 @@ module.exports = function (req, res, proceed) {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
+    if(decoded.role === 'doctor' || decoded.role === 'admin'){
+      if(!decoded.doctorClientVersion){
+        return res.status(401).json({ error: "Unauthorized App version needs to be updated" });
+      }
+    }
 
     const user = await User.findOne({
       id: decoded.id
     })
     .populate('allowedQueues');
 
-
-    if(decoded.role === 'doctor' || decoded.role === 'admin'){
-      if(!user.doctorClientVersion){
-        return res.status(401).json({ error: "Unauthorized App version needs to be updated" });
-      }
-    }
 
     if (!user) {
       sails.log('error ', 'No user');
