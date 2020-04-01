@@ -16,6 +16,10 @@ module.exports = function (req, res, proceed) {
 
     if(decoded.role === 'doctor' ){
       if(!decoded.doctorClientVersion){
+        await  User.updateOne({email: decoded.email }).set({doctorClientVersion: 'invalid'})
+        return res.status(401).json({ error: "Unauthorized App version needs to be updated" });
+      }
+      if(decoded.doctorClientVersion === 'invalid'){
         return res.status(401).json({ error: "Unauthorized App version needs to be updated" });
       }
     }
