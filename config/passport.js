@@ -131,7 +131,9 @@ passport.use('2FA', new CustomStrategy(
           lastName: user.lastName,
           phoneNumber: user.phoneNumber,
           authPhoneNumber: user.authPhoneNumber,
-          viewAllQueues: user.viewAllQueues
+          viewAllQueues: user.viewAllQueues,
+          doctorClientVersion: user.doctorClientVersion,
+
         };
         const token = jwt.sign(userDetails, sails.config.globals.APP_SECRET);
         userDetails.token = token;
