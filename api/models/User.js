@@ -63,6 +63,10 @@ module.exports = {
     viewAllQueues: {
       type: 'boolean',
       defaultsTo: false,
+    },
+    doctorClientVersion: {
+      type: 'string',
+      required: false
     }
   },
 

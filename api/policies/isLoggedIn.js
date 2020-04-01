@@ -19,6 +19,14 @@ module.exports = function (req, res, proceed) {
       id: decoded.id
     })
     .populate('allowedQueues');
+
+
+    if(decoded.role === 'doctor' || decoded.role === 'admin'){
+      if(!user.doctorClientVersion){
+        return res.status(401).json({ error: "Unauthorized App version needs to be updated" });
+      }
+    }
+
     if (!user) {
       sails.log('error ', 'No user');
       return res.status(401).json({ error: "Unauthorized" });

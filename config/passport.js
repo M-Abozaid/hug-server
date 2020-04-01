@@ -154,6 +154,11 @@ passport.use(new LocalStrategy({
       if (err) { return cb(err); }
 
       if (!res) { return cb(null, false, { message: 'Email ou mot de passe incorrect' }); }
+      if(user.role === 'doctor' || user.role === 'admin'){
+        if(!user.doctorClientVersion){
+          return cb(null, false, { message: "Le cache de votre navigateur n'est pas à jour, vous devez le raffraichir avec CTRL+F5 !" });
+        }
+      }
       const userDetails = {
         email: user.email,
         username: user.username,
@@ -163,7 +168,8 @@ passport.use(new LocalStrategy({
         lastName: user.lastName,
         phoneNumber: user.phoneNumber,
         authPhoneNumber: user.authPhoneNumber,
-        viewAllQueues: user.viewAllQueues
+        viewAllQueues: user.viewAllQueues,
+        doctorClientVersion: user.doctorClientVersion,
       };
 
       const token = jwt.sign(userDetails, sails.config.globals.APP_SECRET);

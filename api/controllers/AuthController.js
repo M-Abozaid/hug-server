@@ -154,12 +154,16 @@ module.exports = {
   },
 
   // used only for admin
-  loginLocal(req, res) {
+  async loginLocal(req, res) {
     if (!process.env.LOGIN_METHOD || (process.env.LOGIN_METHOD !== 'password' && process.env.LOGIN_METHOD !== 'both')) {
       console.log('Password login is disabled');
       return res.status(500).json({
         message: 'Password login is disabled',
       });
+    }
+
+    if(req.body._version){
+      await  User.updateOne({email: req.body.email, role: {in:['doctor','admin']} } ).set({doctorClientVersion: req.body._version})
     }
 
     passport.authenticate('local', async (err, user, info = {}) => {
