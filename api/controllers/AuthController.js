@@ -363,7 +363,7 @@ module.exports = {
           res.status(500).json({message:'UNKNOWN ERROR'})
         }
 
-        if(user.role === 'doctor' || user.role === 'admin'){
+        if(user.role === 'doctor' ){
           if(!user.doctorClientVersion){
             return res.status(401).json({ error: "Unauthorized App version needs to be updated" });
           }

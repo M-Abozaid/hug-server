@@ -14,7 +14,7 @@ module.exports = function (req, res, proceed) {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    if(decoded.role === 'doctor' || decoded.role === 'admin'){
+    if(decoded.role === 'doctor' ){
       if(!decoded.doctorClientVersion){
         return res.status(401).json({ error: "Unauthorized App version needs to be updated" });
       }

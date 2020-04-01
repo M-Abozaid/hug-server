@@ -154,7 +154,7 @@ passport.use(new LocalStrategy({
       if (err) { return cb(err); }
 
       if (!res) { return cb(null, false, { message: 'Email ou mot de passe incorrect' }); }
-      if(user.role === 'doctor' || user.role === 'admin'){
+      if(user.role === 'doctor' ){
         if(!user.doctorClientVersion){
           return cb(null, false, { message: "Le cache de votre navigateur n'est pas à jour, vous devez le raffraichir avec CTRL+F5 !" });
         }
@@ -267,13 +267,6 @@ if (process.env.NODE_ENV !== 'development') {
           // }).fetch();
           return cb(new Error('User not found'))
         }
-
-        // remove unnecessary fields
-        user = (({
-          firstName, lastName, id, role, viewAllQueues
-        }) => ({
-          firstName, lastName, id, role, viewAllQueues
-        }))(user);
 
 
         const token = jwt.sign(user, sails.config.globals.APP_SECRET);
