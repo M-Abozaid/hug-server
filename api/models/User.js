@@ -67,6 +67,9 @@ module.exports = {
     doctorClientVersion: {
       type: 'string',
       required: false
+    },
+    department: {
+      type: 'string'
     }
   },
 
