@@ -82,6 +82,7 @@ module.exports = {
   },
 
   async beforeCreate(consultation, cb) {
+
     if (!consultation.queue && consultation.invitedBy && process.env.DEFAULT_QUEUE_ID) {
       const defaultQueue = await Queue.findOne({ id: process.env.DEFAULT_QUEUE_ID });
       if (defaultQueue) {
