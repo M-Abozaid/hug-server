@@ -82,7 +82,7 @@ module.exports = {
   },
 
   async beforeCreate(consultation, cb) {
-    if (!consultation.queue && process.env.DEFAULT_QUEUE_ID) {
+    if (!consultation.queue && consultation.invitedBy && process.env.DEFAULT_QUEUE_ID) {
       const defaultQueue = await Queue.findOne({ id: process.env.DEFAULT_QUEUE_ID });
       if (defaultQueue) {
         console.log("Assigning the default queue to the consultation as no queue is set");

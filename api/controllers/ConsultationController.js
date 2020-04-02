@@ -113,7 +113,8 @@ module.exports = {
       match = [{
         acceptedBy: new ObjectId(req.user.id)
       },{
-        invitedBy: new ObjectId(req.user.id)
+        invitedBy: new ObjectId(req.user.id),
+        queue : null,
       }
       ];
     }
