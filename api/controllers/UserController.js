@@ -60,6 +60,11 @@ module.exports = {
     return res.status(200).json(user.allowedQueues)
   },
 
+  async getUser(req, res) {
+    const user = await User.findOne({ id: req.params.user });
+    return res.status(200).json(user);
+  }
+
 
   // async count(req, res){
   //   let count
