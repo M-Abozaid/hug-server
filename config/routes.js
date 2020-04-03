@@ -55,6 +55,7 @@ module.exports.routes = {
   'POST /api/v1/user/:user/allowed-queues': 'UserController.addDoctorToQueue',
   'DELETE /api/v1/user/:user/allowed-queues': 'UserController.removeDoctorFromQueue',
   'GET /api/v1/user/:user/allowed-queues': 'UserController.getDoctorQueues',
+  'GET /api/v1/user/:user': 'UserController.getUser',
   'GET /api/v1/metadata': 'AuthController.metadata',
   'POST /api/v1/saml-callback': 'AuthController.samlCallback',
   'POST /api/v1/support': 'SupportController.supportRequest',

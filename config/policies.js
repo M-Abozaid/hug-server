@@ -44,6 +44,7 @@ module.exports.policies = {
     destroy: ['isLoggedIn', 'isAdmin'],
     remove: ['isLoggedIn', 'isAdmin'],
     replace: ['isLoggedIn', 'isAdmin'],
+    getUser: ['isLoggedIn', 'isDoctorOrAdmin'],
   },
   countController:{
     count: ['isLoggedIn', 'isAdmin'],
