@@ -70,6 +70,9 @@ module.exports = {
     },
     department: {
       type: 'string'
+    },
+    function: {
+      type: 'string'
     }
   },
 
