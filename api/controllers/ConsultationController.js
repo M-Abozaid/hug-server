@@ -84,7 +84,7 @@ async function saveAnonymousDetails(consultation){
   const doctorTextMessagesCount = await Message.count({from: consultation.acceptedBy, consultation: consultation.id, type:'text'})
   const patientTextMessagesCount = await Message.count({from: consultation.owner, consultation: consultation.id, type:'text'})
   const missedCallsCount = await Message.count({consultation: consultation.id, type:{in:['videoCall', 'audioCall']}, acceptedAt:0 })
-  const successfulCalls = await Message.find({consultation: consultation.id, type:{in:['videoCall', 'audioCall']}, acceptedAt:{'!=':0} })
+  const successfulCalls = await Message.find({consultation: consultation.id, type:{in:['videoCall', 'audioCall']}, acceptedAt:{'!=':0}, closedAt:{'!=':0} })
 
   const callDurations = successfulCalls.map(c=> c.closedAt - c.acceptedAt)
   const sum = callDurations.reduce((a, b) => a + b, 0);
