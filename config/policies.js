@@ -108,5 +108,7 @@ module.exports.policies = {
     find: ['isLoggedIn', 'isDoctorOrAdmin'],
     create: ['isLoggedIn', 'isAdmin'],
     destroy: ['isLoggedIn', 'isAdmin'],
+    update: ['isLoggedIn', 'isAdmin'],
+
   }
 };
