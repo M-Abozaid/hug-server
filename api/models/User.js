@@ -71,7 +71,7 @@ module.exports = {
     department: {
       type: 'string'
     },
-    function: {
+    _function: {
       type: 'string'
     }
   },
