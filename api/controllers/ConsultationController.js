@@ -48,7 +48,7 @@ const columns = [
   {colName:'Docteur taux satisfaction', key:'doctorRating'},
   {colName:'Docteur satisfaction message', key:'doctorComment'},
   {colName:'Department', key:'acceptedBy.department'},
-  {colName:'Function', key:'acceptedBy.function'},
+  {colName:'Function', key:'acceptedBy._function'},
 
 ]
 
