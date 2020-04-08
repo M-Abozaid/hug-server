@@ -30,16 +30,11 @@ const sendConsultationClosed = function (consultation) {
 
 const columns = [
   {colName:'Invitation envoyée le', key:'inviteCreatedAt'},
-  // {colName:'Invitation envoyée par', key:'invitedBy.name'},
   {colName:'Consultation planifiée le', key:'inviteScheduledFor'},
   {colName:'File d\'attente', key:'queue.name'},
   {colName:'Patient consultation demandée à', key:'consultationCreatedAt'},
   {colName:'IMAD equipe', key:'IMADTeam'},
-  // {colName:'IMAD infirmier', key:'owner.name'},
-  // {colName:'Consultation prise en charge par', key:'acceptedBy.name'},
   {colName:'Consultation clôturée le', key:'closedAt'},
-  // {colName:'Total messages envoyé par le docteur', key:'doctorTextMessagesCount'},
-  // {colName:'Total messages envoyé par le patient', key:'patientTextMessagesCount'},
   {colName:'Total appel avec réponse', key:'successfulCallsCount'},
   {colName:'Total appel sans réponse', key:'missedCallsCount'},
   {colName:'Moyenne durée appel', key:'averageCallDuration'},
@@ -49,6 +44,8 @@ const columns = [
   {colName:'Docteur satisfaction message', key:'doctorComment'},
   {colName:'Department', key:'acceptedBy.department'},
   {colName:'Function', key:'acceptedBy._function'},
+  {colName:'Docteur ID', key:'acceptedBy.id'},
+
 
 ]
 
