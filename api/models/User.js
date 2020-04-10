@@ -76,7 +76,7 @@ module.exports = {
     },
     lastLoginType: {
       type: 'string',
-      isIn: ['saml', 'local'],
+      isIn: ['saml', 'local', 'sslcert', 'invite'],
     }
   },
 

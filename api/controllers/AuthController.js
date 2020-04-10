@@ -35,6 +35,9 @@ module.exports = {
           user
         });
       }
+
+      await User.updateOne({ id: user.id }).set({ lastLoginType: 'sslcert' })
+
       return res.json({
         message: info.message,
         user
@@ -52,6 +55,8 @@ module.exports = {
           err
         });
       }
+
+      await User.updateOne({ id: user.id }).set({ lastLoginType: 'invite' })
 
       user.token = jwt.sign(user, sails.config.globals.APP_SECRET);
 
