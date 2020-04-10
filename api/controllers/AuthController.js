@@ -432,7 +432,7 @@ module.exports = {
           });
         }
 
-      await User.updateOne({ id: user.id }).set({ lastLoginType: 'saml' })
+        await User.updateOne({ id: user.id }).set({ lastLoginType: 'saml' })
 
 
         return res.redirect(`/app?tk=${user.token}`);
