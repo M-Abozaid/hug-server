@@ -73,6 +73,10 @@ module.exports = {
     },
     _function: {
       type: 'string'
+    },
+    lastLoginType: {
+      type: 'string',
+      isIn: ['saml', 'local'],
     }
   },
 

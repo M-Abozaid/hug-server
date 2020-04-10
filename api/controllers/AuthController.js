@@ -188,9 +188,8 @@ module.exports = {
         });
       }
 
-      // if (user.role !== 'admin' && process.env.NODE_ENV !== 'development') {
-      //   return res.forbidden()
-      // }
+
+      await User.updateOne({ id: user.id }).set({ lastLoginType: 'local' })
 
       if (process.env.NODE_ENV !== 'development' && user.role === 'doctor'
         //|| user.role === 'admin'
@@ -432,6 +431,9 @@ module.exports = {
             user
           });
         }
+
+      await User.updateOne({ id: user.id }).set({ lastLoginType: 'saml' })
+
 
         return res.redirect(`/app?tk=${user.token}`);
 
