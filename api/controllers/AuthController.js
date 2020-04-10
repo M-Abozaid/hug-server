@@ -35,8 +35,12 @@ module.exports = {
           user
         });
       }
+      try {
 
-      await User.updateOne({ id: user.id }).set({ lastLoginType: 'sslcert' })
+        await User.updateOne({ id: user.id }).set({ lastLoginType: 'sslcert' })
+      } catch (error) {
+        console.log('error Updating user login type ', error)
+      }
 
       return res.json({
         message: info.message,
@@ -56,7 +60,12 @@ module.exports = {
         });
       }
 
-      await User.updateOne({ id: user.id }).set({ lastLoginType: 'invite' })
+      try {
+
+        await User.updateOne({ id: user.id }).set({ lastLoginType: 'invite' })
+      } catch (error) {
+        console.log('error Updating user login type ', error)
+      }
 
       user.token = jwt.sign(user, sails.config.globals.APP_SECRET);
 
@@ -194,7 +203,13 @@ module.exports = {
       }
 
 
-      await User.updateOne({ id: user.id }).set({ lastLoginType: 'local' })
+      try {
+        await User.updateOne({ id: user.id }).set({ lastLoginType: 'local' })
+      } catch (error) {
+        console.log('error Updating user login type ', error)
+      }
+
+
 
       if (process.env.NODE_ENV !== 'development' && user.role === 'doctor'
         //|| user.role === 'admin'
@@ -437,7 +452,12 @@ module.exports = {
           });
         }
 
-        await User.updateOne({ id: user.id }).set({ lastLoginType: 'saml' })
+
+        try {
+          await User.updateOne({ id: user.id }).set({ lastLoginType: 'saml' })
+        } catch (error) {
+          console.log('error Updating user login type ', error)
+        }
 
 
         return res.redirect(`/app?tk=${user.token}`);
