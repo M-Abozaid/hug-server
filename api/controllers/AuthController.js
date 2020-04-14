@@ -28,7 +28,7 @@ module.exports = {
   loginCert(req, res) {
 
     // return res.status(401).send()
-    passport.authenticate('trusted-header', (err, user, info = {}) => {
+    passport.authenticate('trusted-header', async (err, user, info = {}) => {
       if ((err) || (!user)) {
         return res.send({
           message: info.message,
@@ -53,7 +53,7 @@ module.exports = {
   },
 
   loginInvite(req, res) {
-    passport.authenticate('invite', (err, user) => {
+    passport.authenticate('invite', async (err, user) => {
       if ((err) || (!user)) {
         return res.status(401).send({
           err
@@ -437,7 +437,7 @@ module.exports = {
     }
 
     bodyParser.urlencoded({ extended: false })(req, res, () => {
-      passport.authenticate('saml', (err, user, info = {}) => {
+      passport.authenticate('saml', async (err, user, info = {}) => {
 
         if (err) {
           sails.log('error authenticating ', err);
