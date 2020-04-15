@@ -72,7 +72,16 @@ passport.use('sms', new CustomStrategy(
 
 
       if (decoded.code !== req.body.smsVerificationCode) {
-        return cb(null, false, { message: 'Invalid verification code' });
+        user.smsAttempts++;
+        if (user.smsAttempts > 9) {
+          await User.updateOne({ id: req.body.user }).set({ smsVerificationCode: '' });
+          return cb(null, false, { message: 'MAX_ATTEMPS' });
+        }
+        else {
+          await User.updateOne({ id: req.body.user }).set({ smsAttempts: user.smsAttempts });
+          return cb(null, false, { message: 'Invalid verification code' });
+        }
+
       }
 
       return cb(null, user, { message: 'SMS Login Successful' });

@@ -236,7 +236,7 @@ module.exports = {
         // const hash = await bcrypt.hash(verificationCode, salt)
         const smsToken = jwt.sign({ code: verificationCode }, sails.config.globals.APP_SECRET, { expiresIn: SMS_CODE_LIFESPAN });
 
-        await User.updateOne({ id: user.id }).set({ smsVerificationCode: smsToken })
+        await User.updateOne({ id: user.id }).set({ smsVerificationCode: smsToken, smsAttempts:0 })
 
         try {
           await sails.helpers.sms.with({

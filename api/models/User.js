@@ -34,6 +34,9 @@ module.exports = {
     smsVerificationCode: {
       type: 'string'
     },
+    smsAttempts: {
+      type: 'number'
+    },
     temporaryAccount: {
       type: 'boolean'
     },
