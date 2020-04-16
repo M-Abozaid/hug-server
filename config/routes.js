@@ -51,6 +51,7 @@ module.exports.routes = {
   'GET /api/v1/current-user': 'AuthController.getUser',
   'GET /api/v1/config': 'AuthController.getConfig',
   'GET /api/v1/user/ip': 'UserController.ip',
+  'POST /api/v1/user/notif': 'UserController.updateNotif',
 
   'POST /api/v1/user/:user/allowed-queues': 'UserController.addDoctorToQueue',
   'DELETE /api/v1/user/:user/allowed-queues': 'UserController.removeDoctorFromQueue',
