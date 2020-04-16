@@ -32,13 +32,13 @@ module.exports = {
     }
 
     try {
-      let userAndQueueExist = await User.findOne({ id: req.params.user}).populate('allowedQueues', { id:req.body.queue }) ;
+      let userAndQueueExist = await User.findOne({ id: req.params.user }).populate('allowedQueues', { id: req.body.queue });
 
       if (!userAndQueueExist) {
         res.status(404)
         return res.json({ message: 'User not found' });
       }
-      else if(userAndQueueExist.allowedQueues.length==0){
+      else if (userAndQueueExist.allowedQueues.length == 0) {
         res.status(404)
         return res.json({ message: 'Queue not found' });
       }
@@ -59,6 +59,23 @@ module.exports = {
 
     return res.status(200).json(user.allowedQueues)
   },
+
+  async getUser(req, res) {
+    const user = await User.findOne({ id: req.params.user });
+    return res.status(200).json(user);
+  },
+
+  async updateNotif(req, res) {
+    let valuesToUpdate = {};
+    if (req.body.enableNotif !=undefined) {
+      valuesToUpdate.enableNotif = req.body.enableNotif;
+    }
+    if (req.body.notifPhoneNumber) {
+      valuesToUpdate.notifPhoneNumber = req.body.notifPhoneNumber;
+    }
+    const user = await User.updateOne({ id : req.user.id}).set(valuesToUpdate);
+    return res.status(200).json({ success: true });
+  }
 
 
   // async count(req, res){

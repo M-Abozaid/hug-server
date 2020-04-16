@@ -34,6 +34,9 @@ module.exports = {
     smsVerificationCode: {
       type: 'string'
     },
+    smsAttempts: {
+      type: 'number'
+    },
     temporaryAccount: {
       type: 'boolean'
     },
@@ -50,6 +53,13 @@ module.exports = {
     },
     authPhoneNumber: {
       type: 'string'
+    },
+    notifPhoneNumber: {
+      type: 'string'
+    },
+    enableNotif: {
+      type: 'boolean',
+      defaultsTo: false,
     },
     // Add a reference to Consultation
     consultations: {
@@ -70,6 +80,13 @@ module.exports = {
     },
     department: {
       type: 'string'
+    },
+    _function: {
+      type: 'string'
+    },
+    lastLoginType: {
+      type: 'string',
+      isIn: ['saml', 'local', 'sslcert', 'invite'],
     }
   },
 
@@ -119,16 +136,16 @@ module.exports = {
 
   },
 
-  beforeUpdate: async function(valuesToSet, proceed){
+  beforeUpdate: async function (valuesToSet, proceed) {
 
     // let existing = await User.findOne({ email: valuesToSet.email });
     console.log('values to set ', valuesToSet)
-    if(valuesToSet.email){
-      let existing = await User.findOne({ email: valuesToSet.email, id:{'!=':valuesToSet.id} });
-      if(existing){
+    if (valuesToSet.email) {
+      let existing = await User.findOne({ email: valuesToSet.email, id: { '!=': valuesToSet.id } });
+      if (existing) {
         const err = new Error('Email have already been used ')
-          err.name =  "DUPLICATE_EMAIL"
-          err.code =  400
+        err.name = "DUPLICATE_EMAIL"
+        err.code = 400
 
         return proceed(err)
       }

@@ -30,23 +30,23 @@ const sendConsultationClosed = function (consultation) {
 
 const columns = [
   {colName:'Invitation envoyée le', key:'inviteCreatedAt'},
-  {colName:'Invitation envoyée par', key:'invitedBy.name'},
   {colName:'Consultation planifiée le', key:'inviteScheduledFor'},
   {colName:'File d\'attente', key:'queue.name'},
   {colName:'Patient consultation demandée à', key:'consultationCreatedAt'},
   {colName:'IMAD equipe', key:'IMADTeam'},
-  {colName:'IMAD infirmier', key:'owner.name'},
-  {colName:'Consultation prise en charge par', key:'acceptedBy.name'},
   {colName:'Consultation clôturée le', key:'closedAt'},
-  {colName:'Total messages envoyé par le docteur', key:'doctorTextMessagesCount'},
-  {colName:'Total messages envoyé par le patient', key:'patientTextMessagesCount'},
   {colName:'Total appel avec réponse', key:'successfulCallsCount'},
   {colName:'Total appel sans réponse', key:'missedCallsCount'},
   {colName:'Moyenne durée appel', key:'averageCallDuration'},
   {colName:'Patient taux satisfaction', key:'patientRating'},
   {colName:'Patient satisfaction message', key:'patientComment'},
   {colName:'Docteur taux satisfaction', key:'doctorRating'},
-  {colName:'Docteur satisfaction message', key:'doctorComment'}
+  {colName:'Docteur satisfaction message', key:'doctorComment'},
+  {colName:'Department', key:'acceptedBy.department'},
+  {colName:'Function', key:'acceptedBy._function'},
+  {colName:'Docteur ID', key:'acceptedBy.id'},
+
+
 ]
 
 
@@ -84,11 +84,12 @@ async function saveAnonymousDetails(consultation){
   const doctorTextMessagesCount = await Message.count({from: consultation.acceptedBy, consultation: consultation.id, type:'text'})
   const patientTextMessagesCount = await Message.count({from: consultation.owner, consultation: consultation.id, type:'text'})
   const missedCallsCount = await Message.count({consultation: consultation.id, type:{in:['videoCall', 'audioCall']}, acceptedAt:0 })
-  const successfulCalls = await Message.find({consultation: consultation.id, type:{in:['videoCall', 'audioCall']}, acceptedAt:{'!=':0} })
+  const successfulCalls = await Message.find({consultation: consultation.id, type:{in:['videoCall', 'audioCall']}, acceptedAt:{'!=':0}, closedAt:{'!=':0} })
 
   const callDurations = successfulCalls.map(c=> c.closedAt - c.acceptedAt)
   const sum = callDurations.reduce((a, b) => a + b, 0);
-  const averageCallDuration = (sum / callDurations.length) || 0;
+  const averageCallDurationMs = (sum / callDurations.length) || 0;
+  const averageCallDuration = averageCallDurationMs/6000;
 
 
   anonymousConsultation.doctorTextMessagesCount = doctorTextMessagesCount

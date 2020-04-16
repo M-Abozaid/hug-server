@@ -276,7 +276,7 @@ module.exports = {
       return res.notFound();
     }
 
-    if(consultation.invitationToken){
+    if(!consultation.invitationToken){
       return res.notFound();
 
     }

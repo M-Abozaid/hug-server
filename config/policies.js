@@ -44,8 +44,10 @@ module.exports.policies = {
     destroy: ['isLoggedIn', 'isAdmin'],
     remove: ['isLoggedIn', 'isAdmin'],
     replace: ['isLoggedIn', 'isAdmin'],
+    getUser: ['isLoggedIn', 'isDoctorOrAdmin'],
+    updateNotif: ['isLoggedIn', 'isDoctor']
   },
-  countController:{
+  countController: {
     count: ['isLoggedIn', 'isAdmin'],
   },
   MessageController: {
@@ -88,8 +90,8 @@ module.exports.policies = {
   SupportController: {
     supportRequest: ['isLoggedIn'],
   },
-  InviteController:{
-    '*':false,
+  InviteController: {
+    '*': false,
     invite: ['isLoggedIn', 'isDoctorOrAdmin', 'setPublicInviteOwner'],
     resend: ['isLoggedIn', 'isDoctor'],
     revoke: ['isLoggedIn', 'isDoctor'],
@@ -106,5 +108,8 @@ module.exports.policies = {
     '*': false,
     find: ['isLoggedIn', 'isDoctorOrAdmin'],
     create: ['isLoggedIn', 'isAdmin'],
+    destroy: ['isLoggedIn', 'isAdmin'],
+    update: ['isLoggedIn', 'isAdmin'],
+
   }
 };

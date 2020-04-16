@@ -28,13 +28,20 @@ module.exports = {
   loginCert(req, res) {
 
     // return res.status(401).send()
-    passport.authenticate('trusted-header', (err, user, info = {}) => {
+    passport.authenticate('trusted-header', async (err, user, info = {}) => {
       if ((err) || (!user)) {
         return res.send({
           message: info.message,
           user
         });
       }
+      try {
+
+        await User.updateOne({ id: user.id }).set({ lastLoginType: 'sslcert' })
+      } catch (error) {
+        console.log('error Updating user login type ', error)
+      }
+
       return res.json({
         message: info.message,
         user
@@ -46,11 +53,18 @@ module.exports = {
   },
 
   loginInvite(req, res) {
-    passport.authenticate('invite', (err, user) => {
+    passport.authenticate('invite', async (err, user) => {
       if ((err) || (!user)) {
         return res.status(401).send({
           err
         });
+      }
+
+      try {
+
+        await User.updateOne({ id: user.id }).set({ lastLoginType: 'invite' })
+      } catch (error) {
+        console.log('error Updating user login type ', error)
       }
 
       user.token = jwt.sign(user, sails.config.globals.APP_SECRET);
@@ -188,9 +202,14 @@ module.exports = {
         });
       }
 
-      // if (user.role !== 'admin' && process.env.NODE_ENV !== 'development') {
-      //   return res.forbidden()
-      // }
+
+      try {
+        await User.updateOne({ id: user.id }).set({ lastLoginType: 'local' })
+      } catch (error) {
+        console.log('error Updating user login type ', error)
+      }
+
+
 
       if (process.env.NODE_ENV !== 'development' && user.role === 'doctor'
         //|| user.role === 'admin'
@@ -217,7 +236,7 @@ module.exports = {
         // const hash = await bcrypt.hash(verificationCode, salt)
         const smsToken = jwt.sign({ code: verificationCode }, sails.config.globals.APP_SECRET, { expiresIn: SMS_CODE_LIFESPAN });
 
-        await User.updateOne({ id: user.id }).set({ smsVerificationCode: smsToken })
+        await User.updateOne({ id: user.id }).set({ smsVerificationCode: smsToken, smsAttempts:0 })
 
         try {
           await sails.helpers.sms.with({
@@ -418,7 +437,7 @@ module.exports = {
     }
 
     bodyParser.urlencoded({ extended: false })(req, res, () => {
-      passport.authenticate('saml', (err, user, info = {}) => {
+      passport.authenticate('saml', async (err, user, info = {}) => {
 
         if (err) {
           sails.log('error authenticating ', err);
@@ -432,6 +451,14 @@ module.exports = {
             user
           });
         }
+
+
+        try {
+          await User.updateOne({ id: user.id }).set({ lastLoginType: 'saml' })
+        } catch (error) {
+          console.log('error Updating user login type ', error)
+        }
+
 
         return res.redirect(`/app?tk=${user.token}`);
 
