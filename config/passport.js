@@ -75,7 +75,7 @@ passport.use('sms', new CustomStrategy(
         user.smsAttempts++;
         if (user.smsAttempts > 9) {
           await User.updateOne({ id: req.body.user }).set({ smsVerificationCode: '' });
-          return cb(null, false, { message: 'MAX_ATTEMPS' });
+          return cb(null, false, { message: 'MAX_ATTEMPTS' });
         }
         else {
           await User.updateOne({ id: req.body.user }).set({ smsAttempts: user.smsAttempts });
