@@ -66,7 +66,22 @@ module.exports = {
       } catch (error) {
         console.log('error Updating user login type ', error)
       }
+      //When a patient accept an invitation if the doctor enable the notif he recieve a sms
+      try {
+        let publicInvite = await PublicInvite.findOne({ id: user.inviteToken });
+        console.log(publicInvite);
 
+        let doctorToNotif = await User.findOne({ id: publicInvite.invitedBy });
+        console.log(publicInvite, doctorToNotif);
+        if (doctorToNotif && doctorToNotif.enableNotif && doctorToNotif.notifPhoneNumber) {
+          a = await sails.helpers.sms.with({
+            phoneNumber: doctorToNotif.notifPhoneNumber,
+            message: `Un patient est dans la file d'attente`
+          });
+        }
+      }
+      catch (e) {
+      }
       user.token = jwt.sign(user, sails.config.globals.APP_SECRET);
 
       return res.json({
@@ -136,7 +151,7 @@ module.exports = {
 
       const password = await User.generatePassword(req.body.password);
 
-      const user =  await User.findOne({resetPasswordToken: req.body.token});
+      const user = await User.findOne({ resetPasswordToken: req.body.token });
       await User.updateOne({
         resetPasswordToken: req.body.token
       }).set({
@@ -176,12 +191,12 @@ module.exports = {
       });
     }
 
-    const isAdmin = await User.count({email: req.body.email, role:'admin'})
-    if(req.body._version){
-      await  User.updateOne({email: req.body.email, role: {in:['doctor','admin']} } ).set({doctorClientVersion: req.body._version})
-    }else{
-      if(!isAdmin){
-        await  User.updateOne({email: req.body.email }).set({doctorClientVersion: 'invalid'})
+    const isAdmin = await User.count({ email: req.body.email, role: 'admin' })
+    if (req.body._version) {
+      await User.updateOne({ email: req.body.email, role: { in: ['doctor', 'admin'] } }).set({ doctorClientVersion: req.body._version })
+    } else {
+      if (!isAdmin) {
+        await User.updateOne({ email: req.body.email }).set({ doctorClientVersion: 'invalid' })
         return res.status(400).json({
           message: "Le cache de votre navigateur n'est pas à jour, vous devez le raffraichir avec CTRL+F5 !",
         });
@@ -236,7 +251,7 @@ module.exports = {
         // const hash = await bcrypt.hash(verificationCode, salt)
         const smsToken = jwt.sign({ code: verificationCode }, sails.config.globals.APP_SECRET, { expiresIn: SMS_CODE_LIFESPAN });
 
-        await User.updateOne({ id: user.id }).set({ smsVerificationCode: smsToken, smsAttempts:0 })
+        await User.updateOne({ id: user.id }).set({ smsVerificationCode: smsToken, smsAttempts: 0 })
 
         try {
           await sails.helpers.sms.with({
@@ -361,17 +376,17 @@ module.exports = {
         return res.status(401).json({ error: "Unauthorized" });
       }
 
-      if(decoded.singleFactor){
+      if (decoded.singleFactor) {
         return res.status(401).json({ error: "Unauthorized" });
       }
 
       try {
 
 
-        if(req.query._version){
-          await  User.updateOne({email: decoded.email, role: {in:['doctor','admin']} } ).set({doctorClientVersion: req.query._version})
-        }else{
-          await  User.updateOne({email: decoded.email }).set({doctorClientVersion: 'invalid'})
+        if (req.query._version) {
+          await User.updateOne({ email: decoded.email, role: { in: ['doctor', 'admin'] } }).set({ doctorClientVersion: req.query._version })
+        } else {
+          await User.updateOne({ email: decoded.email }).set({ doctorClientVersion: 'invalid' })
           return res.status(400).json({
             message: "Le cache de votre navigateur n'est pas à jour, vous devez le raffraichir avec CTRL+F5 !",
           });
@@ -382,13 +397,13 @@ module.exports = {
           id: decoded.id
         })
 
-        if(!user){
+        if (!user) {
           console.error('No user from a valid token ')
-          res.status(500).json({message:'UNKNOWN ERROR'})
+          res.status(500).json({ message: 'UNKNOWN ERROR' })
         }
 
-        if(user.role === 'doctor' ){
-          if(!user.doctorClientVersion){
+        if (user.role === 'doctor') {
+          if (!user.doctorClientVersion) {
             return res.status(401).json({ error: "Unauthorized App version needs to be updated" });
           }
         }
@@ -400,7 +415,7 @@ module.exports = {
         });
       } catch (error) {
         console.error(error)
-        res.status(500).json({message:'UNKNOWN ERROR'})
+        res.status(500).json({ message: 'UNKNOWN ERROR' })
 
       }
     })
