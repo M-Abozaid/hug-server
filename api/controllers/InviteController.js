@@ -25,8 +25,19 @@ function getSmsText(inviteUrl) {
  * @param {string} inviteUrl - The URL of the invitation.
  * @returns {string} - The invitation SMS message.
  */
-function getInviteReminderSmsText(inviteUrl) {
-  return `Votre consultation est prévue dans une heure : ${inviteUrl}`;
+function getInviteReminderText(inviteUrl) {
+  return `Votre consultation démarre dans une minute : ${inviteUrl}`;
+}
+
+/**
+ *
+ *
+ * @param {number} scheduledFor -
+ * @returns {string} - The invitation SMS message.
+ */
+function getInvite24HReminderText(scheduledFor) {
+  return `Rappel J-1
+  Votre consultation de télémédecine @home aura lieu demain à ${moment(scheduledFor).format('HH:mm')}.`;
 }
 
 /**
@@ -36,7 +47,9 @@ function getInviteReminderSmsText(inviteUrl) {
  * @returns {string} - The invitation SMS message.
  */
 function getScheduledInviteText(inviteUrl, scheduledFor) {
-  return `Votre consultation est planifiée pour le ${moment(scheduledFor).format('D MMMM à HH:mm')} :  ${inviteUrl}`;
+  return `Bonjour,
+  Vous avez été invité pour une consultation de télémédecine HUG@home le ${moment(scheduledFor).format('D MMMM à HH:mm')}.
+  Veuillez noter cette date dans votre agenda. ${inviteUrl}`;
 }
 
 
@@ -177,12 +190,44 @@ module.exports = {
     }
 
     if(invite.scheduledFor){
-      schedule.scheduleJob(new Date(invite.scheduledFor) - 60*60*1000, async function(){
-        await sails.helpers.sms.with({
-          phoneNumber: req.body.phoneNumber,
-          message: getInviteReminderSmsText(url)
+      if (invite.phoneNumber) {
+
+        if(invite.scheduledFor - Date.now() > 24*60*60*1000){
+          schedule.scheduleJob(new Date(invite.scheduledFor - 24*60*60*1000), async function(){
+            await sails.helpers.sms.with({
+              phoneNumber: req.body.phoneNumber,
+              message: getInvite24HReminderText(invite.scheduledFor)
+            })
+          })
+        }
+        schedule.scheduleJob(new Date(invite.scheduledFor - 60*1000), async function(){
+          await sails.helpers.sms.with({
+            phoneNumber: req.body.phoneNumber,
+            message: getInviteReminderText(url)
+          })
         })
-      })
+      }
+
+      if (invite.emailAddress) {
+        if(invite.scheduledFor - Date.now() > 24*60*60*1000){
+          schedule.scheduleJob(new Date(invite.scheduledFor - 24*60*60*1000), async function(){
+            await sails.helpers.email.with({
+              to: invite.emailAddress,
+              subject: 'Votre lien de consultation',
+              text: getInvite24HReminderText(invite.scheduledFor),
+            })
+
+          })
+        }
+        schedule.scheduleJob(new Date(invite.scheduledFor - 60*1000), async function(){
+          await sails.helpers.email.with({
+            to: invite.emailAddress,
+            subject: 'Votre lien de consultation',
+            text: getInviteReminderText(url),
+          })
+
+        })
+      }
     }
 
     return res.json({
