@@ -89,7 +89,7 @@ async function saveAnonymousDetails(consultation){
   const callDurations = successfulCalls.map(c=> c.closedAt - c.acceptedAt)
   const sum = callDurations.reduce((a, b) => a + b, 0);
   const averageCallDurationMs = (sum / callDurations.length) || 0;
-  const averageCallDuration = averageCallDurationMs/6000;
+  const averageCallDuration = averageCallDurationMs/60000;
 
 
   anonymousConsultation.doctorTextMessagesCount = doctorTextMessagesCount
