@@ -9,7 +9,22 @@ const { Strategy } = require('passport-trusted-header');
 const passportCustom = require('passport-custom');
 const CustomStrategy = passportCustom.Strategy;
 
-
+function getUserDetails(user){
+  return {
+    email: user.email,
+    username: user.username,
+    id: user.id,
+    role: user.role,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    phoneNumber: user.phoneNumber,
+    authPhoneNumber: user.authPhoneNumber,
+    viewAllQueues: user.viewAllQueues,
+    doctorClientVersion: user.doctorClientVersion,
+    notifPhoneNumber : user.notifPhoneNumber,
+    enableNotif : user.enableNotif
+  };
+}
 
 passport.serializeUser((user, cb) => {
   cb(null, user.id);
@@ -72,7 +87,16 @@ passport.use('sms', new CustomStrategy(
 
 
       if (decoded.code !== req.body.smsVerificationCode) {
-        return cb(null, false, { message: 'Invalid verification code' });
+        user.smsAttempts++;
+        if (user.smsAttempts > 9) {
+          await User.updateOne({ id: req.body.user }).set({ smsVerificationCode: '' });
+          return cb(null, false, { message: 'MAX_ATTEMPTS' });
+        }
+        else {
+          await User.updateOne({ id: req.body.user }).set({ smsAttempts: user.smsAttempts });
+          return cb(null, false, { message: 'Invalid verification code' });
+        }
+
       }
 
       return cb(null, user, { message: 'SMS Login Successful' });
@@ -122,19 +146,7 @@ passport.use('2FA', new CustomStrategy(
           return cb(null, false, { message: 'Invalid Token' });
         }
 
-        const userDetails = {
-          email: user.email,
-          username: user.username,
-          id: user.id,
-          role: user.role,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          phoneNumber: user.phoneNumber,
-          authPhoneNumber: user.authPhoneNumber,
-          viewAllQueues: user.viewAllQueues,
-          doctorClientVersion: user.doctorClientVersion,
-
-        };
+        const userDetails = getUserDetails(user);
         const token = jwt.sign(userDetails, sails.config.globals.APP_SECRET);
         userDetails.token = token;
 
@@ -160,19 +172,9 @@ passport.use(new LocalStrategy({
         if(!user.doctorClientVersion){
           return cb(null, false, { message: "Le cache de votre navigateur n'est pas à jour, vous devez le raffraichir avec CTRL+F5 !" });
         }
+        
       }
-      const userDetails = {
-        email: user.email,
-        username: user.username,
-        id: user.id,
-        role: user.role,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        phoneNumber: user.phoneNumber,
-        authPhoneNumber: user.authPhoneNumber,
-        viewAllQueues: user.viewAllQueues,
-        doctorClientVersion: user.doctorClientVersion,
-      };
+      const userDetails = getUserDetails(user)
 
       const token = jwt.sign(userDetails, sails.config.globals.APP_SECRET);
       userDetails.token = token;
