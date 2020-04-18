@@ -311,6 +311,24 @@ module.exports = {
         consultationJson.invitedBy = invite.invitedBy;
         consultationJson.invite = invite.id;
       }
+    }else if(process.env.DEFAULT_QUEUE_ID){
+      const queuesUsersCollection = db.collection('queue_allowedQueues_queue__user_allowedQueues');
+      const results = await queuesUsersCollection.find({queue_allowedQueues_queue: new ObjectId(process.env.DEFAULT_QUEUE_ID)});
+
+      const queuesUsers = await results.toArray();
+      const userCollection = db.collection('user');
+      const doctorsCurs = await userCollection.find({ role: 'doctor', $or:[{viewAllQueues:true}, {_id:{$in:queuesUsers.map(qu=> new ObjectId(qu.user_allowedQueues))}}]  });
+
+      const doctors = await doctorsCurs.toArray()
+
+      doctors.forEach(async doctor=>{
+        if (doctor && doctor.enableNotif && doctor.notifPhoneNumber) {
+          a = await sails.helpers.sms.with({
+            phoneNumber: doctor.notifPhoneNumber,
+            message: `Un patient est dans la file d'attente`
+          });
+        }
+      })
     }
 
     Consultation.create(consultationJson).fetch().then(consultation => {
