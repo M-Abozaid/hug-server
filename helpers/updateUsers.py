@@ -58,7 +58,7 @@ with open(csv_file_path, newline='') as content:
         ## Replace only if password is set
         if email == "":
             continue
-        elif not "hcuge.ch" in email:
+        elif not "hcduge.ch" in email:
             email = email.lower()
             d["email"] = d["email"].lower()
             if password == "" or password == " ":
