@@ -6,16 +6,15 @@ import json, requests, csv
 from datetime import datetime
 import bcrypt, string, random
 import re
+import time
+
+api_token =
+api_id =
+api_url_base =
 
 
-## DEV
-api_token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImluZm9AaWFic2lzLmNvbSIsInVzZXJuYW1lIjoiaW5mb0BpYWJzaXMuY29tIiwiaWQiOiI1ZTZlMDU2OTA1NmRkMTUyMDg5OTI4NzIiLCJyb2xlIjoiYWRtaW4iLCJmaXJzdE5hbWUiOiJBZG1pbiIsImxhc3ROYW1lIjoiSUFCU0lTIiwiaWF0IjoxNTg0MjY4NzczfQ.8GItFBopfmThaWjvv-BivgeLMX40k3ZoP-ysJJfsqvM'
-api_id = '5e6e0569056dd15208992872'
-api_url_base = 'https://dev-medecin-hug-at-home.oniabsis.com/api/v1'
-
-
-
-
+print("UPDATING URL (in 5 seconds): " + api_url_base)
+time.sleep(5)
 
 
 class accounts():
@@ -25,7 +24,8 @@ class accounts():
            'id': api_id,
            'x-access-token': api_token}
         self.email = email
-        self.data = self.getAccountInfo(filter='role=doctor&email='+self.email)
+        self.data = self.getAccountInfo(filter='role=doctor&email='+self.email)["results"]
+
 
 
     def getAccountInfo(self, filter):
@@ -97,11 +97,11 @@ class queues():
            'id': api_id,
            'x-access-token': api_token}
         
-        self.data = self.getQueues()
+        self.data = self.getQueues()["results"]
 
     def getQueues(self):
 
-        api_url = api_url_base + '/queue'
+        api_url = api_url_base + '/queue?limit=100'
         response = requests.get(api_url, headers=self.headers)
 
         if response.status_code == 200:
@@ -125,7 +125,8 @@ class allDoctors():
         self.headers = {'Content-Type': 'application/json',
            'id': api_id,
            'x-access-token': api_token}
-        self.data = self.getAccountInfo(filter='role=doctor&limit=1000')
+        self.data = self.getAccountInfo(filter='role=doctor&limit=1000')["results"]
+
 
     def getAccountInfo(self, filter):
         
