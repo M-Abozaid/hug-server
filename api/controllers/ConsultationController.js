@@ -10,7 +10,7 @@ const {
 } = require('openvidu-node-client');
 const uuidv1 = require('uuid/v1');
 console.log("START MEDIA SERVER", sails.config.OPENVIDU_URL, sails.config.OPENVIDU_SECRET);
-const openvidu = new OpenVidu(sails.config.OPENVIDU_URL, sails.config.OPENVIDU_SECRET);
+// const openvidu = new OpenVidu(sails.config.OPENVIDU_URL, sails.config.OPENVIDU_SECRET);
 const fs = require('fs');
 const Json2csvParser = require("json2csv").Parser;
 
@@ -473,6 +473,11 @@ module.exports = {
       data1['RECORDING_LAYOUT'] = 'BEST_FIT';
       data1['recordingLayout'] = 'BEST_FIT';
 
+      const openviduServers = await sails.helpers.openViduServer()
+
+      const serverIndex = Math.floor(Math.random() * openviduServers.length)
+
+      const openvidu = new OpenVidu(openviduServers[serverIndex].url, openviduServers[serverIndex].password);
 
       const session = await openvidu.createSession(data1);
       const token  = await session.generateToken();
@@ -488,6 +493,13 @@ module.exports = {
 
   async call(req, res) {
     try {
+
+      const openviduServers = await sails.helpers.openViduServer()
+
+      const serverIndex = Math.floor(Math.random() * openviduServers.length)
+
+      const openvidu = new OpenVidu(openviduServers[serverIndex].url, openviduServers[serverIndex].password);
+
       // the consultation this call belongs to
       console.log("Start call");
       const consultation = await Consultation.findOne({
