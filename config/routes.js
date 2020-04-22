@@ -28,6 +28,7 @@ module.exports.routes = {
   'get /api/v1/consultations-overview': 'ConsultationController.consultationOverview',
   'get /api/v1/consultations-csv': 'ConsultationController.consultationsCSV',
   'post /api/v1/consultation': 'ConsultationController.create',
+  'GET /api/v1/consultation/test-call': 'ConsultationController.testCall',
   'post /api/v1/consultation/:consultation/accept': 'ConsultationController.acceptConsultation',
   // 'delete /api/v1/consultation/:consultation': 'ConsultationController.destroy',
   'post /api/v1/consultation/:consultation/close': 'ConsultationController.closeConsultation',

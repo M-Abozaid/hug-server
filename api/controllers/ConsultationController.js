@@ -464,6 +464,28 @@ module.exports = {
     }
   },
 
+  async testCall(req, res){
+    try {
+
+      const data1 = {};
+      data1['mediaMode'] = 'ROUTED';
+      data1['recordingMode'] = 'MANUAL';
+      data1['RECORDING_LAYOUT'] = 'BEST_FIT';
+      data1['recordingLayout'] = 'BEST_FIT';
+
+
+      const session = await openvidu.createSession(data1);
+      const token  = await session.generateToken();
+
+      console.log('sessoin tokens', session, token)
+      return res.json({token: token})
+    }catch(err){
+
+    }
+
+
+  },
+
   async call(req, res) {
     try {
       // the consultation this call belongs to
