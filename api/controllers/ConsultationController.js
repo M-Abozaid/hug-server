@@ -473,7 +473,7 @@ module.exports = {
       data1['RECORDING_LAYOUT'] = 'BEST_FIT';
       data1['recordingLayout'] = 'BEST_FIT';
 
-      const openviduServers = await sails.helpers.openViduServer()
+      const openviduServers = await sails.helpers.openviduServer()
 
       const serverIndex = Math.floor(Math.random() * openviduServers.length)
 
@@ -494,7 +494,7 @@ module.exports = {
   async call(req, res) {
     try {
 
-      const openviduServers = await sails.helpers.openViduServer()
+      const openviduServers = await sails.helpers.openviduServer()
 
       const serverIndex = Math.floor(Math.random() * openviduServers.length)
 
