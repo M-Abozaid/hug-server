@@ -15,6 +15,11 @@ const {
 //   }
 // ]
 
+const fallbackOpenvidu = {
+  url:sails.config.OPENVIDU_URL,
+  password: sails.config.OPENVIDU_SECRET
+}
+
 
 module.exports = {
 
@@ -59,6 +64,10 @@ module.exports = {
     const availableServers = serversStatues.filter(server=>{
       return server.activeSessions < server.maxNumberOfSessions
     })
+
+    if(!availableServers.length){
+      return exits.success([fallbackOpenvidu])
+    }
 
     exits.success(availableServers)
 
