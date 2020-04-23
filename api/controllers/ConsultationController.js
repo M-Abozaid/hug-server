@@ -475,10 +475,14 @@ module.exports = {
 
       const openviduServers = await sails.helpers.openviduServer()
 
-      const serverIndex = Math.floor(Math.random() * openviduServers.length)
+      let openvidu
 
-      const openvidu = new OpenVidu(openviduServers[serverIndex].url, openviduServers[serverIndex].password);
-
+      if(openviduServers.length){
+        const serverIndex = Math.floor(Math.random() * openviduServers.length)
+        openvidu = new OpenVidu(openviduServers[serverIndex].url, openviduServers[serverIndex].password);
+      }else{
+        openvidu = new OpenVidu(sails.config.OPENVIDU_URL, sails.config.OPENVIDU_SECRET);
+      }
       const session = await openvidu.createSession(data1);
       const token  = await session.generateToken();
 
@@ -494,12 +498,16 @@ module.exports = {
   async call(req, res) {
     try {
 
-      const openviduServers = await sails.helpers.openviduServer()
+      const openviduServers = await sails.helpers.openviduServer();
 
-      const serverIndex = Math.floor(Math.random() * openviduServers.length)
+      let openvidu
 
-      const openvidu = new OpenVidu(openviduServers[serverIndex].url, openviduServers[serverIndex].password);
-
+      if(openviduServers.length){
+        const serverIndex = Math.floor(Math.random() * openviduServers.length)
+        openvidu = new OpenVidu(openviduServers[serverIndex].url, openviduServers[serverIndex].password);
+      }else{
+        openvidu = new OpenVidu(sails.config.OPENVIDU_URL, sails.config.OPENVIDU_SECRET);
+      }
       // the consultation this call belongs to
       console.log("Start call");
       const consultation = await Consultation.findOne({
