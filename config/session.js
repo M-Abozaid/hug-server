@@ -18,8 +18,9 @@ module.exports.session = {
   * of your users, forcing them to log in again.                             *
   *                                                                          *
   ***************************************************************************/
-  secret: '819f0bd67d1e61bd2acfbd067e8975e3'
+  secret: '819f0bd67d1e61bd2acfbd067e8975e3',
 
+  adapter:'@sailshq/connect-redis'
 
   /** *************************************************************************
   *                                                                          *

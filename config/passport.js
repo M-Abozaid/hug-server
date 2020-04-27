@@ -172,7 +172,7 @@ passport.use(new LocalStrategy({
         if(!user.doctorClientVersion){
           return cb(null, false, { message: "Le cache de votre navigateur n'est pas à jour, vous devez le raffraichir avec CTRL+F5 !" });
         }
-        
+
       }
       const userDetails = getUserDetails(user)
 
@@ -238,7 +238,7 @@ passport.use(new Strategy(options, (async (requestHeaders, cb) => {
 const SamlStrategy = require('passport-saml').Strategy;
 let samlStrategy
 console.log('env >>>> ', process.env.NODE_ENV)
-if (process.env.NODE_ENV !== 'development') {
+if (process.env.NODE_ENV !== 'development' && process.env.SAML_CALLBACK) {
 
 
   samlStrategy = new SamlStrategy(
