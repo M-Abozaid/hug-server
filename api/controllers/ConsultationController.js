@@ -453,11 +453,15 @@ module.exports = {
 
       // emit consultation closed event with the consultation
       sendConsultationClosed(consultation);
+      consultation.status = 'closed';
+      consultation.closedAtISO = closedAt;
+      consultation.closedAt = closedAt.getTime();
+
+      // emit consultation closed event with the consultation
+      sendConsultationClosed(consultation);
 
       res.status(200);
-      return res.json({
-        message: 'success'
-      });
+      return res.json(consultation);
 
     } catch (error) {
       sails.log('error ', error);

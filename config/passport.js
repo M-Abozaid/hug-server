@@ -51,7 +51,7 @@ passport.use('invite', new CustomStrategy(
 
     const newUser = {
       username: invite.id,
-      email: "",
+      email: invite.emailAddress,
       firstName: "",
       lastName: "",
       role: 'patient',
