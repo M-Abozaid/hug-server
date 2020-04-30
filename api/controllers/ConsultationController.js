@@ -85,6 +85,7 @@ async function saveAnonymousDetails(consultation){
   const patientTextMessagesCount = await Message.count({from: consultation.owner, consultation: consultation.id, type:'text'})
   const missedCallsCount = await Message.count({consultation: consultation.id, type:{in:['videoCall', 'audioCall']}, acceptedAt:0 })
   const successfulCalls = await Message.find({consultation: consultation.id, type:{in:['videoCall', 'audioCall']}, acceptedAt:{'!=':0}, closedAt:{'!=':0} })
+  const successfulCallsCount = await Message.count({consultation: consultation.id, type:{in:['videoCall', 'audioCall']}, acceptedAt:{'!=':0}})
 
   const callDurations = successfulCalls.map(c=> c.closedAt - c.acceptedAt)
   const sum = callDurations.reduce((a, b) => a + b, 0);
@@ -95,7 +96,7 @@ async function saveAnonymousDetails(consultation){
   anonymousConsultation.doctorTextMessagesCount = doctorTextMessagesCount
   anonymousConsultation.patientTextMessagesCount = patientTextMessagesCount
   anonymousConsultation.missedCallsCount = missedCallsCount
-  anonymousConsultation.successfulCallsCount = successfulCalls.length
+  anonymousConsultation.successfulCallsCount = successfulCallsCount
   anonymousConsultation.averageCallDuration = averageCallDuration
 
   console.log('anonymous consultation ',anonymousConsultation )
