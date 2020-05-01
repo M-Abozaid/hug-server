@@ -79,6 +79,10 @@ module.exports = {
       model: 'PublicInvite',
       required: false
     },
+    flagPatientOnline: {
+      type: 'boolean',
+      required: false
+    },
   },
 
   async beforeCreate(consultation, cb) {
