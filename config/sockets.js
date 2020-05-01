@@ -193,6 +193,18 @@ module.exports.sockets = {
           sails.log('error ', 'No user');
           return proceed(false)
         }
+
+        if(user.role === 'nurse' || user.role ==='patient'){
+
+            const consultations = await Consultation.update({owner : user.id}).set({flagPatientOnline:true}).fetch();
+
+            consultations.forEach(consultation=>{
+              sails.sockets.broadcast(consultation.acceptedBy || consultation.queue || consultation.invitedBy, 'patientOnline', { data: consultation });
+            })
+
+
+        }
+
         handshake.user = user;
         return proceed(undefined, true);
       });
