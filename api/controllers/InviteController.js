@@ -48,7 +48,7 @@ function getInvite24HReminderText(scheduledFor) {
  */
 function getScheduledInviteText(inviteUrl, scheduledFor) {
   return `Bonjour,
-  Vous avez été invité pour une consultation de télémédecine HUG@home le ${moment(scheduledFor).format('D MMMM à HH:mm')}.
+  Vous avez été invité pour une consultation de télémédecine @Home le ${moment(scheduledFor).format('D MMMM à HH:mm')}.
   Veuillez noter cette date dans votre agenda. ${inviteUrl}`;
 }
 
@@ -63,7 +63,7 @@ function getScheduledInviteText(inviteUrl, scheduledFor) {
  * @returns {string} - The invitation email content.
  */
 function getEmailText(inviteUrl) {
-  return `Cliquez ici pour accéder à votre vidéo consultation avec votre médecin HUG : ${inviteUrl}`;
+  return `Cliquez ici pour accéder à votre vidéo consultation avec votre médecin : ${inviteUrl}`;
 }
 
 /**
