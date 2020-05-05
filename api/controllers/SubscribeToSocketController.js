@@ -29,6 +29,7 @@ module.exports = {
       // ...
       console.log('disconnected >>>>' , reason)
       const consultations = await Consultation.update({owner : user.id}).set({flagPatientOnline:false}).fetch();
+      console.log("flagPatientOnline > set false", user.id)
 
       consultations.forEach(consultation=>{
 
@@ -45,6 +46,7 @@ module.exports = {
         message: `Subscribed to a fun room called ${user.id}!`
       });
     });
+
   }
 
 };

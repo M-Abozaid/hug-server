@@ -7,15 +7,13 @@
  * For more information on using Sails with Sockets, check out:
  * http://sailsjs.org/#documentation
  */
-const jwt = require('jsonwebtoken');
-
+const jwt = require('jsonwebtoken')
 module.exports.sockets = {
-
   // A array of allowed transport methods which the clients will try to use.
   // The flashsocket transport is disabled by default
   // You can enable flashsockets by adding 'flashsocket' to this list:
   transports: [
-    'websocket'
+    'websocket',
     // 'htmlfile',
     // 'xhr-polling',
     // 'jsonp-polling'
@@ -26,7 +24,6 @@ module.exports.sockets = {
   adapter: '@sailshq/socket.io-redis',
 
   // path:'/socket.io',
-
 
   // Node.js (and consequently Sails.js) apps scale horizontally.
   // It's a powerful, efficient approach, but it involves a tiny bit of planning.
@@ -52,8 +49,6 @@ module.exports.sockets = {
   // port: 32768,
   // db: 'sails',
   // pass: '<redis auth password>'
-
-
 
   // Match string representing the origins that are allowed to connect to the Socket.IO server
   origins: '*:*',
@@ -146,8 +141,6 @@ module.exports.sockets = {
   // You can also use your own custom logic with:
   // authorization: function (data, proceed) {
 
-
-
   //   sails.log('data ', data );
   //   return proceed(undefined, true);
   // },
@@ -176,51 +169,57 @@ module.exports.sockets = {
 
   // socket authentication
   beforeConnect(handshake, proceed) {
-
     // socket authentication
 
     if (handshake._query && handshake._query.token) {
-      jwt.verify(handshake._query.token, sails.config.globals.APP_SECRET, async (err, decoded) => {
-        if (err) {
-          sails.log('error ', err);
-          return proceed(false);
-        }
-        const user = await User.findOne({
-          id: decoded.id
-        });
+      jwt.verify(
+        handshake._query.token,
+        sails.config.globals.APP_SECRET,
+        async (err, decoded) => {
+          if (err) {
+            sails.log('error ', err)
+            return proceed(false)
+          }
+          const user = await User.findOne({
+            id: decoded.id,
+          })
 
-        if (!user) {
-          sails.log('error ', 'No user');
-          return proceed(false)
-        }
+          if (!user) {
+            sails.log('error ', 'No user')
+            return proceed(false)
+          }
 
-        if(user.role === 'nurse' || user.role ==='patient'){
+          if (user.role === 'nurse' || user.role === 'patient') {
+            const consultations = await Consultation.update({ owner: user.id })
+              .set({ flagPatientOnline: true })
+              .fetch()
 
-            const consultations = await Consultation.update({owner : user.id}).set({flagPatientOnline:true}).fetch();
+            console.log('flagPatientOnline > set true', user.id)
 
-            consultations.forEach(consultation=>{
-              sails.sockets.broadcast(consultation.acceptedBy || consultation.queue || consultation.invitedBy, 'patientOnline', { data: consultation });
+            consultations.forEach((consultation) => {
+              sails.sockets.broadcast(
+                consultation.acceptedBy ||
+                  consultation.queue ||
+                  consultation.invitedBy,
+                'patientOnline',
+                { data: consultation },
+              )
             })
+          }
 
-
-        }
-
-        handshake.user = user;
-        return proceed(undefined, true);
-      });
+          handshake.user = user
+          return proceed(undefined, true)
+        },
+      )
     } else {
-
-      return proceed({ message: 'no Token was found' }, false);
+      return proceed({ message: 'no Token was found' }, false)
     }
 
     // Send back `true` to allow the socket to connect.
     // (Or send back `false` to reject the attempt.)
-
-
-  }
+  },
   // 'url':'mongodb://localhost/hug_at_home_ws'
   // The entry point where Socket.IO starts looking for incoming connections.
   // This should be the same between the client and the server.
   // resource: '/socket.io'
-
-};
+}

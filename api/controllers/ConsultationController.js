@@ -311,6 +311,7 @@ module.exports = {
         consultationJson.queue = invite.queue;
         consultationJson.invitedBy = invite.invitedBy;
         consultationJson.invite = invite.id;
+        consultationJson.flagPatientOnline = true;
       }
     }else if(process.env.DEFAULT_QUEUE_ID){
       const queuesUsersCollection = db.collection('queue_allowedQueues_queue__user_allowedQueues');
