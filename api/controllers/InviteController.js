@@ -43,17 +43,15 @@ function getInvite24HReminderText(scheduledFor) {
 /**
  *
  *
- * @param {string} inviteUrl - The URL of the invitation.
+ * @param {string} testingUrl - The URL to hit the test page.
  * @returns {string} - The invitation SMS message.
  */
-function getScheduledInviteText(inviteUrl, scheduledFor) {
-  return `Bonjour,
-  Vous avez été invité pour une consultation de télémédecine @Home le ${moment(scheduledFor).format('D MMMM à HH:mm')}.
-  Veuillez noter cette date dans votre agenda. ${inviteUrl}`;
+function getScheduledInviteText(testingUrl, scheduledFor) {
+  return `Bonjour, Vous avez été invité pour une consultation de télémédecine @Home le ` +
+  `${moment(scheduledFor).format('D MMMM à HH:mm')}. ` +
+  `Nous vous conseillons dors et déjà de tester la compatibilité de votre appareil avec le lien suivant. ${testingUrl}`
+  ;
 }
-
-
-
 
 
 /**
@@ -152,13 +150,14 @@ module.exports = {
     }
 
     const url = `${process.env.PUBLIC_URL}?invite=${invite.inviteToken}`
+    const testingUrl = `${process.env.PUBLIC_URL}/#test-call`
 
     if (invite.emailAddress) {
       try {
         await sails.helpers.email.with({
           to: invite.emailAddress,
           subject: 'Votre lien de consultation',
-          text: invite.scheduledFor? getScheduledInviteText(url, invite.scheduledFor ):getEmailText(url),
+          text: invite.scheduledFor? getScheduledInviteText(testingUrl, invite.scheduledFor ):getEmailText(url),
         })
       } catch (error) {
         if (!invite.phoneNumber) {
@@ -176,7 +175,7 @@ module.exports = {
       try {
         await sails.helpers.sms.with({
           phoneNumber: req.body.phoneNumber,
-          message: invite.scheduledFor? getScheduledInviteText(url, invite.scheduledFor ): getSmsText(url)
+          message: invite.scheduledFor? getScheduledInviteText(testingUrl, invite.scheduledFor ): getSmsText(url)
         })
 
       } catch (error) {
