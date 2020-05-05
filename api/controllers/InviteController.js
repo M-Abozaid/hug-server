@@ -16,7 +16,7 @@ moment.locale('fr');
  * @returns {string} - The invitation SMS message.
  */
 function getSmsText(inviteUrl) {
-  return `Cliquez ici pour accéder à votre vidéo consultation avec votre médecin HUG : ${inviteUrl}`;
+  return `Cliquez ici pour accéder à votre vidéo consultation avec votre médecin : ${inviteUrl}`;
 }
 
 /**
