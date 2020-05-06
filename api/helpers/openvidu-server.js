@@ -52,15 +52,19 @@ module.exports = {
     try {
       const serversStatues =  await  Promise.all(servers.map(async server=>{
         try {
+            const start = Date.now()
             const openvidu = new OpenVidu(server.url, server.password);
-            await openvidu.fetch()
+            console.log('getting server info ', server.url)
+            await openvidu.fetch();
+            console.log('got server info ', server.url, Date.now()- start)
+
             server.activeSessions = openvidu.activeSessions.length
             server.reachable = true
             return server
 
         } catch (error) {
           console.log(error)
-          console.log('Server ', server.url, ' is Not reachable')
+          console.log('Server ', server.url, ' is Not reachable', Date.now()-start)
           return Promise.resolve({reachable:false})
         }
 
