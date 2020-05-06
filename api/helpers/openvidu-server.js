@@ -51,14 +51,15 @@ module.exports = {
 
     try {
       const serversStatues =  await  Promise.all(servers.map(async server=>{
-        const openvidu = new OpenVidu(server.url, server.password);
         try {
+            const openvidu = new OpenVidu(server.url, server.password);
             await openvidu.fetch()
             server.activeSessions = openvidu.activeSessions.length
             server.reachable = true
             return server
 
         } catch (error) {
+          console.log(error)
           console.log('Server ', server.url, ' is Not reachable')
           return Promise.resolve({reachable:false})
         }
@@ -68,19 +69,19 @@ module.exports = {
 
 
 
-    const availableServers = serversStatues.filter(server=>{
-      return (server.activeSessions < server.maxNumberOfSessions) && server.reachable
-    })
+      const availableServers = serversStatues.filter(server=>{
+        return (server.activeSessions < server.maxNumberOfSessions) && server.reachable
+      })
 
-    JSON.stringify('AVAILABLE SERVERS:: ', JSON.stringify(availableServers))
-    if(!availableServers.length){
-      return exits.success([fallbackOpenvidu])
+      console.log('AVAILABLE SERVERS:: ', JSON.stringify(availableServers))
+      if(!availableServers.length){
+        return exits.success([fallbackOpenvidu])
+      }
+
+      exits.success(availableServers)
+    } catch (error) {
+      console.log('Error with getting openvidu server ',error)
     }
-
-    exits.success(availableServers)
-  } catch (error) {
-    console.log('Error with getting openvidu server ',error)
-  }
   }
 
 
