@@ -72,6 +72,7 @@ module.exports = {
       return (server.activeSessions < server.maxNumberOfSessions) && server.reachable
     })
 
+    JSON.stringify('AVAILABLE SERVERS:: ', JSON.stringify(availableServers))
     if(!availableServers.length){
       return exits.success([fallbackOpenvidu])
     }
