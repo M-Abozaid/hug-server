@@ -490,7 +490,7 @@ module.exports = {
       console.log('sessoin tokens', session, token)
       return res.json({token: token})
     }catch(err){
-
+      console.error(err)
     }
 
 
@@ -567,6 +567,7 @@ module.exports = {
       });
 
     } catch (error) {
+      console.error(err)
       return res.json(error);
     }
   },

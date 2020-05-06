@@ -47,22 +47,29 @@ module.exports = {
   fn: async function (inputs, exits) {
     // TODO
 
-
-
     const servers = await OpenviduServer.find();
 
-    const serversStatues =  await  Promise.all(servers.map(server=>{
-      const openvidu = new OpenVidu(server.url, server.password);
-      return openvidu.fetch().then(change=>{
-        console.log('change ', openvidu.activeSessions)
-        server.activeSessions = openvidu.activeSessions.length
-        return server
-      })
-    }))
+    try {
+      const serversStatues =  await  Promise.all(servers.map(async server=>{
+        const openvidu = new OpenVidu(server.url, server.password);
+        try {
+            await openvidu.fetch()
+            server.activeSessions = openvidu.activeSessions.length
+            server.reachable = true
+            return server
+
+        } catch (error) {
+          console.log('Server ', server.url, ' is Not reachable')
+          return Promise.resolve({reachable:false})
+        }
+
+      }))
+
+
 
 
     const availableServers = serversStatues.filter(server=>{
-      return server.activeSessions < server.maxNumberOfSessions
+      return (server.activeSessions < server.maxNumberOfSessions) && server.reachable
     })
 
     if(!availableServers.length){
@@ -70,8 +77,9 @@ module.exports = {
     }
 
     exits.success(availableServers)
-
-
+  } catch (error) {
+    console.log('Error with getting openvidu server ',error)
+  }
   }
 
 
