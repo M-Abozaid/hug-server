@@ -9,23 +9,22 @@
  */
 
 module.exports.policies = {
-
   /** *************************************************************************
-  *                                                                          *
-  * Default policy for all controllers and actions, unless overridden.       *
-  * (`true` allows public access)                                            *
-  *                                                                          *
-  ***************************************************************************/
+   *                                                                          *
+   * Default policy for all controllers and actions, unless overridden.       *
+   * (`true` allows public access)                                            *
+   *                                                                          *
+   ***************************************************************************/
 
   '*': false,
   DashboardController: {
-    get: true
+    get: true,
   },
   SubscribeToSocketController: {
-    subscribe: ['isLoggedIn']
+    subscribe: ['isLoggedIn'],
   },
   SubscribeToDoctorsController: {
-    subscribe: ['isLoggedIn', 'isDoctor']
+    subscribe: ['isLoggedIn', 'isDoctor'],
   },
   // '/api/v1/subscribe-to-socket':['isLoggedIn'],
   UserController: {
@@ -45,7 +44,7 @@ module.exports.policies = {
     remove: ['isLoggedIn', 'isAdmin'],
     replace: ['isLoggedIn', 'isAdmin'],
     getUser: ['isLoggedIn', 'isDoctorOrAdmin'],
-    updateNotif: ['isLoggedIn', 'isDoctor']
+    updateNotif: ['isLoggedIn', 'isDoctor'],
   },
   countController: {
     count: ['isLoggedIn', 'isAdmin'],
@@ -54,7 +53,7 @@ module.exports.policies = {
     '*': false,
     create: ['isLoggedIn', 'setMessageDestination'],
     find: ['isLoggedIn', 'isConsultationOwner'],
-    readMessages: ['isLoggedIn', 'isConsultationOwner']
+    readMessages: ['isLoggedIn', 'isConsultationOwner'],
   },
   ConsultationController: {
     '*': false,
@@ -72,7 +71,7 @@ module.exports.policies = {
     patientFeedback: ['isLoggedIn', 'isNurseOrPatient'],
     doctorFeedback: ['isLoggedIn', 'isConsultationOwner'],
     consultationsCSV: ['isLoggedIn', 'isAdmin'],
-    testCall: ['isLoggedIn'],
+    testCall: true,
   },
   AuthController: {
     loginLocal: true,
@@ -111,6 +110,5 @@ module.exports.policies = {
     create: ['isLoggedIn', 'isAdmin'],
     destroy: ['isLoggedIn', 'isAdmin'],
     update: ['isLoggedIn', 'isAdmin'],
-
-  }
-};
+  },
+}

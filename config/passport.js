@@ -161,7 +161,7 @@ passport.use(new LocalStrategy({
   usernameField: 'email',
   passportField: 'password'
 }, ((email, password, cb) => {
-  User.findOne({ email: email.toLowerCase() }, (err, user) => {
+  User.findOne({ email: email.toLowerCase(), temporaryAccount: {'!=': true} }, (err, user) => {
     if (err) { return cb(err); }
     if (!user) { return cb(null, false, { message: 'Email ou mot de passe incorrect' }); }
     bcrypt.compare(password, user.password, (err, res) => {

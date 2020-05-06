@@ -1,5 +1,5 @@
 [Unit]
-Description=Hug@Home Script
+Description=@Home Backend
 After=network.target
 
 [Service]
