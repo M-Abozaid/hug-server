@@ -1,6 +1,7 @@
 const {
   OpenVidu
 } = require('openvidu-node-client');
+const FETCH_TIMEOUT = 3000
 
 // const servers = [
 //   {
@@ -53,9 +54,10 @@ module.exports = {
       const serversStatues =  await  Promise.all(servers.map(async server=>{
         const start = Date.now()
         try {
+
             const openvidu = new OpenVidu(server.url, server.password);
             console.log('getting server info ', server.url)
-            await openvidu.fetch();
+            await timeoutPromise(FETCH_TIMEOUT, openvidu.fetch());
             console.log('got server info ', server.url, Date.now()- start)
 
             server.activeSessions = openvidu.activeSessions.length
@@ -91,3 +93,20 @@ module.exports = {
 
 };
 
+function timeoutPromise(ms, promise) {
+  return new Promise((resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      reject(new Error("promise timeout"))
+    }, ms);
+    promise.then(
+      (res) => {
+        clearTimeout(timeoutId);
+        resolve(res);
+      },
+      (err) => {
+        clearTimeout(timeoutId);
+        reject(err);
+      }
+    );
+  })
+}
