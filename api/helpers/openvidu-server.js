@@ -51,8 +51,8 @@ module.exports = {
 
     try {
       const serversStatues =  await  Promise.all(servers.map(async server=>{
+        const start = Date.now()
         try {
-            const start = Date.now()
             const openvidu = new OpenVidu(server.url, server.password);
             console.log('getting server info ', server.url)
             await openvidu.fetch();
