@@ -150,7 +150,7 @@ module.exports = {
     }
 
     const url = `${process.env.PUBLIC_URL}?invite=${invite.inviteToken}`
-    const testingUrl = `${process.env.PUBLIC_URL}/#test-call`
+    const testingUrl = `${process.env.PUBLIC_URL}/#/test-call`
 
     if (invite.emailAddress) {
       try {
