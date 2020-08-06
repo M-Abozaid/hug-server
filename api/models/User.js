@@ -15,7 +15,7 @@ module.exports = {
     email: {
       type: 'string',
       isEmail: true,
-      required: false,
+      required: false
     },
     firstName: {
       type: 'string'
@@ -25,7 +25,7 @@ module.exports = {
     },
     role: {
       type: 'string',
-      isIn: ['doctor', 'nurse', 'admin', 'patient'],
+      isIn: ['doctor', 'nurse', 'admin', 'patient', 'translator', 'guest'],
       required: true
     },
     password: {
@@ -59,7 +59,7 @@ module.exports = {
     },
     enableNotif: {
       type: 'boolean',
-      defaultsTo: false,
+      defaultsTo: false
     },
     // Add a reference to Consultation
     consultations: {
@@ -72,7 +72,7 @@ module.exports = {
     },
     viewAllQueues: {
       type: 'boolean',
-      defaultsTo: false,
+      defaultsTo: false
     },
     doctorClientVersion: {
       type: 'string',
@@ -86,36 +86,42 @@ module.exports = {
     },
     lastLoginType: {
       type: 'string',
-      isIn: ['saml', 'local', 'sslcert', 'invite'],
+      isIn: ['saml', 'local', 'sslcert', 'invite']
+    },
+    preferredLanguage: {
+      type: 'string'
+    },
+    direct: {
+      type: 'number'
     }
   },
 
-  generatePassword(clearPassword) {
+  generatePassword (clearPassword) {
     return new Promise((resolve, reject) => {
       bcrypt.genSalt(10, (err, salt) => {
-        console.log("SALT GENERATED", salt);
-        if (err) { reject(err) }
+        console.log('SALT GENERATED', salt);
+        if (err) { reject(err); }
         bcrypt.hash(clearPassword, salt, (err, hash) => {
-          console.log("PASSWORD ENCRYPTED", hash);
+          console.log('PASSWORD ENCRYPTED', hash);
           crypted = hash;
-          if (err) { reject(err) }
+          if (err) { reject(err); }
           resolve(hash);
         });
       });
-    })
+    });
 
   },
 
-  customToJSON() {
-    return _.omit(this, ['password', 'smsVerificationCode'])
+  customToJSON () {
+    return _.omit(this, ['password', 'smsVerificationCode']);
   },
-  beforeCreate: async function (user, cb) {
+  async beforeCreate (user, cb) {
     try {
       // if(user.role === 'nurse') {return cb();}
       if (!user.password) {
         return cb();
       }
-      let existing = await User.findOne({ email: user.email });
+      const existing = await User.findOne({ email: user.email });
       if (existing) {
         return cb({
           message: 'Email already used '
@@ -136,22 +142,22 @@ module.exports = {
 
   },
 
-  beforeUpdate: async function (valuesToSet, proceed) {
+  async beforeUpdate (valuesToSet, proceed) {
 
     // let existing = await User.findOne({ email: valuesToSet.email });
-    console.log('values to set ', valuesToSet)
+    console.log('values to set ', valuesToSet);
     if (valuesToSet.email) {
-      let existing = await User.findOne({ email: valuesToSet.email, id: { '!=': valuesToSet.id } });
+      const existing = await User.findOne({ email: valuesToSet.email, id: { '!=': valuesToSet.id } });
       if (existing) {
-        const err = new Error('Email have already been used ')
-        err.name = "DUPLICATE_EMAIL"
-        err.code = 400
+        const err = new Error('Email have already been used ');
+        err.name = 'DUPLICATE_EMAIL';
+        err.code = 400;
 
-        return proceed(err)
+        return proceed(err);
       }
     }
-    proceed()
+    proceed();
 
   }
 
-}
+};

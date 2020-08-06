@@ -4,21 +4,27 @@
  * @description :: A model definition represents a database table/collection.
  * @docs        :: https://sailsjs.com/docs/concepts/models-and-orm/models
  */
+const moment = require('moment');
+moment.locale('fr');
+const schedule = require('node-schedule');
 
-const crypto = require("crypto");
-async function generateToken() {
+const FIRST_INVITE_REMINDER_AFTER = 24 * 60 * 60 * 1000;
+const SECOND_INVITE_REMINDER_AFTER = 60 * 1000;
+const testingUrl = `${process.env.PUBLIC_URL}/#test-call`;
+const crypto = require('crypto');
+async function generateToken () {
   const buffer = await new Promise((resolve, reject) => {
-    crypto.randomBytes(256, function (ex, buffer) {
+    crypto.randomBytes(256, (ex, buffer) => {
       if (ex) {
-        reject("error generating token");
+        reject('error generating token');
       }
       resolve(buffer);
     });
   });
   const token = crypto
-    .createHash("sha1")
+    .createHash('sha1')
     .update(buffer)
-    .digest("hex");
+    .digest('hex');
 
   return token;
 }
@@ -33,7 +39,7 @@ module.exports = {
     },
     gender: {
       type: 'string',
-      isIn: ['male', 'female', 'other', 'unknown'],
+      isIn: ['male', 'female', 'other', 'unknown']
     },
     phoneNumber: {
       type: 'string'
@@ -42,12 +48,12 @@ module.exports = {
       type: 'string'
     },
     inviteToken: {
-      type: 'string',
+      type: 'string'
     },
     status: {
       type: 'string',
       isIn: ['SENT', 'ACCEPTED', 'COMPLETE'],
-      defaultsTo: "SENT",
+      defaultsTo: 'SENT'
     },
     queue: {
       model: 'queue'
@@ -60,12 +66,157 @@ module.exports = {
       model: 'user',
       required: false
     },
+    type: {
+      type: 'string',
+      isIn: ['GUEST', 'PATIENT', 'TRANSLATOR_REQUEST', 'TRANSLATOR']
+    },
+    patientInvite: {
+      model: 'publicInvite'
+    },
+    patientLanguage: {
+      type: 'string'
+    },
+    doctorLanguage: {
+      type: 'string'
+    },
+    translationOrganization: {
+      model: 'translationOrganization'
+    },
+    guestEmailAddress: {
+      type: 'string'
+    },
+    guestPhoneNumber: {
+      type: 'string'
+    },
+    translator: {
+      model: 'user',
+      required: false
+    },
+    translatorRequestInvite: {
+      model: 'publicInvite',
+      required: false
+    }
+
   },
-  customToJSON() {
-    return _.omit(this, ['inviteToken'])
+  customToJSON () {
+    return _.omit(this, ['inviteToken']);
   },
-  async beforeCreate(obj, proceed) {
+  async beforeCreate (obj, proceed) {
     obj.inviteToken = await generateToken();
     return proceed();
+  },
+  generateToken,
+  sendTranslationRequestInvite (invite, email) {
+    const url = `${process.env.PUBLIC_URL}?invite=${invite.inviteToken}`;
+    const doctorLang = invite.doctorLanguage || process.env.DEFAULT_DOCTOR_LOCALE;
+    const inviteTime = invite.scheduledFor ? moment(invite.scheduledFor).local(doctorLang).format('HH:mm') : '';
+    return sails.helpers.email.with({
+      to: email,
+      subject: sails._t(doctorLang, 'translation request invite email subject', doctorLang, invite.patientLanguage),
+      text: invite.scheduledFor ? sails._t(doctorLang, 'scheduled translation request invite email', doctorLang, invite.patientLanguage, inviteTime, url) :
+      sails._t(doctorLang, 'translation request invite email', doctorLang, invite.patientLanguage, url)
+    });
+  },
+
+  sendTranslatorInvite (invite, email) {
+    const url = `${process.env.PUBLIC_URL}?invite=${invite.inviteToken}`;
+    const doctorLang = invite.doctorLanguage || process.env.DEFAULT_DOCTOR_LOCALE;
+
+    return sails.helpers.email.with({
+      to: email,
+      subject: sails._t(doctorLang, 'translator login link email subject'),
+      text: sails._t(doctorLang, 'translator login link email', url)
+    });
+  },
+
+
+  async sendPatientInvite (invite) {
+
+    const url = `${process.env.PUBLIC_URL}?invite=${invite.inviteToken}`;
+    const locale = invite.patientLanguage || process.env.DEFAULT_PATIENT_LOCALE;
+    const inviteTime = invite.scheduledFor ? moment(invite.scheduledFor).local(locale).format('HH:mm') : '';
+
+    const message = invite.scheduledFor ? sails._t(locale, 'scheduled patient invite', testingUrl, inviteTime) : sails._t(locale, 'patient invite', url);
+    // don't send invite if there is a translator required
+    if (invite.emailAddress) {
+      try {
+        await sails.helpers.email.with({
+          to: invite.emailAddress,
+          subject: sails._t(locale, 'your consultation link'),
+          text: message
+        });
+      } catch (error) {
+        console.log('error Sending patient invite email', error);
+        if (!invite.phoneNumber) {
+          // await PublicInvite.destroyOne({ id: invite.id });
+          return Promise.reject(error);
+        }
+
+      }
+    }
+
+    if (invite.phoneNumber) {
+      try {
+        await sails.helpers.sms.with({
+          phoneNumber: req.body.phoneNumber,
+          message
+        });
+
+      } catch (error) {
+        console.log('ERROR SENDING SMS>>>>>>>> ', error);
+        // await PublicInvite.destroyOne({ id: invite.id });
+        return Promise.reject(error);
+      }
+    }
+  },
+
+  setPatientInviteReminders (invite) {
+
+    const url = `${process.env.PUBLIC_URL}?invite=${invite.inviteToken}`;
+    const locale = invite.patientLanguage || process.env.DEFAULT_PATIENT_LOCALE;
+    const inviteTime = moment(invite.scheduledFor).local(locale).format('HH:mm');
+    const firstReminderMessage = sails._t(locale, 'first invite reminder', inviteTime);
+    const secondReminderMessage = sails._t(locale, 'second invite reminder', url);
+
+    if (invite.phoneNumber) {
+
+      if (invite.scheduledFor - Date.now() > FIRST_INVITE_REMINDER_AFTER) {
+        schedule.scheduleJob(new Date(invite.scheduledFor - FIRST_INVITE_REMINDER_AFTER), async () => {
+          await sails.helpers.sms.with({
+            phoneNumber: invite.phoneNumber,
+            message: firstReminderMessage
+          });
+        });
+      }
+      schedule.scheduleJob(new Date(invite.scheduledFor - SECOND_INVITE_REMINDER_AFTER), async () => {
+        await sails.helpers.sms.with({
+          phoneNumber: invite.phoneNumber,
+          message: secondReminderMessage
+        });
+      });
+    }
+
+    if (invite.emailAddress) {
+      if (invite.scheduledFor - Date.now() > FIRST_INVITE_REMINDER_AFTER) {
+        schedule.scheduleJob(new Date(invite.scheduledFor - FIRST_INVITE_REMINDER_AFTER), async () => {
+          await sails.helpers.email.with({
+            to: invite.emailAddress,
+            subject: sails._t(locale, 'your consultation link'),
+            text: firstReminderMessage
+          });
+
+        });
+      }
+      schedule.scheduleJob(new Date(invite.scheduledFor - SECOND_INVITE_REMINDER_AFTER), async () => {
+        await sails.helpers.email.with({
+          to: invite.emailAddress,
+          subject: sails._t(locale, 'your consultation link'),
+          text: secondReminderMessage
+        });
+
+      });
+    }
+
   }
-}
+
+};

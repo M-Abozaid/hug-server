@@ -55,15 +55,24 @@ module.exports = {
     },
     closedAt: {
       type: 'number'
+    },
+    isConferenceCall: {
+      type: 'boolean'
+    },
+    participants: {
+      collection: 'user'
     }
   },
 
   async afterCreate (message, proceed) {
 
-    const consultation = await Consultation.findOne({id: message.consultation})
+    const consultation = await Consultation.findOne({ id: message.consultation });
+
+
     sails.sockets.broadcast(message.to || consultation.queue || consultation.invitedBy, 'newMessage', { data: message });
 
     if (message.type === 'audioCall' || message.type === 'videoCall') {
+      // if(consultation.)
       sails.sockets.broadcast(message.from, 'newMessage', { data: message });
     }
 

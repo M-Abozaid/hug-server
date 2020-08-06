@@ -59,6 +59,27 @@ try {
   return;
 }// -•
 
+const path = require('path');
+
+const i18n = new (require('i18n-2'))({
+  locales: ['fr', 'en', 'de', 'es'],
+  directory: path.join(__dirname, './config/locales'),
+  extension: '.json'
+
+});
+
+const { vsprintf } = require('sprintf-js');
+
+
+sails._t = function (locale) {
+  let msg = i18n.translate(locale, arguments[1]);
+
+  if (arguments.length > 2) {
+    msg = vsprintf(msg, Array.prototype.slice.call(arguments, 2));
+  }
+
+  return msg;
+};
 
 // Start server
 sails.lift(rc('sails'));

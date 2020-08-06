@@ -48,6 +48,14 @@ module.exports = {
       model: 'user',
       required: false
     },
+    translator: {
+      model: 'user',
+      required: false
+    },
+    guest: {
+      model: 'user',
+      required: false
+    },
     acceptedAt: {
       type: 'number'
     },
@@ -82,16 +90,16 @@ module.exports = {
     flagPatientOnline: {
       type: 'boolean',
       required: false
-    },
+    }
   },
 
-  async beforeCreate(consultation, cb) {
+  async beforeCreate (consultation, cb) {
 
     if (!consultation.queue && !consultation.invitedBy && process.env.DEFAULT_QUEUE_ID) {
       const defaultQueue = await Queue.findOne({ id: process.env.DEFAULT_QUEUE_ID });
       consultation.flagPatientOnline = true;
       if (defaultQueue) {
-        console.log("Assigning the default queue to the consultation as no queue is set");
+        console.log('Assigning the default queue to the consultation as no queue is set');
         consultation.queue = defaultQueue.id;
       }
     }
@@ -99,20 +107,17 @@ module.exports = {
   },
 
 
-  async afterCreate(consultation, proceed) {
+  async afterCreate (consultation, proceed) {
 
-    const nurse = await User.findOne({ id: consultation.owner });
-    const queue = await Queue.findOne({ id: consultation.queue })
-    sails.sockets.broadcast(consultation.queue || consultation.invitedBy, 'newConsultation',
-      { event: 'newConsultation', data: { _id: consultation.id, unreadCount: 0, consultation, nurse, queue } });
+    await Consultation.broadcastNewConsultation(consultation);
     sails.sockets.broadcast(consultation.queue || consultation.invitedBy, 'patientOnline',
-      {data: consultation });
+      { data: consultation });
     return proceed();
   },
 
 
-  async beforeDestroy(criteria, proceed) {
-    console.log("DELETE CONSULTATION", criteria);
+  async beforeDestroy (criteria, proceed) {
+    console.log('DELETE CONSULTATION', criteria);
     const consultation = await Consultation.findOne({ _id: criteria.where.id });
     await Message.destroy({ consultation: criteria.where.id });
     if (consultation.invitationToken) {
@@ -122,6 +127,19 @@ module.exports = {
     sails.sockets.broadcast(consultation.queue || consultation.invitedBy, 'consultationCanceled',
       { event: 'consultationCanceled', data: { _id: criteria.where.id, consultation: criteria.where } });
     return proceed();
+  },
+
+  async broadcastNewConsultation (consultation) {
+    const nurse = await User.findOne({ id: consultation.owner });
+    const translator = await User.findOne({ id: consultation.translator });
+    const queue = await Queue.findOne({ id: consultation.queue });
+    sails.sockets.broadcast(consultation.queue || consultation.invitedBy, 'newConsultation',
+      { event: 'newConsultation', data: { _id: consultation.id, unreadCount: 0, consultation, nurse, queue, translator } });
+    if (translator) {
+      sails.sockets.broadcast(translator.id, 'newConsultation',
+          { event: 'newConsultation', data: { _id: consultation.id, unreadCount: 0, consultation, nurse, translator } });
+    }
+
   }
 
 };

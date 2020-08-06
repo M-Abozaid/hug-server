@@ -8,7 +8,7 @@
 
 module.exports = {
 
-  async subscribe(req, res) {
+  async subscribe (req, res) {
     if (!req.isSocket) {
       return res.badRequest();
     }
@@ -21,20 +21,20 @@ module.exports = {
 
 
 
-    const  socketId =   sails.sockets.getId(req);
+    const socketId = sails.sockets.getId(req);
 
-    const socket = sails.sockets.get(socketId)
+    const socket = sails.sockets.get(socketId);
 
     socket.once('disconnect', async (reason) => {
       // ...
-      console.log('disconnected >>>>' , reason)
-      const consultations = await Consultation.update({owner : user.id}).set({flagPatientOnline:false}).fetch();
-      console.log("flagPatientOnline > set false", user.id)
+      console.log('disconnected >>>>', reason);
+      const consultations = await Consultation.update({ owner: user.id }).set({ flagPatientOnline: false }).fetch();
+      console.log('flagPatientOnline > set false', user.id);
 
-      consultations.forEach(consultation=>{
+      consultations.forEach(consultation => {
 
         sails.sockets.broadcast(consultation.acceptedBy || consultation.queue || consultation.invitedBy, 'patientOffline', { data: consultation });
-      })
+      });
     });
     sails.sockets.join(req, user.id, (err) => {
       if (err) {

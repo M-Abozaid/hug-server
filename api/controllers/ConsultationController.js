@@ -9,16 +9,17 @@ const {
   OpenVidu
 } = require('openvidu-node-client');
 const uuidv1 = require('uuid/v1');
-console.log("START MEDIA SERVER", sails.config.OPENVIDU_URL, sails.config.OPENVIDU_SECRET);
+console.log('START MEDIA SERVER', sails.config.OPENVIDU_URL, sails.config.OPENVIDU_SECRET);
 // const openvidu = new OpenVidu(sails.config.OPENVIDU_URL, sails.config.OPENVIDU_SECRET);
 const fs = require('fs');
-const Json2csvParser = require("json2csv").Parser;
+const Json2csvParser = require('json2csv').Parser;
 
 const _ = require('@sailshq/lodash');
 
+
 const db = Consultation.getDatastore().manager;
 
-const sendConsultationClosed = function (consultation) {
+function sendConsultationClosed (consultation) {
   // emit consultation closed event with the consultation
   sails.sockets.broadcast(consultation.owner, 'consultationClosed', {
     data: {
@@ -26,32 +27,32 @@ const sendConsultationClosed = function (consultation) {
       _id: consultation.id
     }
   });
-};
+}
 
 const columns = [
-  {colName:'Invitation envoyée le', key:'inviteCreatedAt'},
-  {colName:'Consultation planifiée le', key:'inviteScheduledFor'},
-  {colName:'File d\'attente', key:'queue.name'},
-  {colName:'Patient consultation demandée à', key:'consultationCreatedAt'},
-  {colName:'IMAD equipe', key:'IMADTeam'},
-  {colName:'Consultation clôturée le', key:'closedAt'},
-  {colName:'Total appel avec réponse', key:'successfulCallsCount'},
-  {colName:'Total appel sans réponse', key:'missedCallsCount'},
-  {colName:'Moyenne durée appel', key:'averageCallDuration'},
-  {colName:'Patient taux satisfaction', key:'patientRating'},
-  {colName:'Patient satisfaction message', key:'patientComment'},
-  {colName:'Docteur taux satisfaction', key:'doctorRating'},
-  {colName:'Docteur satisfaction message', key:'doctorComment'},
-  {colName:'Department', key:'acceptedBy.department'},
-  {colName:'Function', key:'acceptedBy._function'},
-  {colName:'Docteur ID', key:'acceptedBy.id'},
+  { colName: 'Invitation envoyée le', key: 'inviteCreatedAt' },
+  { colName: 'Consultation planifiée le', key: 'inviteScheduledFor' },
+  { colName: 'File d\'attente', key: 'queue.name' },
+  { colName: 'Patient consultation demandée à', key: 'consultationCreatedAt' },
+  { colName: 'IMAD equipe', key: 'IMADTeam' },
+  { colName: 'Consultation clôturée le', key: 'closedAt' },
+  { colName: 'Total appel avec réponse', key: 'successfulCallsCount' },
+  { colName: 'Total appel sans réponse', key: 'missedCallsCount' },
+  { colName: 'Moyenne durée appel', key: 'averageCallDuration' },
+  { colName: 'Patient taux satisfaction', key: 'patientRating' },
+  { colName: 'Patient satisfaction message', key: 'patientComment' },
+  { colName: 'Docteur taux satisfaction', key: 'doctorRating' },
+  { colName: 'Docteur satisfaction message', key: 'doctorComment' },
+  { colName: 'Department', key: 'acceptedBy.department' },
+  { colName: 'Function', key: 'acceptedBy._function' },
+  { colName: 'Docteur ID', key: 'acceptedBy.id' }
 
 
-]
+];
 
 
 
-async function saveAnonymousDetails(consultation){
+async function saveAnonymousDetails (consultation) {
 
   // consultation = await Consultation.findOne({id:'5e81e3838475f6352ef40aec'})
   const anonymousConsultation = {
@@ -65,48 +66,50 @@ async function saveAnonymousDetails(consultation){
     owner: consultation.owner,
     acceptedBy: consultation.acceptedBy,
 
-    patientRating:  consultation.patientRating,
+    patientRating: consultation.patientRating,
     patientComment: consultation.patientComment,
     doctorRating: consultation.doctorRating,
-    doctorComment:  consultation.doctorComment,
+    doctorComment: consultation.doctorComment
 
-  }
-  if(consultation.invite){
+  };
+  if (consultation.invite) {
 
-    const invite = await PublicInvite.findOne({ id: consultation.invite })
-    if(invite){
+    const invite = await PublicInvite.findOne({ id: consultation.invite });
+    if (invite) {
       anonymousConsultation.inviteScheduledFor = invite.scheduledFor;
       anonymousConsultation.invitedBy = invite.invitedBy;
       anonymousConsultation.inviteCreatedAt = invite.createdAt;
     }
   }
 
-  const doctorTextMessagesCount = await Message.count({from: consultation.acceptedBy, consultation: consultation.id, type:'text'})
-  const patientTextMessagesCount = await Message.count({from: consultation.owner, consultation: consultation.id, type:'text'})
-  const missedCallsCount = await Message.count({consultation: consultation.id, type:{in:['videoCall', 'audioCall']}, acceptedAt:0 })
-  const successfulCalls = await Message.find({consultation: consultation.id, type:{in:['videoCall', 'audioCall']}, acceptedAt:{'!=':0}, closedAt:{'!=':0} })
-  const successfulCallsCount = await Message.count({consultation: consultation.id, type:{in:['videoCall', 'audioCall']}, acceptedAt:{'!=':0}})
+  const doctorTextMessagesCount = await Message.count({ from: consultation.acceptedBy, consultation: consultation.id, type: 'text' });
+  const patientTextMessagesCount = await Message.count({ from: consultation.owner, consultation: consultation.id, type: 'text' });
+  const missedCallsCount = await Message.count({ consultation: consultation.id, type: { in: ['videoCall', 'audioCall'] }, acceptedAt: 0 });
+  const successfulCalls = await Message.find({ consultation: consultation.id, type: { in: ['videoCall', 'audioCall'] }, acceptedAt: { '!=': 0 }, closedAt: { '!=': 0 } });
+  const successfulCallsCount = await Message.count({ consultation: consultation.id, type: { in: ['videoCall', 'audioCall'] }, acceptedAt: { '!=': 0 } });
 
-  const callDurations = successfulCalls.map(c=> c.closedAt - c.acceptedAt)
+  const callDurations = successfulCalls.map(c => c.closedAt - c.acceptedAt);
   const sum = callDurations.reduce((a, b) => a + b, 0);
   const averageCallDurationMs = (sum / callDurations.length) || 0;
-  const averageCallDuration = averageCallDurationMs/60000;
+  const averageCallDuration = averageCallDurationMs / 60000;
 
 
-  anonymousConsultation.doctorTextMessagesCount = doctorTextMessagesCount
-  anonymousConsultation.patientTextMessagesCount = patientTextMessagesCount
-  anonymousConsultation.missedCallsCount = missedCallsCount
-  anonymousConsultation.successfulCallsCount = successfulCallsCount
-  anonymousConsultation.averageCallDuration = averageCallDuration
+  anonymousConsultation.doctorTextMessagesCount = doctorTextMessagesCount;
+  anonymousConsultation.patientTextMessagesCount = patientTextMessagesCount;
+  anonymousConsultation.missedCallsCount = missedCallsCount;
+  anonymousConsultation.successfulCallsCount = successfulCallsCount;
+  anonymousConsultation.averageCallDuration = averageCallDuration;
 
-  console.log('anonymous consultation ',anonymousConsultation )
-  await AnonymousConsultation.create(anonymousConsultation)
+  console.log('anonymous consultation ', anonymousConsultation);
+  await AnonymousConsultation.create(anonymousConsultation);
 
 
 }
 // saveAnonymousDetails()
 module.exports = {
-  async consultationOverview(req, res) {
+  async consultationOverview (req, res) {
+
+
     let match = [{
       owner: new ObjectId(req.user.id)
     }];
@@ -114,33 +117,37 @@ module.exports = {
 
       match = [{
         acceptedBy: new ObjectId(req.user.id)
-      },{
+      }, {
         invitedBy: new ObjectId(req.user.id),
-        queue : null,
+        queue: null
       }
       ];
     }
 
-    if(req.user.viewAllQueues){
-      let queues =  (await Queue.find({})).map(queue => new ObjectId(queue.id));
+    if (req.user && req.user.role === 'translator') {
+      match = [{ translator: ObjectId(req.user.id) }];
+    }
+
+    if (req.user.viewAllQueues) {
+      const queues = (await Queue.find({})).map(queue => new ObjectId(queue.id));
       match.push(
         {
           status: 'pending',
-          queue : { $in: queues }
+          queue: { $in: queues }
 
-        },
-      )
-    }else
-    //filter the queue of the user
+        }
+      );
+    } else
+    // filter the queue of the user
     if (req.user.allowedQueues && req.user.allowedQueues.length > 0) {
-      let queues = req.user.allowedQueues.map(queue => new ObjectId(queue.id));
+      const queues = req.user.allowedQueues.map(queue => new ObjectId(queue.id));
 
       match.push(
         {
           status: 'pending',
-          queue : { $in: queues }
-        },
-      )
+          queue: { $in: queues }
+        }
+      );
     }
 
     const agg = [{
@@ -270,7 +277,7 @@ module.exports = {
         'doctor.phoneNumber': 1,
         'nurse.firstName': 1,
         'nurse.lastName': 1,
-        'queue.name': 1,
+        'queue.name': 1
       }
     }, {
       $skip: parseInt(req.query.skip) || 0
@@ -287,63 +294,88 @@ module.exports = {
 
   },
 
-  async create(req, res) {
-    let consultationJson = req.body;
+  async create (req, res) {
+    const consultationJson = req.body;
 
+    let invite;
     if (req.body.invitationToken) {
       // If a consultation already exist, another one should not be created
       const existingConsultation = await Consultation.findOne({ invitationToken: req.body.invitationToken });
       if (existingConsultation) {
         return res.json(existingConsultation);
       }
-      const invite = await PublicInvite.findOne({ inviteToken: req.body.invitationToken });
+      invite = await PublicInvite.findOne({ inviteToken: req.body.invitationToken });
+
+
       if (invite) {
-        if(invite.scheduledFor){
-            if(invite.scheduledFor - Date.now() > 10 * 60 * 1000){
-              console.log('can create consultation yet')
-              return res.status(401).json({success: false, message: 'Too early for consultation'})
-            }
+        if (invite.scheduledFor) {
+          if (invite.scheduledFor - Date.now() > 10 * 60 * 1000) {
+            console.log('can create consultation yet');
+            return res.status(401).json({ success: false, message: 'Too early for consultation' });
+          }
         }
 
-        consultationJson.firstName = invite.firstName ? invite.firstName : "No firstname";
-        consultationJson.lastName = invite.lastName ? invite.lastName : "No lastname";
-        consultationJson.gender = invite.gender ? invite.gender : "unknown";
+        consultationJson.firstName = invite.firstName ? invite.firstName : 'No firstname';
+        consultationJson.lastName = invite.lastName ? invite.lastName : 'No lastname';
+        consultationJson.gender = invite.gender ? invite.gender : 'unknown';
         consultationJson.queue = invite.queue;
         consultationJson.invitedBy = invite.invitedBy;
         consultationJson.invite = invite.id;
         consultationJson.flagPatientOnline = true;
+
       }
-    }else if(process.env.DEFAULT_QUEUE_ID){
+    } else if (process.env.DEFAULT_QUEUE_ID) {
       const queuesUsersCollection = db.collection('queue_allowedQueues_queue__user_allowedQueues');
-      const results = await queuesUsersCollection.find({queue_allowedQueues_queue: new ObjectId(process.env.DEFAULT_QUEUE_ID)});
+      const results = await queuesUsersCollection.find({ queue_allowedQueues_queue: new ObjectId(process.env.DEFAULT_QUEUE_ID) });
 
       const queuesUsers = await results.toArray();
       const userCollection = db.collection('user');
-      const doctorsCurs = await userCollection.find({ role: 'doctor', $or:[{viewAllQueues:true}, {_id:{$in:queuesUsers.map(qu=> new ObjectId(qu.user_allowedQueues))}}]  });
+      const doctorsCurs = await userCollection.find({ role: 'doctor', $or: [{ viewAllQueues: true }, { _id: { $in: queuesUsers.map(qu => new ObjectId(qu.user_allowedQueues)) } }] });
 
-      const doctors = await doctorsCurs.toArray()
+      const doctors = await doctorsCurs.toArray();
 
-      doctors.forEach(async doctor=>{
+      doctors.forEach(async doctor => {
         if (doctor && doctor.enableNotif && doctor.notifPhoneNumber) {
           a = await sails.helpers.sms.with({
             phoneNumber: doctor.notifPhoneNumber,
             message: `Un patient est dans la file d'attente`
           });
         }
-      })
+      });
+    }
+
+
+    if (invite) {
+
+      // get translator and guest invites under this invite (guest / translator)
+      const subInvites = await PublicInvite.find({ patientInvite: invite.id });
+
+      if (subInvites.length) {
+        // get users created by these invites (guest / translator)
+        const guest = await User.findOne({ inviteToken: { in: subInvites.map(i => i.id) }, role: 'guest' });
+        const translator = await User.findOne({ inviteToken: { in: subInvites.map(i => i.id) }, role: 'translator' });
+
+        if (guest) {
+          consultationJson.guest = guest.id;
+        }
+        if (translator) {
+          consultationJson.translator = translator.id;
+        }
+
+      }
     }
 
     Consultation.create(consultationJson).fetch().then(consultation => {
       console.log(consultation);
       res.json(consultation);
     }).catch(err => {
-      console.log("ERROR WHILE CREATING CONSULTATION", err);
-      let error = err && err.cause ? err.cause : err;
+      console.log('ERROR WHILE CREATING CONSULTATION', err);
+      const error = err && err.cause ? err.cause : err;
       res.status(400).json(error);
-    })
+    });
   },
 
-  async acceptConsultation(req, res) {
+  async acceptConsultation (req, res) {
     const consultation = await Consultation.updateOne({
       _id: req.params.consultation,
       status: 'pending'
@@ -388,7 +420,7 @@ module.exports = {
   },
 
 
-  async closeConsultation(req, res) {
+  async closeConsultation (req, res) {
 
     try {
 
@@ -404,13 +436,13 @@ module.exports = {
 
       try {
 
-        await saveAnonymousDetails(consultation)
+        await saveAnonymousDetails(consultation);
       } catch (error) {
-        console.error("Error Saving anonymous details ", error)
+        console.error('Error Saving anonymous details ', error);
       }
 
       if (consultation.invitationToken) {
-        await PublicInvite.destroyOne({ inviteToken: consultation.invitationToken })
+        await PublicInvite.destroyOne({ inviteToken: consultation.invitationToken });
       }
 
 
@@ -418,17 +450,17 @@ module.exports = {
       const messageCollection = db.collection('message');
       const consultationCollection = db.collection('consultation');
 
-      const callMessages = await Message.find({ consultation: req.params.consultation, type: {in: ['videoCall', 'audioCall']}})
+      const callMessages = await Message.find({ consultation: req.params.consultation, type: { in: ['videoCall', 'audioCall'] } });
 
       // const callMessages = await callMessagesCursor.toArray();
       // save info for stats
-      await AnonymousCall.createEach(callMessages.map(m=>{
+      await AnonymousCall.createEach(callMessages.map(m => {
         delete m.id;
-        return m
-      }))
+        return m;
+      }));
 
-      if(!consultation.queue){
-        consultation.queue = null
+      if (!consultation.queue) {
+        consultation.queue = null;
       }
 
 
@@ -470,7 +502,7 @@ module.exports = {
     }
   },
 
-  async testCall(req, res){
+  async testCall (req, res) {
     try {
 
       const data1 = {};
@@ -479,54 +511,51 @@ module.exports = {
       data1['RECORDING_LAYOUT'] = 'BEST_FIT';
       data1['recordingLayout'] = 'BEST_FIT';
 
-      const openviduServers = await sails.helpers.openviduServer()
+      const openviduServers = await sails.helpers.openviduServer();
 
-      const serverIndex = Math.floor(Math.random() * openviduServers.length)
+      const serverIndex = Math.floor(Math.random() * openviduServers.length);
 
       const openvidu = new OpenVidu(openviduServers[serverIndex].url, openviduServers[serverIndex].password);
 
       const session = await openvidu.createSession(data1);
-      const token  = await session.generateToken();
+      const token = await session.generateToken();
 
-      console.log('sessoin tokens', session, token)
-      return res.json({token: token})
-    }catch(err){
-      console.error(err)
+      console.log('sessoin tokens', session, token);
+      return res.json({ token });
+    } catch (err) {
+      console.error(err);
     }
 
 
   },
 
-  async call(req, res) {
+  async call (req, res) {
     try {
 
-      const openviduServers = await sails.helpers.openviduServer()
+      const openviduServers = await sails.helpers.openviduServer();
 
-      const serverIndex = Math.floor(Math.random() * openviduServers.length)
+      const serverIndex = Math.floor(Math.random() * openviduServers.length);
 
       const openvidu = new OpenVidu(openviduServers[serverIndex].url, openviduServers[serverIndex].password);
 
       // the consultation this call belongs to
-      console.log("Start call");
+      console.log('Start call');
       const consultation = await Consultation.findOne({
         _id: req.params.consultation
       });
-      console.log("Got consultation", consultation.id);
-      const callerSession = await openvidu.createSession({
+      console.log('Got consultation', consultation.id);
+      const session = await openvidu.createSession({
         customSessionId: req.params.consultation
       });
-      console.log("Caller session", callerSession);
+      console.log('Caller session', session);
 
-      const callerToken = await callerSession.generateToken();
-      console.log("Caller token", callerToken);
+      const callerToken = await session.generateToken();
+      console.log('Caller token', callerToken);
 
-      const calleeSession = await openvidu.createSession({
-        customSessionId: req.params.consultation
-      });
-      console.log("callee session", calleeSession);
 
-      const calleeToken = await calleeSession.generateToken();
-      console.log("callee token", calleeToken);
+      const patientToken = await session.generateToken();
+      console.log('callee token', patientToken);
+
 
       // the current user
       const user = await User.findOne({
@@ -535,20 +564,22 @@ module.exports = {
 
 
       const calleeId = (req.user.id === consultation.owner) ? consultation.acceptedBy : consultation.owner;
-      console.log("Callee id", calleeId);
+      console.log('Callee id', calleeId);
 
       // create a new message
       const msg = await Message.create({
         type: (req.query.audioOnly === 'true') ? 'audioCall' : 'videoCall',
         consultation: req.params.consultation,
         from: req.user.id,
-        to: calleeId
+        to: calleeId,
+        participants: [req.user.id],
+        isConferenceCall: !!((consultation.translator || consultation.guest))
       }).fetch();
 
       const data = {
         consultation: req.params.consultation,
-        token: calleeToken,
-        id: calleeSession.id,
+        token: patientToken,
+        id: session.id,
         user: {
           firstName: user.firstName,
           lastName: user.lastName
@@ -557,38 +588,60 @@ module.exports = {
         msg
       };
 
-      console.log("SEND CALL TO", calleeId);
+      console.log('SEND CALL TO', calleeId);
       sails.sockets.broadcast(calleeId, 'newCall', {
         data
       });
 
+      if (consultation.translator) {
+        const translatorToken = await session.generateToken();
+        sails.sockets.broadcast(consultation.translator, 'newCall', {
+          data: {
+            consultation: req.params.consultation,
+            token: translatorToken,
+            id: session.id,
+            audioOnly: req.query.audioOnly === 'true',
+            msg
+          }
+        });
+
+      }
       return res.json({
         token: callerToken,
-        id: callerSession.id,
+        id: session.id,
         msg
       });
 
     } catch (error) {
-      console.error(err)
+      console.error(error);
       return res.json(error);
     }
   },
 
-  async rejectCall(req, res) {
+  async rejectCall (req, res) {
     try {
       const consultation = await Consultation.findOne({
         _id: req.params.consultation
       });
 
+
+
+
+      const message = await Message.findOne({ id: req.params.message });
+
+      // if conference remove them from participants
+      if (message.isConferenceCall) {
+        await Message.removeFromCollection(message.id, 'participants', req.user.id);
+        return;
+      }
+
       await Message.updateOne({
         _id: req.params.message,
         consultation: req.params.consultation
       })
-        .set({
-          closedAt: new Date()
-        })
-
-      const message = await Message.findOne({ id: req.params.message })
+      .set({
+        closedAt: new Date()
+      });
 
       sails.sockets.broadcast(consultation.acceptedBy, 'rejectCall', {
         data: {
@@ -615,12 +668,17 @@ module.exports = {
   },
 
 
-  async acceptCall(req, res) {
+  async acceptCall (req, res) {
     try {
       const consultation = await Consultation.findOne({
         _id: req.params.consultation
       });
 
+      // if conference remove them from participants
+      if (message.isConferenceCall) {
+        await Message.addToCollection(req.params.message, 'participants', req.user.id);
+        return;
+      }
       await Message.updateOne({
         _id: req.params.message,
         consultation: req.params.consultation
@@ -629,7 +687,7 @@ module.exports = {
           acceptedAt: new Date()
         });
 
-      const message = await Message.findOne({ id: req.params.message })
+      const message = await Message.findOne({ id: req.params.message });
       sails.sockets.broadcast(consultation.acceptedBy, 'acceptCall', {
         data: {
           consultation,
@@ -655,14 +713,14 @@ module.exports = {
 
   },
 
-  uploadFile(req, res) {
+  uploadFile (req, res) {
     const fileId = uuidv1();
     const filePath = `${req.params.consultation}_${fileId}${req.headers['mime-type'].split('/')[1] ? `.${req.headers['mime-type'].split('/')[1]}` : ''}`;
     req.file('attachment')
       .upload({
         dirname: sails.config.globals.attachmentsDir,
         saveAs: filePath
-      }, async function whenDone(err, uploadedFiles) {
+      }, async function whenDone (err, uploadedFiles) {
         if (err) {
           return res.status(500).send(err);
         } else {
@@ -700,7 +758,7 @@ module.exports = {
       });
   },
 
-  async attachment(req, res) {
+  async attachment (req, res) {
     const msg = await Message.findOne({
       id: req.params.attachment
     });
@@ -719,14 +777,14 @@ module.exports = {
     readStream.pipe(res);
   },
 
-  sendReport(req, res) {
+  sendReport (req, res) {
     const filePath = `${uuidv1()}.pdf`;
 
     req.file('report')
       .upload({
         dirname: './.tmp',
         saveAs: filePath
-      }, async function whenDone(err, uploadedFiles) {
+      }, async function whenDone (err, uploadedFiles) {
         if (err) {
           return res.status(500).send(err);
         } else {
@@ -741,10 +799,10 @@ module.exports = {
                 fileName: 'Report.pdf',
                 path: uploadedFiles[0].fd
               }]
-            })
+            });
 
           } catch (error) {
-            res.send(500)
+            res.send(500);
           }
 
         }
@@ -752,19 +810,19 @@ module.exports = {
 
   },
 
-  async patientFeedback(req, res) {
+  async patientFeedback (req, res) {
     try {
       await Consultation.updateOne({
-        id: req.body.consultationId,
+        id: req.body.consultationId
       }).set({
         patientRating: req.body.rating || '',
-        patientComment: req.body.comment,
+        patientComment: req.body.comment
       });
       await AnonymousConsultation.updateOne({
-        consultationId: req.body.consultationId,
+        consultationId: req.body.consultationId
       }).set({
         patientRating: req.body.rating || '',
-        patientComment: req.body.comment,
+        patientComment: req.body.comment
       });
       res.json({ status: 200 });
     } catch (error) {
@@ -772,19 +830,19 @@ module.exports = {
     }
   },
 
-  async doctorFeedback(req, res) {
+  async doctorFeedback (req, res) {
     try {
       await Consultation.updateOne({
-        id: req.body.consultationId,
+        id: req.body.consultationId
       }).set({
         doctorRating: req.body.rating || '',
-        doctorComment: req.body.comment,
+        doctorComment: req.body.comment
       });
       await AnonymousConsultation.updateOne({
-        consultationId: req.body.consultationId,
+        consultationId: req.body.consultationId
       }).set({
         doctorRating: req.body.rating || '',
-        doctorComment: req.body.comment,
+        doctorComment: req.body.comment
       });
       res.json({ status: 200 });
     } catch (error) {
@@ -793,26 +851,26 @@ module.exports = {
   },
 
 
-  async consultationsCSV(req, res){
+  async consultationsCSV (req, res) {
 
     const consultations = await AnonymousConsultation.find().populate('acceptedBy').populate('queue').populate('owner');
-    const mappedConsultations = consultations.map(consultation=>{
-      if(consultation.owner){
-        consultation.owner.name = consultation.owner.firstName + ' ' + consultation.owner.lastName;
+    const mappedConsultations = consultations.map(consultation => {
+      if (consultation.owner) {
+        consultation.owner.name = `${consultation.owner.firstName } ${ consultation.owner.lastName}`;
       }
-      if(consultation.acceptedBy){
-        consultation.acceptedBy.name = consultation.acceptedBy.firstName + ' ' + consultation.acceptedBy.lastName;
+      if (consultation.acceptedBy) {
+        consultation.acceptedBy.name = `${consultation.acceptedBy.firstName } ${ consultation.acceptedBy.lastName}`;
       }
-      const mappedConsultation = {}
-      columns.forEach(col=>{
-        mappedConsultation[col.colName] = _.get(consultation, col.key)
-      })
-      return mappedConsultation
-    })
+      const mappedConsultation = {};
+      columns.forEach(col => {
+        mappedConsultation[col.colName] = _.get(consultation, col.key);
+      });
+      return mappedConsultation;
+    });
 
-    const parser = new Json2csvParser({ fields : columns.map(c=> c.colName) }, { encoding: "utf-8" });
+    const parser = new Json2csvParser({ fields: columns.map(c => c.colName) }, { encoding: 'utf-8' });
     const csv = parser.parse(mappedConsultations);
-    res.set({ "Content-Disposition": 'attachment; filename="consultations_summary.csv"' });
+    res.set({ 'Content-Disposition': 'attachment; filename="consultations_summary.csv"' });
     res.send(csv);
 
 

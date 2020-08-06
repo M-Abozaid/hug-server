@@ -11,7 +11,7 @@
 
 module.exports.globals = {
 
-  /****************************************************************************
+  /** **************************************************************************
   *                                                                           *
   * Whether to expose the locally-installed Lodash as a global variable       *
   * (`_`), making  it accessible throughout your app.                         *
@@ -20,7 +20,7 @@ module.exports.globals = {
 
   _: require('@sailshq/lodash'),
 
-  /****************************************************************************
+  /** **************************************************************************
   *                                                                           *
   * This app was generated without a dependency on the "async" NPM package.   *
   *                                                                           *
@@ -31,7 +31,7 @@ module.exports.globals = {
 
   async: false,
 
-  /****************************************************************************
+  /** **************************************************************************
   *                                                                           *
   * Whether to expose each of your app's models as global variables.          *
   * (See the link at the top of this file for more information.)              *
@@ -40,7 +40,7 @@ module.exports.globals = {
 
   models: true,
 
-  /****************************************************************************
+  /** **************************************************************************
   *                                                                           *
   * Whether to expose the Sails app instance as a global variable (`sails`),  *
   * making it accessible throughout your app.                                 *
@@ -57,7 +57,7 @@ module.exports.globals = {
 
   attachmentsDir: process.env.ATTACHMENTS_DIR || '/var/lib/hug-home/attachments',
 
-  REDMINE_DOMAIN: process.env.REDMINE_DOMAIN || "https://projects.iabsis.com",
+  REDMINE_DOMAIN: process.env.REDMINE_DOMAIN || 'https://projects.iabsis.com',
   REDMINE_API_KEY: process.env.REDMINE_API_KEY
 
 };
