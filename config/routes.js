@@ -33,6 +33,7 @@ module.exports.routes = {
   // 'delete /api/v1/consultation/:consultation': 'ConsultationController.destroy',
   'post /api/v1/consultation/:consultation/close': 'ConsultationController.closeConsultation',
   'post /api/v1/consultation/:consultation/call': 'ConsultationController.call',
+  'GET /api/v1/consultation/:consultation/current-call': 'ConsultationController.getCurrentCall',
   'post /api/v1/consultation/:consultation/:message/reject-call': 'ConsultationController.rejectCall',
   'post /api/v1/consultation/:consultation/:message/accept-call': 'ConsultationController.acceptCall',
   'post /api/v1/consultation/:consultation/upload-file': 'ConsultationController.uploadFile',

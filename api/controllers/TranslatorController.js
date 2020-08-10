@@ -5,6 +5,8 @@
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
 
+const PublicInvite = require('../models/PublicInvite');
+
 
 
 
@@ -89,7 +91,7 @@ module.exports = {
         await PublicInvite.sendPatientInvite(patientInvite);
 
         if (patientInvite.scheduledFor) {
-          await PublicInvite.setPatientInviteReminders(invite);
+          await PublicInvite.setPatientInviteReminders(patientInvite);
         }
 
       } catch (err) {

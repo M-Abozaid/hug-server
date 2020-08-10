@@ -140,6 +140,21 @@ module.exports = {
           { event: 'newConsultation', data: { _id: consultation.id, unreadCount: 0, consultation, nurse, translator } });
     }
 
+  },
+  getConsultationParticipants (consultation) {
+    const consultationParticipants = [consultation.owner];
+    if (consultation.translator) {
+      consultationParticipants.push(consultation.translator);
+    }
+    if (consultation.acceptedBy) {
+      consultationParticipants.push(consultation.acceptedBy);
+    }
+    if (consultation.guest) {
+      consultationParticipants.push(consultation.guest);
+    }
+
+    return consultationParticipants;
   }
+
 
 };

@@ -71,7 +71,10 @@ module.exports.policies = {
     patientFeedback: ['isLoggedIn', 'isNurseOrPatient'],
     doctorFeedback: ['isLoggedIn', 'isConsultationOwner'],
     consultationsCSV: ['isLoggedIn', 'isAdmin'],
-    testCall: true
+    testCall: true,
+    getCurrentCall: ['isLoggedIn', 'isConsultationOwnerOrTranslator']
+    // findOne: ['isLoggedIn', 'isConsultationOwnerOrTranslator']
+
   },
   AuthController: {
     loginLocal: true,
@@ -113,7 +116,7 @@ module.exports.policies = {
   },
 
   TranslationOrganization: {
-    '*': ['isLoggedIn', 'isDoctorOrAdmin']
+    '*': ['isLoggedIn', 'isAdmin']
   },
 
   Translator: {

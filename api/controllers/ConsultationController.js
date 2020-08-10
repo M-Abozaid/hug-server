@@ -573,39 +573,49 @@ module.exports = {
         from: req.user.id,
         to: calleeId,
         participants: [req.user.id],
-        isConferenceCall: !!((consultation.translator || consultation.guest))
+        isConferenceCall: !!((consultation.translator || consultation.guest)),
+        status: 'ringing',
+        openViduURL: openviduServers[serverIndex].url
       }).fetch();
 
-      const data = {
-        consultation: req.params.consultation,
-        token: patientToken,
-        id: session.id,
-        user: {
-          firstName: user.firstName,
-          lastName: user.lastName
-        },
-        audioOnly: req.query.audioOnly === 'true',
-        msg
-      };
+      const patientMsg = Object.assign({}, msg);
+      patientMsg.token = patientToken;
+
+
 
       console.log('SEND CALL TO', calleeId);
       sails.sockets.broadcast(calleeId, 'newCall', {
-        data
+        data: {
+          consultation: req.params.consultation,
+          token: patientToken,
+          id: session.id,
+          user: {
+            firstName: user.firstName,
+            lastName: user.lastName
+          },
+          audioOnly: req.query.audioOnly === 'true',
+          msg: patientMsg
+        }
       });
 
       if (consultation.translator) {
         const translatorToken = await session.generateToken();
+        const translatorMsg = Object.assign({}, msg);
+        translatorMsg.token = translatorToken;
+
         sails.sockets.broadcast(consultation.translator, 'newCall', {
           data: {
             consultation: req.params.consultation,
             token: translatorToken,
             id: session.id,
             audioOnly: req.query.audioOnly === 'true',
-            msg
+            msg: translatorMsg
           }
         });
 
       }
+
+      msg.token = callerToken;
       return res.json({
         token: callerToken,
         id: session.id,
@@ -625,14 +635,29 @@ module.exports = {
       });
 
 
-
-
-      const message = await Message.findOne({ id: req.params.message });
+      const message = await Message.findOne({ id: req.params.message }).populate('participants');
 
       // if conference remove them from participants
       if (message.isConferenceCall) {
+
+        if (!message.participants.length || message.status === 'ended') {
+
+          return res.json({
+            status: 200
+          });
+        }
+
         await Message.removeFromCollection(message.id, 'participants', req.user.id);
-        return;
+        // if this is the last participant end the call and destroy the session
+        // and set closed at
+        if (message.participants.length === 1 && message.participants[0].id === req.user.id) {
+          await Message.endCall(message, consultation, 'MEMBERS_LEFT');
+
+        }
+
+        return res.json({
+          status: 200
+        });
       }
 
       await Message.updateOne({
@@ -674,20 +699,38 @@ module.exports = {
         _id: req.params.consultation
       });
 
+      const message = await Message.findOne({ id: req.params.message }).populate('participants');
+
       // if conference remove them from participants
       if (message.isConferenceCall) {
         await Message.addToCollection(req.params.message, 'participants', req.user.id);
-        return;
+
+        // if message doesn't have accepted At add it and set status to ongoing
+        if (!message.acceptAt) {
+          await Message.updateOne({
+            _id: req.params.message,
+            consultation: req.params.consultation
+          })
+            .set({
+              acceptedAt: new Date(),
+              status: 'ongoing'
+            });
+
+        }
+        return res.json({
+          status: 200
+        });
       }
       await Message.updateOne({
         _id: req.params.message,
         consultation: req.params.consultation
       })
         .set({
-          acceptedAt: new Date()
+          acceptedAt: new Date(),
+          status: 'ongoing'
         });
 
-      const message = await Message.findOne({ id: req.params.message });
+
       sails.sockets.broadcast(consultation.acceptedBy, 'acceptCall', {
         data: {
           consultation,
@@ -729,6 +772,7 @@ module.exports = {
 
           try {
             if (process.env.NODE_ENV !== 'development') {
+              // eslint-disable-next-line camelcase
               const { is_infected } = await sails.config.globals.clamscan.is_infected(uploadedFiles[0].fd);
               if (is_infected) {
                 return res.status(400).send(new Error('File is infected'));
@@ -873,7 +917,42 @@ module.exports = {
     res.set({ 'Content-Disposition': 'attachment; filename="consultations_summary.csv"' });
     res.send(csv);
 
+  },
 
+  async getCurrentCall (req, res) {
+
+    const selector = {
+      consultation: req.params.consultation,
+      type: { in: ['videoCall', 'audioCall'] },
+      status: { in: ['ringing', 'ongoing'] }
+    };
+
+
+
+    const [call] = await Message.find({ where: selector, sort: [{ createdAt: 'DESC' }] }).limit(1);
+
+    let openvidu;
+    if (call) {
+
+      const [openViduServer] = await OpenviduServer.find({ url: call.openViduURL }).limit(1);
+      if (openViduServer) {
+
+        openvidu = new OpenVidu(openViduServer.url, openViduServer.password);
+      } else {
+        if (call.openViduURL === sails.config.OPENVIDU_URL) {
+          openvidu = new OpenVidu(sails.config.OPENVIDU_URL, sails.config.OPENVIDU_SECRET);
+        } else {
+          return res.status(500).send();
+        }
+      }
+      const session = await openvidu.createSession({
+        customSessionId: req.params.consultation
+      });
+      const token = await session.generateToken();
+
+      call.token = token;
+    }
+    res.status(200).json(call);
   }
 
 };

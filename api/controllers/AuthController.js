@@ -89,6 +89,7 @@ module.exports = {
       });
 
     })(req, res, (err) => {
+      console.log('error Login invite ', err);
     });
   },
 
@@ -196,7 +197,7 @@ module.exports = {
       await User.updateOne({ email: req.body.email, role: { in: ['doctor', 'admin'] } }).set({ doctorClientVersion: req.body._version });
     } else {
       if (!isAdmin) {
-        await User.updateOne({ email: req.body.email }).set({ doctorClientVersion: 'invalid' });
+        await User.updateOne({ email: req.body.email, role: { in: ['doctor', 'admin'] } }).set({ doctorClientVersion: 'invalid' });
         return res.status(400).json({
           message: 'Le cache de votre navigateur n\'est pas à jour, vous devez le raffraichir avec CTRL+F5 !'
         });
@@ -338,7 +339,7 @@ module.exports = {
       });
     }
 
-    passport.authenticate('2FA', async (err, user, info = {}) => {
+    passport.authenticate('2FA', (err, user, info = {}) => {
       console.log('Authenticate now', err, user);
       if (err) {
         return res.status(500).json({

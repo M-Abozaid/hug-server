@@ -173,6 +173,7 @@ module.exports = {
       if (inviteData.guestPhoneNumber || inviteData.guestEmailAddress) {
 
         const guestInviteDate = {
+
           patientInvite: invite.id,
           invitedBy: req.user.id,
           scheduledFor: req.body.scheduledFor ? new Date(req.body.scheduledFor) : undefined,

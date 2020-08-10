@@ -8,8 +8,8 @@ const moment = require('moment');
 moment.locale('fr');
 const schedule = require('node-schedule');
 
-const FIRST_INVITE_REMINDER_AFTER = 24 * 60 * 60 * 1000;
-const SECOND_INVITE_REMINDER_AFTER = 60 * 1000;
+const FIRST_INVITE_REMINDER = 24 * 60 * 60 * 1000;
+const SECOND_INVITE_REMINDER = 60 * 1000;
 const testingUrl = `${process.env.PUBLIC_URL}/#test-call`;
 const crypto = require('crypto');
 async function generateToken () {
@@ -180,15 +180,15 @@ module.exports = {
 
     if (invite.phoneNumber) {
 
-      if (invite.scheduledFor - Date.now() > FIRST_INVITE_REMINDER_AFTER) {
-        schedule.scheduleJob(new Date(invite.scheduledFor - FIRST_INVITE_REMINDER_AFTER), async () => {
+      if (invite.scheduledFor - Date.now() > FIRST_INVITE_REMINDER) {
+        schedule.scheduleJob(new Date(invite.scheduledFor - FIRST_INVITE_REMINDER), async () => {
           await sails.helpers.sms.with({
             phoneNumber: invite.phoneNumber,
             message: firstReminderMessage
           });
         });
       }
-      schedule.scheduleJob(new Date(invite.scheduledFor - SECOND_INVITE_REMINDER_AFTER), async () => {
+      schedule.scheduleJob(new Date(invite.scheduledFor - SECOND_INVITE_REMINDER), async () => {
         await sails.helpers.sms.with({
           phoneNumber: invite.phoneNumber,
           message: secondReminderMessage
@@ -197,8 +197,8 @@ module.exports = {
     }
 
     if (invite.emailAddress) {
-      if (invite.scheduledFor - Date.now() > FIRST_INVITE_REMINDER_AFTER) {
-        schedule.scheduleJob(new Date(invite.scheduledFor - FIRST_INVITE_REMINDER_AFTER), async () => {
+      if (invite.scheduledFor - Date.now() > FIRST_INVITE_REMINDER) {
+        schedule.scheduleJob(new Date(invite.scheduledFor - FIRST_INVITE_REMINDER), async () => {
           await sails.helpers.email.with({
             to: invite.emailAddress,
             subject: sails._t(locale, 'your consultation link'),
@@ -207,7 +207,7 @@ module.exports = {
 
         });
       }
-      schedule.scheduleJob(new Date(invite.scheduledFor - SECOND_INVITE_REMINDER_AFTER), async () => {
+      schedule.scheduleJob(new Date(invite.scheduledFor - SECOND_INVITE_REMINDER), async () => {
         await sails.helpers.email.with({
           to: invite.emailAddress,
           subject: sails._t(locale, 'your consultation link'),
