@@ -95,6 +95,10 @@ module.exports = {
     translatorRequestInvite: {
       model: 'publicInvite',
       required: false
+    },
+    guestInvite: {
+      model: 'publicInvite',
+      required: false
     }
 
   },
@@ -170,13 +174,54 @@ module.exports = {
     }
   },
 
-  setPatientInviteReminders (invite) {
+  async sendGuestInvite (invite) {
+
+    const url = `${process.env.PUBLIC_URL}?invite=${invite.inviteToken}`;
+    const locale = invite.patientLanguage || process.env.DEFAULT_PATIENT_LOCALE;
+    const inviteTime = invite.scheduledFor ? moment(invite.scheduledFor).local(locale).format('HH:mm') : '';
+
+    const message = invite.scheduledFor ? sails._t(locale, 'scheduled guest invite', testingUrl, inviteTime) : sails._t(locale, 'guest invite', url);
+    // don't send invite if there is a translator required
+    if (invite.emailAddress) {
+      try {
+        await sails.helpers.email.with({
+          to: invite.emailAddress,
+          subject: sails._t(locale, 'your consultation link'),
+          text: message
+        });
+      } catch (error) {
+        console.log('error Sending guest invite email', error);
+        if (!invite.phoneNumber) {
+          // await PublicInvite.destroyOne({ id: invite.id });
+          return Promise.reject(error);
+        }
+
+      }
+    }
+
+    if (invite.phoneNumber) {
+      try {
+        await sails.helpers.sms.with({
+          phoneNumber: req.body.phoneNumber,
+          message
+        });
+
+      } catch (error) {
+        console.log('ERROR SENDING SMS>>>>>>>> ', error);
+        // await PublicInvite.destroyOne({ id: invite.id });
+        return Promise.reject(error);
+      }
+    }
+  },
+
+
+  setPatientOrGuestInviteReminders (invite) {
 
     const url = `${process.env.PUBLIC_URL}?invite=${invite.inviteToken}`;
     const locale = invite.patientLanguage || process.env.DEFAULT_PATIENT_LOCALE;
     const inviteTime = moment(invite.scheduledFor).local(locale).format('HH:mm');
-    const firstReminderMessage = sails._t(locale, 'first invite reminder', inviteTime);
-    const secondReminderMessage = sails._t(locale, 'second invite reminder', url);
+    const firstReminderMessage = invite.type === 'PATIENT' ? sails._t(locale, 'first invite reminder', inviteTime) : sails._t(locale, 'first guest invite reminder', inviteTime);
+    const secondReminderMessage = invite.type === 'PATIENT' ? sails._t(locale, 'second invite reminder', url) : sails._t(locale, 'second guest invite reminder', url);
 
     if (invite.phoneNumber) {
 

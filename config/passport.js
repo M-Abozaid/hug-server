@@ -87,9 +87,17 @@ passport.use('invite', new CustomStrategy(
       newUser.phoneNumberEnteredByPatient = req.body.phoneNumber;
     }
 
-
-
     user = await User.create(newUser).fetch();
+
+    if (invite.type === 'GUEST') {
+      const patientInvite = await PublicInvite.findOne({ guestInvite: invite.id });
+      if (patientInvite) {
+        await Consultation.update({ invite: patientInvite.id }).set({ guest: user.id });
+
+      }
+    }
+
+
 
 
     callback(null, user);

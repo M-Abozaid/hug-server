@@ -66,13 +66,13 @@ module.exports.policies = {
     attachment: ['isLoggedIn', 'isConsultationOwner'],
     sendReport: ['isLoggedIn', 'isDoctor', 'isConsultationOwner'],
     call: ['isLoggedIn', 'isConsultationOwner'],
-    rejectCall: ['isLoggedIn', 'isConsultationOwnerOrTranslator'],
-    acceptCall: ['isLoggedIn', 'isConsultationOwnerOrTranslator'],
+    rejectCall: ['isLoggedIn', 'isConsultationParticipant'],
+    acceptCall: ['isLoggedIn', 'isConsultationParticipant'],
     patientFeedback: ['isLoggedIn', 'isNurseOrPatient'],
     doctorFeedback: ['isLoggedIn', 'isConsultationOwner'],
     consultationsCSV: ['isLoggedIn', 'isAdmin'],
     testCall: true,
-    getCurrentCall: ['isLoggedIn', 'isConsultationOwnerOrTranslator']
+    getCurrentCall: ['isLoggedIn', 'isConsultationParticipant']
     // findOne: ['isLoggedIn', 'isConsultationOwnerOrTranslator']
 
   },

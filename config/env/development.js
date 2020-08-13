@@ -21,12 +21,12 @@
 
 module.exports = {
 
-  OPENVIDU_URL: process.env.OPENVIDU_URL,//'https://localhost:4443', // 'https://192.168.43.167:4443'//'https://kurento-hugathome.dev.oniabsis.com:443'//'https://' + location.hostname + ':4443/';
+  OPENVIDU_URL: process.env.OPENVIDU_URL, // 'https://localhost:4443', // 'https://192.168.43.167:4443'//'https://kurento-hugathome.dev.oniabsis.com:443'//'https://' + location.hostname + ':4443/';
   OPENVIDU_SECRET: process.env.OPENVIDU_SECRET,
 
 
 
-  /**************************************************************************
+  /** ************************************************************************
   *                                                                         *
   * Tell Sails what database(s) it should use in development.                *
   *                                                                         *
@@ -35,7 +35,7 @@ module.exports = {
   **************************************************************************/
   datastores: {
 
-    /***************************************************************************
+    /** *************************************************************************
     *                                                                          *
     * Configure your default development database.                              *
     *                                                                          *
@@ -53,7 +53,7 @@ module.exports = {
     default: {
       // adapter: 'sails-mysql',
       // url: 'mysql://user:password@host:port/database',
-      //--------------------------------------------------------------------------
+      // --------------------------------------------------------------------------
       //  /\   To avoid checking it in to version control, you might opt to set
       //  ||   sensitive credentials like `url` using an environment variable.
       //
@@ -61,9 +61,9 @@ module.exports = {
       //  ```
       //  sails_datastores__default__url=mysql://admin:myc00lpAssw2D@db.example.com:3306/my_prod_db
       //  ```
-      //--------------------------------------------------------------------------
+      // --------------------------------------------------------------------------
 
-      /****************************************************************************
+      /** **************************************************************************
       *                                                                           *
       * More adapter-specific options                                             *
       *                                                                           *
@@ -76,7 +76,7 @@ module.exports = {
       ****************************************************************************/
       // ssl: true,
 
-    },
+    }
 
   },
 
@@ -84,7 +84,7 @@ module.exports = {
 
   models: {
 
-    /***************************************************************************
+    /** *************************************************************************
     *                                                                          *
     * To help avoid accidents, Sails automatically sets the automigration      *
     * strategy to "safe" when your app lifts in development mode.               *
@@ -94,9 +94,9 @@ module.exports = {
     * https://sailsjs.com/docs/concepts/models-and-orm/model-settings#?migrate *
     *                                                                          *
     ***************************************************************************/
-    migrate: 'safe',
+    migrate: 'safe'
 
-    /***************************************************************************
+    /** *************************************************************************
     *                                                                          *
     * If, in development, this app has access to physical-layer CASCADE         *
     * constraints (e.g. PostgreSQL or MySQL), then set those up in the         *
@@ -111,7 +111,7 @@ module.exports = {
 
 
 
-  /**************************************************************************
+  /** ************************************************************************
   *                                                                         *
   * Always disable "shortcut" blueprint routes.                             *
   *                                                                         *
@@ -122,12 +122,12 @@ module.exports = {
   *                                                                         *
   ***************************************************************************/
   blueprints: {
-    shortcuts: false,
+    shortcuts: false
   },
 
 
 
-  /***************************************************************************
+  /** *************************************************************************
   *                                                                          *
   * Configure your security settings for development.                         *
   *                                                                          *
@@ -140,7 +140,7 @@ module.exports = {
   ***************************************************************************/
   security: {
 
-    /***************************************************************************
+    /** *************************************************************************
     *                                                                          *
     * If this app has CORS enabled (see `config/security.js`) with the         *
     * `allowCredentials` setting enabled, then you should uncomment the        *
@@ -155,13 +155,13 @@ module.exports = {
       // allowOrigins: [
       //   'https://example.com',
       // ]
-    },
+    }
 
   },
 
 
 
-  /***************************************************************************
+  /** *************************************************************************
   *                                                                          *
   * Configure how your app handles sessions in development.                   *
   *                                                                          *
@@ -173,7 +173,7 @@ module.exports = {
   ***************************************************************************/
   session: {
 
-    /***************************************************************************
+    /** *************************************************************************
     *                                                                          *
     * development session store configuration.                                  *
     *                                                                          *
@@ -190,7 +190,7 @@ module.exports = {
     ***************************************************************************/
     // adapter: '@sailshq/connect-redis',
     // url: 'redis://user:password@localhost:6379/databasenumber',
-    //--------------------------------------------------------------------------
+    // --------------------------------------------------------------------------
     // /\   OR, to avoid checking it in to version control, you might opt to
     // ||   set sensitive credentials like this using an environment variable.
     //
@@ -199,11 +199,11 @@ module.exports = {
     // sails_session__url=redis://admin:myc00lpAssw2D@bigsquid.redistogo.com:9562/0
     // ```
     //
-    //--------------------------------------------------------------------------
+    // --------------------------------------------------------------------------
 
 
 
-    /***************************************************************************
+    /** *************************************************************************
     *                                                                          *
     * development configuration for the session ID cookie.                      *
     *                                                                          *
@@ -226,14 +226,14 @@ module.exports = {
     ***************************************************************************/
     cookie: {
       // secure: true,
-      maxAge: 24 * 60 * 60 * 1000,  // 24 hours
-    },
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
 
   },
 
 
 
-  /**************************************************************************
+  /** ************************************************************************
   *                                                                          *
   * Set up Socket.io for your development environment.                        *
   *                                                                          *
@@ -245,7 +245,7 @@ module.exports = {
   ***************************************************************************/
   sockets: {
 
-    /***************************************************************************
+    /** *************************************************************************
     *                                                                          *
     * Uncomment the `onlyAllowOrigins` whitelist below to configure which      *
     * "origins" are allowed to open socket connections to your Sails app.      *
@@ -260,7 +260,7 @@ module.exports = {
     // ],
 
 
-    /***************************************************************************
+    /** *************************************************************************
     *                                                                          *
     * If you are deploying a cluster of multiple servers and/or processes,     *
     * then uncomment the following lines.  This tells Socket.io about a Redis  *
@@ -274,7 +274,7 @@ module.exports = {
     ***************************************************************************/
     // adapter: '@sailshq/socket.io-redis',
     // url: 'redis://user:password@bigsquid.redistogo.com:9562/databasenumber',
-    //--------------------------------------------------------------------------
+    // --------------------------------------------------------------------------
     // /\   OR, to avoid checking it in to version control, you might opt to
     // ||   set sensitive credentials like this using an environment variable.
     //
@@ -282,13 +282,13 @@ module.exports = {
     // ```
     // sails_sockets__url=redis://admin:myc00lpAssw2D@bigsquid.redistogo.com:9562/0
     // ```
-    //--------------------------------------------------------------------------
+    // --------------------------------------------------------------------------
 
   },
 
 
 
-  /**************************************************************************
+  /** ************************************************************************
   *                                                                         *
   * Set the development log level.                                           *
   *                                                                         *
@@ -297,7 +297,7 @@ module.exports = {
   ***************************************************************************/
   log: {
     level: 'debug'
-  },
+  }
 
 
 

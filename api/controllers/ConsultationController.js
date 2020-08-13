@@ -128,6 +128,11 @@ module.exports = {
       match = [{ translator: ObjectId(req.user.id) }];
     }
 
+    if (req.user && req.user.role === 'guest') {
+      match = [{ guest: ObjectId(req.user.id) }];
+    }
+
+
     if (req.user.viewAllQueues) {
       const queues = (await Queue.find({})).map(queue => new ObjectId(queue.id));
       match.push(
@@ -389,17 +394,19 @@ module.exports = {
     if (!consultation) {
       return res.notFound();
     }
+    Consultation.getConsultationParticipants(consultation).forEach(participant => {
 
-    sails.sockets.broadcast(consultation.owner, 'consultationAccepted', {
-      data: {
-        consultation,
-        _id: consultation.id,
-        doctor: {
-          firstName: req.user.firstName,
-          lastName: req.user.lastName,
-          phoneNumber: req.user.phoneNumber ? req.user.phoneNumber : ''
+      sails.sockets.broadcast(participant, 'consultationAccepted', {
+        data: {
+          consultation,
+          _id: consultation.id,
+          doctor: {
+            firstName: req.user.firstName,
+            lastName: req.user.lastName,
+            phoneNumber: req.user.phoneNumber ? req.user.phoneNumber : ''
+          }
         }
-      }
+      });
     });
     sails.sockets.broadcast(consultation.queue || consultation.invitedBy, 'consultationAccepted', {
       data: {
@@ -610,6 +617,23 @@ module.exports = {
             id: session.id,
             audioOnly: req.query.audioOnly === 'true',
             msg: translatorMsg
+          }
+        });
+
+      }
+
+      if (consultation.guest) {
+        const guestToken = await session.generateToken();
+        const guestMsg = Object.assign({}, msg);
+        guestMsg.token = guestToken;
+
+        sails.sockets.broadcast(consultation.guest, 'newCall', {
+          data: {
+            consultation: req.params.consultation,
+            token: guestToken,
+            id: session.id,
+            audioOnly: req.query.audioOnly === 'true',
+            msg: guestMsg
           }
         });
 

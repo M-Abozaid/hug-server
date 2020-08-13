@@ -6,7 +6,6 @@
  */
 
 
-
 const db = PublicInvite.getDatastore().manager;
 const ObjectId = require('mongodb').ObjectID;
 
@@ -134,6 +133,8 @@ module.exports = {
     }
 
 
+    let guestInvite;
+
     try {
       // add other invite info
       // send invite to translator and guest
@@ -169,7 +170,6 @@ module.exports = {
       invite = await PublicInvite.create(inviteData).fetch();
 
 
-      let guestInvite;
       if (inviteData.guestPhoneNumber || inviteData.guestEmailAddress) {
 
         const guestInviteDate = {
@@ -179,10 +179,15 @@ module.exports = {
           scheduledFor: req.body.scheduledFor ? new Date(req.body.scheduledFor) : undefined,
           type: 'GUEST',
           guestEmailAddress: inviteData.guestEmailAddress,
-          guestPhoneNumber: inviteData.guestPhoneNumber
+          guestPhoneNumber: inviteData.guestPhoneNumber,
+          emailAddress: inviteData.guestEmailAddress,
+          phoneNumber: inviteData.guestPhoneNumber,
+          patientLanguage: req.body.language
         };
 
         guestInvite = await PublicInvite.create(guestInviteDate).fetch();
+
+        await PublicInvite.updateOne({ id: invite.id }).set({ guestInvite: guestInvite.id });
       }
 
       if (translationOrganization) {
@@ -198,6 +203,8 @@ module.exports = {
         };
 
         const translatorRequestInvite = await PublicInvite.create(translatorRequestInviteData).fetch();
+
+        await PublicInvite.updateOne({ id: invite.id }).set({ translatorRequestInvite: translatorRequestInvite.id });
 
         createTranslationRequest(translatorRequestInvite, translationOrganization);
 
@@ -222,6 +229,9 @@ module.exports = {
 
     try {
       await PublicInvite.sendPatientInvite(invite);
+      if (guestInvite) {
+        await PublicInvite.sendGuestInvite(guestInvite);
+      }
     } catch (error) {
       console.log('ERROR SENDING Invite>>>>>>>> ', error);
       await PublicInvite.destroyOne({ id: invite.id });
@@ -233,7 +243,10 @@ module.exports = {
 
 
     if (invite.scheduledFor) {
-      await PublicInvite.setPatientInviteReminders(invite);
+      await PublicInvite.setPatientOrGuestInviteReminders(invite);
+      if (guestInvite) {
+        await PublicInvite.setPatientOrGuestInviteReminders(guestInvite);
+      }
     }
 
     return res.json({
