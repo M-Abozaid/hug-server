@@ -17,5 +17,7 @@
   "translator login link email subject": "Your login link",
   "translator login link email": "Please click here to start translation %s",
   "invalid invite":"This invite is invalid",
-  "invite have been accepted":"This invite have already been accepted"
+  "invite have been accepted":"This invite have already been accepted",
+  "fr":"French",
+  "en":"English"
 }

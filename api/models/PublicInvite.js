@@ -114,11 +114,12 @@ module.exports = {
     const url = `${process.env.PUBLIC_URL}?invite=${invite.inviteToken}`;
     const doctorLang = invite.doctorLanguage || process.env.DEFAULT_DOCTOR_LOCALE;
     const inviteTime = invite.scheduledFor ? moment(invite.scheduledFor).local(doctorLang).format('HH:mm') : '';
+    const doctorLangTranslated = sails._t(doctorLang, doctorLang);
     return sails.helpers.email.with({
       to: email,
-      subject: sails._t(doctorLang, 'translation request invite email subject', doctorLang, invite.patientLanguage),
-      text: invite.scheduledFor ? sails._t(doctorLang, 'scheduled translation request invite email', doctorLang, invite.patientLanguage, inviteTime, url) :
-      sails._t(doctorLang, 'translation request invite email', doctorLang, invite.patientLanguage, url)
+      subject: sails._t(doctorLang, 'translation request invite email subject', doctorLangTranslated, invite.patientLanguage),
+      text: invite.scheduledFor ? sails._t(doctorLang, 'scheduled translation request invite email', doctorLangTranslated, invite.patientLanguage, inviteTime, url) :
+      sails._t(doctorLang, 'translation request invite email', doctorLangTranslated, invite.patientLanguage, url)
     });
   },
 
@@ -162,7 +163,7 @@ module.exports = {
     if (invite.phoneNumber) {
       try {
         await sails.helpers.sms.with({
-          phoneNumber: req.body.phoneNumber,
+          phoneNumber: invite.phoneNumber,
           message
         });
 
@@ -199,10 +200,11 @@ module.exports = {
       }
     }
 
+
     if (invite.phoneNumber) {
       try {
         await sails.helpers.sms.with({
-          phoneNumber: req.body.phoneNumber,
+          phoneNumber: invite.phoneNumber,
           message
         });
 

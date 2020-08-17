@@ -3,5 +3,7 @@
   "A brand new app.": "A brand new app.",
   "scheduled patient invite":"Bonjour, Vous avez été invité pour une consultation de télémédecine @Home le %s Nous vous conseillons dors et déjà de tester la compatibilité de votre appareil avec le lien suivant. %s",
   "invalid invite":"This invite is invalid en",
-  "invite have been accepted":"This invite have already been accepted en"
+  "invite have been accepted":"This invite have already been accepted en",
+  "fr":"French",
+  "en":"English"
 }
