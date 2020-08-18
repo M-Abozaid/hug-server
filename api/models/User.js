@@ -92,7 +92,7 @@ module.exports = {
       type: 'string'
     },
     direct: {
-      type: 'number'
+      type: 'string'
     }
   },
 

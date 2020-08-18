@@ -45,7 +45,8 @@ module.exports = {
       type: 'string'
     },
     emailAddress: {
-      type: 'string'
+      type: 'string',
+      isEmail: true
     },
     inviteToken: {
       type: 'string'
@@ -83,7 +84,8 @@ module.exports = {
       model: 'translationOrganization'
     },
     guestEmailAddress: {
-      type: 'string'
+      type: 'string',
+      isEmail: true
     },
     guestPhoneNumber: {
       type: 'string'

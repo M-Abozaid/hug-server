@@ -115,8 +115,12 @@ module.exports.policies = {
     update: ['isLoggedIn', 'isAdmin']
   },
 
-  TranslationOrganization: {
-    '*': ['isLoggedIn', 'isAdmin']
+  TranslationOrganizationController: {
+    '*': false,
+    find: ['isLoggedIn', 'isDoctorOrAdmin'],
+    create: ['isLoggedIn', 'isAdmin'],
+    destroy: ['isLoggedIn', 'isAdmin'],
+    update: ['isLoggedIn', 'isAdmin']
   },
 
   Translator: {
@@ -125,5 +129,12 @@ module.exports.policies = {
   TranslatorController: {
     acceptRequest: true,
     findConsultation: ['isLoggedIn']
+  },
+  Language: {
+    '*': false,
+    find: ['isLoggedIn', 'isDoctorOrAdmin'],
+    create: ['isLoggedIn', 'isAdmin'],
+    destroy: ['isLoggedIn', 'isAdmin'],
+    update: ['isLoggedIn', 'isAdmin']
   }
 };

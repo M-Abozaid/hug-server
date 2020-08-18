@@ -673,8 +673,9 @@ module.exports = {
 
         await Message.removeFromCollection(message.id, 'participants', req.user.id);
         // if this is the last participant end the call and destroy the session
+        const isParticipant = message.participants.find(p => p.id === req.user.id);
         // and set closed at
-        if (message.participants.length === 1 && message.participants[0].id === req.user.id) {
+        if (message.participants.length <= 2 && isParticipant) {
           await Message.endCall(message, consultation, 'MEMBERS_LEFT');
 
         }
