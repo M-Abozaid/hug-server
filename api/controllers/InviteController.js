@@ -132,17 +132,9 @@ module.exports = {
       });
     }
 
-    let patientLanguage;
-    if (req.body.language) {
-      patientLanguage = await Language.findOne({
-        or: [
-          { code: req.body.language },
-          { id: req.body.language }
-        ]
-      });
-    }
 
-    if (req.body.language && !patientLanguage) {
+
+    if (translationOrganization && (translationOrganization.languages || []).indexOf(req.body.language) === -1) {
       return res.status(400).json({
         error: true,
         message: `patientLanguage ${req.body.language} doesn't exist`
@@ -163,7 +155,7 @@ module.exports = {
         lastName: req.body.lastName,
         invitedBy: req.user.id,
         scheduledFor: req.body.scheduledFor ? new Date(req.body.scheduledFor) : undefined,
-        patientLanguage: patientLanguage.code,
+        patientLanguage: req.body.language,
         type: 'PATIENT'
       };
       if (queue) {
@@ -199,7 +191,7 @@ module.exports = {
           guestPhoneNumber: inviteData.guestPhoneNumber,
           emailAddress: inviteData.guestEmailAddress,
           phoneNumber: inviteData.guestPhoneNumber,
-          patientLanguage: patientLanguage.code
+          patientLanguage: req.body.language
         };
 
         guestInvite = await PublicInvite.create(guestInviteDate).fetch();
@@ -214,7 +206,7 @@ module.exports = {
           organization: translationOrganization.id,
           invitedBy: req.user.id,
           scheduledFor: req.body.scheduledFor ? new Date(req.body.scheduledFor) : undefined,
-          patientLanguage: patientLanguage.code,
+          patientLanguage: req.body.language,
           doctorLanguage: req.body.doctorLanguage,
           type: 'TRANSLATOR_REQUEST'
         };
