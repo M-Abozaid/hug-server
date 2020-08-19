@@ -5,5 +5,7 @@
   "invalid invite":"This invite is invalid en",
   "invite have been accepted":"This invite have already been accepted en",
   "fr":"French",
-  "en":"English"
+  "en":"English",
+  "patient invite":"Cliquez ici pour accéder à votre vidéo consultation avec votre médecin : %s",
+  "guest invite":"Cliquez ici pour accéder à votre vidéo consultation avec votre médecin : %s"
 }
