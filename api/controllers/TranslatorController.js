@@ -9,6 +9,8 @@
 
 
 
+
+
 module.exports = {
 
 
@@ -43,6 +45,17 @@ module.exports = {
         });
       }
 
+      // if it has been accepted return error
+      if (translatorRequestInvite.status === 'REFUSED') {
+        return res.status(400).json({
+          success: false,
+          error: {
+            name: 'ERROR_INVITE_REFUSED',
+            message: 'invite have already been REFUSED',
+            userMessage: sails._t(locale, 'invite have been refused')
+          }
+        });
+      }
 
 
       // set invite as accepted
@@ -126,6 +139,79 @@ module.exports = {
     }
 
     return res.status(200).json(consultation);
+  },
+
+  async refuseRequest (req, res) {
+
+    const translatorRequestInvite = await PublicInvite.findOne({ type: 'TRANSLATOR_REQUEST',
+      inviteToken: req.params.translationRequestToken }).populate('invitedBy').populate('patientInvite').populate('translationOrganization');
+
+    const locale = req.headers.locale || process.env.DEFAULT_PATIENT_LOCALE;
+
+    if (!translatorRequestInvite.translationOrganization.canRefuse) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          name: 'ERROR_CANT_REFUSE',
+          message: 'You can\'n refuse this request',
+          userMessage: sails._t(locale, 'can\'t refuse')
+        }
+      });
+    }
+    if (!translatorRequestInvite) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          name: 'ERROR_NO_INVITE',
+          message: 'invite doesn\'t exist',
+          userMessage: sails._t(locale, 'invalid invite')
+        }
+      });
+
+    }
+    // if it has been accepted return error
+    if (translatorRequestInvite.status === 'ACCEPTED') {
+      return res.status(400).json({
+        success: false,
+        error: {
+          name: 'ERROR_INVITE_ACCEPTED',
+          message: 'invite have already been accepted',
+          userMessage: sails._t(locale, 'invite have been accepted')
+        }
+      });
+    }
+
+    // if it has been accepted return error
+    if (translatorRequestInvite.status === 'REFUSED') {
+      return res.status(400).json({
+        success: false,
+        error: {
+          name: 'ERROR_INVITE_REFUSED',
+          message: 'invite have already been REFUSED',
+          userMessage: sails._t(locale, 'invite have been refused')
+        }
+      });
+    }
+
+
+    await PublicInvite.updateOne({ type: 'TRANSLATOR_REQUEST', inviteToken: req.params.translationRequestToken }).set({ status: 'REFUSED' });
+    await PublicInvite.updateOne({ id: translatorRequestInvite.patientInvite.id }).set({ status: 'CANCELED' });
+
+    if (translatorRequestInvite.patientInvite.guestInvite) {
+      await PublicInvite.updateOne({ id: translatorRequestInvite.patientInvite.guestInvite }).set({ status: 'CANCELED' });
+    }
+
+    if (translatorRequestInvite.invitedBy.email) {
+      const docLocale = translatorRequestInvite.invitedBy.preferredLanguage || process.env.DEFAULT_DOCTOR_LOCALE;
+      await sails.helpers.email.with({
+        to: translatorRequestInvite.invitedBy.email,
+        subject: sails._t(docLocale, 'Translation request has been refused'),
+        text: sails._t(docLocale, 'Translation request has been refused')
+      });
+    }
+
+
+    res.status(200).send();
   }
 };
 

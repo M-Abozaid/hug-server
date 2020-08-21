@@ -51,7 +51,7 @@ passport.use('invite', new CustomStrategy(
       return callback({ invite: 'cannot use this invite for login' }, null);
     }
 
-    if (invite.status === 'ACCEPTED' || invite.status === 'COMPLETED') {
+    if (invite.status === 'ACCEPTED' || invite.status === 'COMPLETED' || invite.status === 'REFUSED') {
       return callback({ invite: 'invite have already been accepted' }, null);
     }
 

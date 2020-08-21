@@ -16,6 +16,12 @@ module.exports = {
     },
     mainEmail: {
       type: 'string'
+    },
+    languages: {
+      type: 'json'
+    },
+    canRefuse: {
+      type: 'boolean'
     }
 
   }

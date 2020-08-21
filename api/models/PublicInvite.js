@@ -53,7 +53,7 @@ module.exports = {
     },
     status: {
       type: 'string',
-      isIn: ['SENT', 'ACCEPTED', 'COMPLETE'],
+      isIn: ['SENT', 'ACCEPTED', 'COMPLETE', 'REFUSED', 'CANCELED'],
       defaultsTo: 'SENT'
     },
     queue: {

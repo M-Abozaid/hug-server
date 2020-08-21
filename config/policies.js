@@ -128,6 +128,7 @@ module.exports.policies = {
   },
   TranslatorController: {
     acceptRequest: true,
+    refuseRequest: true,
     findConsultation: ['isLoggedIn']
   },
   Language: {

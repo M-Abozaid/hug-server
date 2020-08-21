@@ -203,7 +203,7 @@ module.exports = {
         // create and send translator invite
         const translatorRequestInviteData = {
           patientInvite: invite.id,
-          organization: translationOrganization.id,
+          translationOrganization: translationOrganization.id,
           invitedBy: req.user.id,
           scheduledFor: req.body.scheduledFor ? new Date(req.body.scheduledFor) : undefined,
           patientLanguage: req.body.language,
@@ -276,7 +276,15 @@ module.exports = {
     try {
       const invite = await PublicInvite.findOne({ id: req.params.invite });
 
-      await PublicInvite.sendPatientInvite(invite);
+      if (invite) {
+
+        await PublicInvite.updateOne({ id: req.params.invite }).set({
+          status: 'SENT'
+        });
+        await PublicInvite.sendPatientInvite(invite);
+      } else {
+        return res.notFound();
+      }
 
 
       return res.json({
@@ -293,6 +301,8 @@ module.exports = {
   async revoke (req, res) {
 
     try {
+      const invite = await PublicInvite.findOne({ id: req.params.invite });
+
       await PublicInvite.destroyOne({ id: req.params.invite });
 
       return res.status(200).send();
@@ -339,7 +349,7 @@ module.exports = {
 
     const publicinvite = await PublicInvite.findOne({
       inviteToken: req.params.invitationToken
-    });
+    }).populate('translationOrganization');
     if (!publicinvite) {
       return res.notFound();
     }
