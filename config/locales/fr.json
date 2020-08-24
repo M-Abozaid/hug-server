@@ -19,5 +19,6 @@
 	"fr": "French",
 	"en": "English",
 	"invite have been refused": "invite have been refused",
-	"Translation request has been refused": "Translation request has been refused"
+  "translation request refused body": "Votre demande de traducteur n'a malheureusement pas été accepté pour la télé-consultation du patient .  Merci de renouveler votre demande de traduction depuis l'interface @Home.",
+  "translation request refused subject":"translation request refused subject"
 }

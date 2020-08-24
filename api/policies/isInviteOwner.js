@@ -12,10 +12,14 @@ module.exports = async function (req, res, proceed) {
 
 
   req.query.where = JSON.stringify({
+
+    type: 'PATIENT',
+
     or: [
       {
         invitedBy: req.user.id
       }, {
+
         queue: queues
       }
     ]

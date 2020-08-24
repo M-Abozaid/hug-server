@@ -205,8 +205,8 @@ module.exports = {
       const docLocale = translatorRequestInvite.invitedBy.preferredLanguage || process.env.DEFAULT_DOCTOR_LOCALE;
       await sails.helpers.email.with({
         to: translatorRequestInvite.invitedBy.email,
-        subject: sails._t(docLocale, 'Translation request has been refused'),
-        text: sails._t(docLocale, 'Translation request has been refused')
+        subject: sails._t(docLocale, 'translation request refused subject'),
+        text: sails._t(docLocale, 'translation request refused body')
       });
     }
 

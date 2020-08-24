@@ -67,7 +67,8 @@ async function createTranslationRequest (translationInvite, organization) {
 
   // if organization has main email sent to that email
   if (organization.mainEmail) {
-    return PublicInvite.sendTranslationRequestInvite(translationInvite, organization.mainEmail);
+    await PublicInvite.sendTranslationRequestInvite(translationInvite, organization.mainEmail);
+    return PublicInvite.setTranslatorRequestTimer(translationInvite);
   }
   // if not
   // get all translators under organization
@@ -78,7 +79,8 @@ async function createTranslationRequest (translationInvite, organization) {
     return Promise.reject(`There are no translators for ${ translationInvite.patientLanguage }${translationInvite.doctorLanguage}`);
   }
 
-  return PublicInvite.sendTranslationRequestInvite(translationInvite, translator.email);
+  await PublicInvite.sendTranslationRequestInvite(translationInvite, translator.email);
+  return PublicInvite.setTranslatorRequestTimer(translationInvite);
 
 }
 

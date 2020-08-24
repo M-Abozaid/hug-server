@@ -10,6 +10,7 @@ const schedule = require('node-schedule');
 
 const FIRST_INVITE_REMINDER = 24 * 60 * 60 * 1000;
 const SECOND_INVITE_REMINDER = 60 * 1000;
+const TRANSLATOR_REQUEST_TIMEOUT = 24 * 60 * 60 * 1000;
 const testingUrl = `${process.env.PUBLIC_URL}/#test-call`;
 const crypto = require('crypto');
 async function generateToken () {
@@ -136,6 +137,32 @@ module.exports = {
     });
   },
 
+  setTranslatorRequestTimer (invite) {
+    schedule.scheduleJob(new Date(Date.now() + TRANSLATOR_REQUEST_TIMEOUT), async () => {
+
+
+      const translatorRequestInvite = await PublicInvite.findOne({ type: 'TRANSLATOR_REQUEST',
+        id: invite.id }).populate('invitedBy').populate('patientInvite').populate('translationOrganization');
+      if (translatorRequestInvite.status === 'SENT') {
+
+        await PublicInvite.updateOne({ type: 'TRANSLATOR_REQUEST', id: invite.id }).set({ status: 'REFUSED' });
+        await PublicInvite.updateOne({ id: translatorRequestInvite.patientInvite.id }).set({ status: 'CANCELED' });
+
+        if (translatorRequestInvite.patientInvite.guestInvite) {
+          await PublicInvite.updateOne({ id: translatorRequestInvite.patientInvite.guestInvite }).set({ status: 'CANCELED' });
+        }
+
+        if (translatorRequestInvite.invitedBy.email) {
+          const docLocale = translatorRequestInvite.invitedBy.preferredLanguage || process.env.DEFAULT_DOCTOR_LOCALE;
+          await sails.helpers.email.with({
+            to: translatorRequestInvite.invitedBy.email,
+            subject: sails._t(docLocale, 'translation request refused subject'),
+            text: sails._t(docLocale, 'translation request refused body')
+          });
+        }
+      }
+    });
+  },
 
   async sendPatientInvite (invite) {
 
