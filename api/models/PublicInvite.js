@@ -99,6 +99,10 @@ module.exports = {
       model: 'publicInvite',
       required: false
     },
+    translatorInvite: {
+      model: 'publicInvite',
+      required: false
+    },
     guestInvite: {
       model: 'publicInvite',
       required: false
@@ -293,6 +297,23 @@ module.exports = {
       });
     }
 
+  },
+  async destroyPatientInvite (invite) {
+    if (invite.guestInvite) {
+      await PublicInvite.destroyOne({ id: invite.guestInvite });
+      await User.destroyOne({ username: invite.guestInvite });
+    }
+    if (invite.translatorRequestInvite) {
+      await PublicInvite.destroyOne({ id: invite.translatorRequestInvite });
+
+    }
+    if (invite.translatorInvite) {
+      await PublicInvite.destroyOne({ id: invite.translatorInvite });
+      await User.destroyOne({ username: invite.translatorInvite });
+    }
+
+    await PublicInvite.destroyOne({ id: invite.id });
+    await User.destroyOne({ username: invite.id });
   }
 
 };

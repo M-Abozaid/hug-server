@@ -5,6 +5,8 @@
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
 
+const PublicInvite = require('../models/PublicInvite');
+
 
 
 
@@ -74,7 +76,7 @@ module.exports = {
         };
 
         const translatorInvite = await PublicInvite.create(translatorInviteData).fetch();
-
+        await PublicInvite.updateOne({ id: translatorRequestInvite.patientInvite }).set({ translatorInvite: translatorInvite.id });
 
         const newUser = {
           username: translatorInvite.id,
