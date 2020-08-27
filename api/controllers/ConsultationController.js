@@ -19,15 +19,6 @@ const _ = require('@sailshq/lodash');
 
 const db = Consultation.getDatastore().manager;
 
-function sendConsultationClosed (consultation) {
-  // emit consultation closed event with the consultation
-  sails.sockets.broadcast(consultation.owner, 'consultationClosed', {
-    data: {
-      consultation,
-      _id: consultation.id
-    }
-  });
-}
 
 const columns = [
   { colName: 'Invitation envoyée le', key: 'inviteCreatedAt' },
@@ -52,59 +43,8 @@ const columns = [
 
 
 
-async function saveAnonymousDetails (consultation) {
-
-  // consultation = await Consultation.findOne({id:'5e81e3838475f6352ef40aec'})
-  const anonymousConsultation = {
-
-    consultationId: consultation.id,
-    IMADTeam: consultation.IMADTeam,
-    acceptedAt: consultation.acceptedAt,
-    closedAt: consultation.closedAt || Date.now(),
-    consultationCreatedAt: consultation.createdAt,
-    queue: consultation.queue,
-    owner: consultation.owner,
-    acceptedBy: consultation.acceptedBy,
-
-    patientRating: consultation.patientRating,
-    patientComment: consultation.patientComment,
-    doctorRating: consultation.doctorRating,
-    doctorComment: consultation.doctorComment
-
-  };
-  if (consultation.invite) {
-
-    const invite = await PublicInvite.findOne({ id: consultation.invite });
-    if (invite) {
-      anonymousConsultation.inviteScheduledFor = invite.scheduledFor;
-      anonymousConsultation.invitedBy = invite.invitedBy;
-      anonymousConsultation.inviteCreatedAt = invite.createdAt;
-    }
-  }
-
-  const doctorTextMessagesCount = await Message.count({ from: consultation.acceptedBy, consultation: consultation.id, type: 'text' });
-  const patientTextMessagesCount = await Message.count({ from: consultation.owner, consultation: consultation.id, type: 'text' });
-  const missedCallsCount = await Message.count({ consultation: consultation.id, type: { in: ['videoCall', 'audioCall'] }, acceptedAt: 0 });
-  const successfulCalls = await Message.find({ consultation: consultation.id, type: { in: ['videoCall', 'audioCall'] }, acceptedAt: { '!=': 0 }, closedAt: { '!=': 0 } });
-  const successfulCallsCount = await Message.count({ consultation: consultation.id, type: { in: ['videoCall', 'audioCall'] }, acceptedAt: { '!=': 0 } });
-
-  const callDurations = successfulCalls.map(c => c.closedAt - c.acceptedAt);
-  const sum = callDurations.reduce((a, b) => a + b, 0);
-  const averageCallDurationMs = (sum / callDurations.length) || 0;
-  const averageCallDuration = averageCallDurationMs / 60000;
 
 
-  anonymousConsultation.doctorTextMessagesCount = doctorTextMessagesCount;
-  anonymousConsultation.patientTextMessagesCount = patientTextMessagesCount;
-  anonymousConsultation.missedCallsCount = missedCallsCount;
-  anonymousConsultation.successfulCallsCount = successfulCallsCount;
-  anonymousConsultation.averageCallDuration = averageCallDuration;
-
-  console.log('anonymous consultation ', anonymousConsultation);
-  await AnonymousConsultation.create(anonymousConsultation);
-
-
-}
 // saveAnonymousDetails()
 module.exports = {
   async consultationOverview (req, res) {
@@ -315,7 +255,7 @@ module.exports = {
       if (invite) {
         if (invite.scheduledFor) {
           if (invite.scheduledFor - Date.now() > 10 * 60 * 1000) {
-            console.log('can create consultation yet');
+            console.log('cant create consultation yet');
             return res.status(401).json({ success: false, message: 'Too early for consultation' });
           }
         }
@@ -432,74 +372,14 @@ module.exports = {
     try {
 
 
-      const closedAt = new Date();
-
       const consultation = await Consultation.findOne({
         id: req.params.consultation
       });
       if (!consultation || consultation.status !== 'active') {
         return res.notFound();
       }
+      await Consultation.closeConsultation(consultation);
 
-      try {
-
-        await saveAnonymousDetails(consultation);
-      } catch (error) {
-        console.error('Error Saving anonymous details ', error);
-      }
-
-      if (consultation.invitationToken) {
-        await PublicInvite.destroyOne({ inviteToken: consultation.invitationToken });
-      }
-
-
-
-      const messageCollection = db.collection('message');
-      const consultationCollection = db.collection('consultation');
-
-      const callMessages = await Message.find({ consultation: req.params.consultation, type: { in: ['videoCall', 'audioCall'] } });
-
-      // const callMessages = await callMessagesCursor.toArray();
-      // save info for stats
-      await AnonymousCall.createEach(callMessages.map(m => {
-        delete m.id;
-        return m;
-      }));
-
-      if (!consultation.queue) {
-        consultation.queue = null;
-      }
-
-
-      // mark consultation as closed and set closedAtISO for mongodb ttl
-      const { result } = await consultationCollection.update({ _id: new ObjectId(req.params.consultation) }, {
-        $set: {
-          status: 'closed',
-          closedAtISO: closedAt,
-          closedAt: closedAt.getTime()
-        }
-      });
-
-
-
-      // set consultationClosedAtISO for mongodb ttl index
-      await messageCollection.update({ consultation: new ObjectId(req.params.consultation) }, {
-        $set: {
-          consultationClosedAtISO: closedAt,
-          consultationClosedAt: closedAt.getTime()
-        }
-      }, { multi: true });
-
-
-
-      // emit consultation closed event with the consultation
-      sendConsultationClosed(consultation);
-      consultation.status = 'closed';
-      consultation.closedAtISO = closedAt;
-      consultation.closedAt = closedAt.getTime();
-
-      // emit consultation closed event with the consultation
-      sendConsultationClosed(consultation);
 
       res.status(200);
       return res.json(consultation);
@@ -674,6 +554,11 @@ module.exports = {
         await Message.removeFromCollection(message.id, 'participants', req.user.id);
         // if this is the last participant end the call and destroy the session
         const isParticipant = message.participants.find(p => p.id === req.user.id);
+
+        if (req.user.role === 'doctor' && isParticipant) {
+          await Message.endCall(message, consultation, 'DOCTOR_LEFT');
+
+        } else
         // and set closed at
         if (message.participants.length <= 2 && isParticipant) {
           await Message.endCall(message, consultation, 'MEMBERS_LEFT');

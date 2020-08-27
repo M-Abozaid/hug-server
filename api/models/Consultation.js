@@ -5,6 +5,9 @@
  * @docs        :: https://sailsjs.com/docs/concepts/models-and-orm/models
  */
 
+const ObjectId = require('mongodb').ObjectID;
+
+
 module.exports = {
 
   attributes: {
@@ -90,6 +93,9 @@ module.exports = {
     flagPatientOnline: {
       type: 'boolean',
       required: false
+    },
+    scheduledFor: {
+      type: 'number'
     }
   },
 
@@ -154,7 +160,162 @@ module.exports = {
     }
 
     return consultationParticipants;
-  }
+  },
 
+  async saveAnonymousDetails (consultation) {
+
+    // consultation = await Consultation.findOne({id:'5e81e3838475f6352ef40aec'})
+    const anonymousConsultation = {
+
+      consultationId: consultation.id,
+      IMADTeam: consultation.IMADTeam,
+      acceptedAt: consultation.acceptedAt,
+      closedAt: consultation.closedAt || Date.now(),
+      consultationCreatedAt: consultation.createdAt,
+      queue: consultation.queue,
+      owner: consultation.owner,
+      acceptedBy: consultation.acceptedBy,
+
+      patientRating: consultation.patientRating,
+      patientComment: consultation.patientComment,
+      doctorRating: consultation.doctorRating,
+      doctorComment: consultation.doctorComment
+
+    };
+    if (consultation.invite) {
+
+      try {
+
+        const invite = await PublicInvite.findOne({ id: consultation.invite });
+        if (invite) {
+          anonymousConsultation.inviteScheduledFor = invite.scheduledFor;
+          anonymousConsultation.invitedBy = invite.invitedBy;
+          anonymousConsultation.inviteCreatedAt = invite.createdAt;
+        }
+      } catch (error) {
+        console.log('Error finding invite ', error);
+
+      }
+    }
+
+    try {
+
+      const doctorTextMessagesCount = await Message.count({ from: consultation.acceptedBy, consultation: consultation.id, type: 'text' });
+      const patientTextMessagesCount = await Message.count({ from: consultation.owner, consultation: consultation.id, type: 'text' });
+      const missedCallsCount = await Message.count({ consultation: consultation.id, type: { in: ['videoCall', 'audioCall'] }, acceptedAt: 0 });
+      const successfulCalls = await Message.find({ consultation: consultation.id, type: { in: ['videoCall', 'audioCall'] }, acceptedAt: { '!=': 0 }, closedAt: { '!=': 0 } });
+      const successfulCallsCount = await Message.count({ consultation: consultation.id, type: { in: ['videoCall', 'audioCall'] }, acceptedAt: { '!=': 0 } });
+
+      const callDurations = successfulCalls.map(c => c.closedAt - c.acceptedAt);
+      const sum = callDurations.reduce((a, b) => a + b, 0);
+      const averageCallDurationMs = (sum / callDurations.length) || 0;
+      const averageCallDuration = averageCallDurationMs / 60000;
+
+
+      anonymousConsultation.doctorTextMessagesCount = doctorTextMessagesCount;
+      anonymousConsultation.patientTextMessagesCount = patientTextMessagesCount;
+      anonymousConsultation.missedCallsCount = missedCallsCount;
+      anonymousConsultation.successfulCallsCount = successfulCallsCount;
+      anonymousConsultation.averageCallDuration = averageCallDuration;
+
+      console.log('anonymous consultation ', anonymousConsultation);
+    } catch (error) {
+
+      console.log('Error counting messages ', error);
+    }
+    console.log('create anonymous ', anonymousConsultation);
+    await AnonymousConsultation.create(anonymousConsultation);
+
+
+  },
+  sendConsultationClosed (consultation) {
+    // emit consultation closed event with the consultation
+    sails.sockets.broadcast(consultation.owner, 'consultationClosed', {
+      data: {
+        consultation,
+        _id: consultation.id
+      }
+    });
+  },
+  async closeConsultation (consultation) {
+    const db = Consultation.getDatastore().manager;
+
+    const closedAt = new Date();
+
+
+    try {
+
+      await Consultation.saveAnonymousDetails(consultation);
+    } catch (error) {
+      console.error('Error Saving anonymous details ', error);
+    }
+
+    if (consultation.invitationToken) {
+      try {
+        const patientInvite = await PublicInvite.findOne({ inviteToken: consultation.invitationToken });
+        await PubicInvite.destroyPatientInvite(patientInvite);
+
+      } catch (error) {
+        console.error('Error destroying Invite ', error);
+      }
+    }
+
+
+
+    const messageCollection = db.collection('message');
+    const consultationCollection = db.collection('consultation');
+    try {
+
+
+      const callMessages = await Message.find({ consultation: consultation.id, type: { in: ['videoCall', 'audioCall'] } });
+      // const callMessages = await callMessagesCursor.toArray();
+      // save info for stats
+      try {
+
+        await AnonymousCall.createEach(callMessages.map(m => {
+          delete m.id;
+          return m;
+        }));
+      } catch (error) {
+        console.log('Error creating anonymous calls ', error);
+      }
+
+    } catch (error) {
+      console.log('Error finding messages ', error);
+    }
+    if (!consultation.queue) {
+      consultation.queue = null;
+    }
+
+
+    // mark consultation as closed and set closedAtISO for mongodb ttl
+    const { result } = await consultationCollection.update({ _id: new ObjectId(consultation.id) }, {
+      $set: {
+        status: 'closed',
+        closedAtISO: closedAt,
+        closedAt: closedAt.getTime()
+      }
+    });
+
+
+
+    // set consultationClosedAtISO for mongodb ttl index
+    await messageCollection.update({ consultation: new ObjectId(consultation.id) }, {
+      $set: {
+        consultationClosedAtISO: closedAt,
+        consultationClosedAt: closedAt.getTime()
+      }
+    }, { multi: true });
+
+
+
+
+    consultation.status = 'closed';
+    consultation.closedAtISO = closedAt;
+    consultation.closedAt = closedAt.getTime();
+
+    // emit consultation closed event with the consultation
+    Consultation.sendConsultationClosed(consultation);
+  }
 
 };

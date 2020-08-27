@@ -5,10 +5,6 @@
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
 
-const PublicInvite = require('../models/PublicInvite');
-
-
-
 
 
 
