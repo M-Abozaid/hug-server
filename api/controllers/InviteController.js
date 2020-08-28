@@ -4,8 +4,6 @@
  * @description :: Server-side actions for handling incoming requests.
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
-
-
 const db = PublicInvite.getDatastore().manager;
 const ObjectId = require('mongodb').ObjectID;
 
@@ -276,26 +274,56 @@ module.exports = {
    */
   async resend (req, res) {
     try {
-      const invite = await PublicInvite.findOne({ id: req.params.invite });
+      const patientInvite = await PublicInvite.findOne({ id: req.params.invite }).populate('guestInvite').populate('translatorInvite').populate('translatorRequestInvite');
 
-      if (invite) {
+      if (!patientInvite) {
+        return res.notFound();
+      }
 
-        await PublicInvite.updateOne({ id: req.params.invite }).set({
+      if (patientInvite.translatorRequestInvite &&
+        patientInvite.translatorRequestInvite.status !== 'ACCEPTED') {
+        return res.status(400).json({
+          success: false,
+          error: 'Translation invite have NOT been accepted'
+        });
+      }
+
+      await PublicInvite.updateOne({ id: req.params.invite }).set({
+        status: 'SENT'
+      });
+      await PublicInvite.sendPatientInvite(patientInvite);
+
+
+
+      if (patientInvite.translatorInvite) {
+        const translator = await User.findOne({ username: patientInvite.translatorInvite.id });
+        await PublicInvite.updateOne({ id: patientInvite.translatorInvite.id }).set({
           status: 'SENT'
         });
-        await PublicInvite.sendPatientInvite(invite);
-      } else {
-        return res.notFound();
+
+        await PublicInvite.sendTranslatorInvite(patientInvite.translatorInvite, translator.email);
+      }
+
+
+      if (patientInvite.guestInvite) {
+        await PublicInvite.updateOne({ id: patientInvite.guestInvite.id }).set({
+          status: 'SENT'
+        });
+
+        await PublicInvite.sendGuestInvite(patientInvite.guestInvite);
       }
 
 
       return res.json({
         success: true,
-        invite
+        patientInvite
       });
     } catch (error) {
       console.log('error ', error);
-      res.send();
+      res.json({
+        success: false,
+        error: error.message
+      });
     }
 
   },
