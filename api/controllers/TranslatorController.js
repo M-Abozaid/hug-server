@@ -8,7 +8,6 @@
 
 
 
-
 module.exports = {
 
 
@@ -192,22 +191,7 @@ module.exports = {
     }
 
 
-    await PublicInvite.updateOne({ type: 'TRANSLATOR_REQUEST', inviteToken: req.params.translationRequestToken }).set({ status: 'REFUSED' });
-    await PublicInvite.updateOne({ id: translatorRequestInvite.patientInvite.id }).set({ status: 'CANCELED' });
-
-    if (translatorRequestInvite.patientInvite.guestInvite) {
-      await PublicInvite.updateOne({ id: translatorRequestInvite.patientInvite.guestInvite }).set({ status: 'CANCELED' });
-    }
-
-    if (translatorRequestInvite.invitedBy.email) {
-      const docLocale = translatorRequestInvite.invitedBy.preferredLanguage || process.env.DEFAULT_DOCTOR_LOCALE;
-      await sails.helpers.email.with({
-        to: translatorRequestInvite.invitedBy.email,
-        subject: sails._t(docLocale, 'translation request refused subject'),
-        text: sails._t(docLocale, 'translation request refused body')
-      });
-    }
-
+    await PublicInvite.refuseTranslatorRequest(translatorRequestInvite);
 
     res.status(200).send();
   }

@@ -1,7 +1,8 @@
 const schedule = require('node-schedule');
 
-const CONSULTATION_TIMEOUT = 24 * 60 * 60 * 1000;
 
+const CONSULTATION_TIMEOUT = 24 * 60 * 60 * 1000;
+const TRANSLATION_REQUEST_TIMEOUT = 48 * 60 * 60 * 1000;
 module.exports = {
 
 
@@ -27,8 +28,24 @@ module.exports = {
 
     await Promise.all(consultationsToBeClosed.map(async c => {
 
-      await Consultation.closeConsultation(c);
+      return await Consultation.closeConsultation(c);
     }));
+
+
+
+    const translatorRequestsToBeRefused = await PublicInvite.find({
+      status: 'SENT',
+      type: 'TRANSLATOR_REQUEST',
+      createdAt: {
+        '<': now - TRANSLATION_REQUEST_TIMEOUT
+      }
+    });
+
+
+    await Promise.all(translatorRequestsToBeRefused.map(async invite => {
+      return await PublicInvite.refuseTranslatorRequest(invite);
+    }));
+
   })
 
 };
