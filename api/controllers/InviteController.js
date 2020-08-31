@@ -92,10 +92,14 @@ module.exports = {
     let invite = null;
     console.log('create invite now');
 
-    const errors = validateInviteRequest(req.body);
-    if (errors.length) {
-      return res.status(400).json(errors);
+    if (req.body.isPatientInvite) {
+
+      const errors = validateInviteRequest(req.body);
+      if (errors.length) {
+        return res.status(400).json(errors);
+      }
     }
+
 
     let queue;
     if (req.body.queue) {
