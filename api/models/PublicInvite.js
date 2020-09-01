@@ -119,16 +119,16 @@ module.exports = {
   generateToken,
   sendTranslationRequestInvite (invite, email) {
     const url = `${process.env.PUBLIC_URL}?invite=${invite.inviteToken}`;
-    const doctorLang = invite.doctorLanguage || process.env.DEFAULT_DOCTOR_LOCALE;
-    const inviteTime = invite.scheduledFor ? moment(invite.scheduledFor).local(doctorLang).format('D MMMM YYYY HH:mm') : '';
-    const nowDate = moment().local(doctorLang).format('D MMMM YYYY');
-    const doctorLangTranslated = sails._t(doctorLang, doctorLang);
-    const patientLanguageTranslated = sails._t(doctorLang, invite.patientLanguage);
+    const doctorLangCode = invite.doctorLanguage || process.env.DEFAULT_DOCTOR_LOCALE;
+    const inviteTime = invite.scheduledFor ? moment(invite.scheduledFor).local(doctorLangCode).format('D MMMM YYYY HH:mm') : '';
+    const nowDate = moment().local(doctorLangCode).format('D MMMM YYYY');
+    const doctorLanguage = sails._t(doctorLangCode, doctorLangCode);
+    const patientLanguage = sails._t(doctorLangCode, invite.patientLanguage);
     return sails.helpers.email.with({
       to: email,
-      subject: sails._t(doctorLang, 'translation request email subject', doctorLangTranslated, patientLanguageTranslated),
-      text: invite.scheduledFor ? sails._t(doctorLang, 'scheduled translation request email', doctorLangTranslated, patientLanguageTranslated, inviteTime, url) :
-      sails._t(doctorLang, 'translation request email', doctorLangTranslated, patientLanguageTranslated, nowDate, url)
+      subject: sails._t(doctorLangCode, 'translation request email subject', { doctorLanguage, patientLanguage }),
+      text: invite.scheduledFor ? sails._t(doctorLangCode, 'scheduled translation request email', { doctorLanguage, patientLanguage, inviteTime, url }) :
+      sails._t(doctorLangCode, 'translation request email', { doctorLanguage, patientLanguage, inviteTime: nowDate, url })
     });
   },
 
