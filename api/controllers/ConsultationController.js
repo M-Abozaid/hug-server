@@ -578,6 +578,8 @@ module.exports = {
         closedAt: new Date()
       });
 
+      await Message.endCall(message, consultation, 'MEMBERS_LEFT');
+
       sails.sockets.broadcast(consultation.acceptedBy, 'rejectCall', {
         data: {
           consultation,
