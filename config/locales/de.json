@@ -1,4 +1,24 @@
 {
-  "Welcome": "Willkommen",
-  "A brand new app.": "Eine neue App."
+	"patient invite": "Cliquez ici pour accéder à votre vidéo consultation avec votre soignant : %s",
+	"guest invite": "Cliquez ici pour accéder à votre vidéo consultation avec votre soignant : %s",
+	"invite reminder one": "Votre consultation démarre dans une minute : %s",
+	"scheduled patient invite": "Bonjour, Vous avez été invité pour une consultation de télémédecine @Home le %s Nous vous conseillons dors et déjà de tester la compatibilité de votre appareil avec le lien suivant.\n %s",
+	"scheduled guest invite": "Bonjour, Vous avez été invité pour une consultation de télémédecine @Home le %s Nous vous conseillons dors et déjà de tester la compatibilité de votre appareil avec le lien suivant.\n %s",
+	"first invite reminder": "Rappel J-1 Votre consultation de télémédecine @home aura lieu demain à %s",
+	"second invite reminder": "Votre consultation démarre dans une minute : %s",
+	"first guest invite reminder": "Rappel J-1 Votre consultation de télémédecine @home aura lieu demain à %s",
+	"second guest invite reminder": "Votre consultation démarre dans une minute : %s",
+	"your consultation link": "Votre lien de téléconsultation",
+	"translation request email subject": "Requête de traducteur entre %s et %s",
+	"translation request email":  "Chère traducteur,\n\nNous avons reçu de la part d'un soignant une requête de traducteur sur la plateforme @Home :\n\\Langue du soigant : %s\nLangue du patient : %s\nDate :%s\nAfin de confirmer ou non votre disponibilité, veuillez cliquer sur le lien ci-dessous\n%s\n\nSi personne ne confirme sa disponibilité après 48h, nous considérerons que personne n'est disponible.\n\nMerci",
+    "scheduled translation request email": "Chère traducteur,\n\nNous avons reçu de la part d'un soignant une requête de traducteur sur la plateforme @Home :\n\\Langue du soigant : %s\nLangue du patient : %s\nDate :%s\nAfin de confirmer ou non votre disponibilité, veuillez cliquer sur le lien ci-dessous\n%s\n\nSi personne ne confirme sa disponibilité après 48h, nous considérerons que personne n'est disponible.\n\nMerci",
+	"translator login link email subject": "Votre  lien de téléconsultation",
+	"translator login link email": "Veuillez cliquer ici pour rejoindre la consultation %s",
+	"invalid invite": "Ce lien d'invitation est invalide",
+	"invite have been accepted": "Cette invitation a déjà été acceptée.",
+	"fr": "Français",
+	"en": "Anglais",
+	"invite have been refused": "invite have been refused",
+  "translation request refused body": "Votre demande de traducteur n'a malheureusement pas été acceptée pour l'une de votre télé-consultation. Merci de renouveler votre demande de traduction depuis l'interface @Home.",
+  "translation request refused subject":"Indisponibilité de traducteur"
 }

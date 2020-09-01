@@ -216,7 +216,7 @@ module.exports = {
     const locale = invite.patientLanguage || process.env.DEFAULT_PATIENT_LOCALE;
     const inviteTime = invite.scheduledFor ? moment(invite.scheduledFor).local(locale).format('HH:mm') : '';
 
-    const message = invite.scheduledFor ? sails._t(locale, 'scheduled guest invite', testingUrl, inviteTime) : sails._t(locale, 'guest invite', url);
+    const message = invite.scheduledFor ? sails._t(locale, 'scheduled guest invite', inviteTime, testingUrl) : sails._t(locale, 'guest invite', url);
     // don't send invite if there is a translator required
     if (invite.emailAddress) {
       try {
