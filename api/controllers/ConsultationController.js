@@ -241,15 +241,51 @@ module.exports = {
 
   async create (req, res) {
     const consultationJson = req.body;
-
+    const { user } = req;
     let invite;
+    // if user is guest or translator
+
+    if (user.role === 'guest' || user.role === 'translator') {
+      if (!req.body.invitationToken) {
+        return res.status(200).send(null);
+
+      }
+      const subInvite = await PublicInvite.findOne({ inviteToken: req.body.invitationToken });
+      if (!subInvite) {
+        return res.status(400).send();
+      }
+
+      invite = await PublicInvite.findOne({ id: subInvite.patientInvite });
+
+      if (!invite) {
+        return res.status(400).send();
+      }
+
+      // if the patient invite has contact details
+      if (invite.emailAddress || invite.phoneNumber) {
+        return res.status(200).send(null);
+      }
+      req.body.invitationToken = invite.inviteToken;
+
+    }
     if (req.body.invitationToken) {
+
+      // find patient invite
+
+      if (!invite) {
+
+        invite = await PublicInvite.findOne({ inviteToken: req.body.invitationToken });
+      }
+
+
+
       // If a consultation already exist, another one should not be created
       const existingConsultation = await Consultation.findOne({ invitationToken: req.body.invitationToken });
       if (existingConsultation) {
+
         return res.json(existingConsultation);
       }
-      invite = await PublicInvite.findOne({ inviteToken: req.body.invitationToken });
+
 
 
       if (invite) {
