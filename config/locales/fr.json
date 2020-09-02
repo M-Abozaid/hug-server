@@ -10,8 +10,13 @@
 	"second guest invite reminder": "Votre consultation démarre dans une minute : %s",
 	"your consultation link": "Votre lien de téléconsultation",
 	"translation request email subject": "Requête de traducteur entre %s et %s",
+<<<<<<< HEAD
 	"translation request email":  "Chère traducteur,\n\nNous avons reçu de la part d'un soignant une requête de traducteur sur la plateforme @Home :\nLangue du soignant : %(doctorLanguage)s\nLangue du patient : %(patientLanguage)s\nDate : aussi vite que possible\nAfin de confirmer ou non votre disponibilité, veuillez cliquer sur le lien ci-dessous\n%(url)s\n\nSi personne ne confirme sa disponibilité après 48h, nous considérerons que personne n'est disponible.\n\nMerci",
     "scheduled translation request email": "Chère traducteur,\n\nNous avons reçu de la part d'un soignant une requête de traducteur sur la plateforme @Home :\nLangue du soignant : %(doctorLanguage)s\nLangue du patient : %(patientLanguage)s\nDate : %(inviteTime)s\nAfin de confirmer ou non votre disponibilité, veuillez cliquer sur le lien ci-dessous\n%(url)s\n\nSi personne ne confirme sa disponibilité après 48h, nous considérerons que personne n'est disponible.\n\nMerci",
+=======
+	"translation request email": "Chère traducteur,\n\nNous avons reçu de la part d'un soignant une requête de traducteur sur la plateforme @Home :\nLangue du soignant : %(doctorLanguage)s\nLangue du patient : %(patientLanguage)s\nDate : aussi vite que possible\nAfin de confirmer ou non votre disponibilité, veuillez cliquer sur le lien ci-dessous\n%(url)s\n\nSi personne ne confirme sa disponibilité après 48h, nous considérerons que personne n'est disponible.\n\nMerci",
+	"scheduled translation request email": "Chère traducteur,\n\nNous avons reçu de la part d'un soignant une requête de traducteur sur la plateforme @Home :\nLangue du soignant : %s\nLangue du patient : %s\nDate : %s\nAfin de confirmer ou non votre disponibilité, veuillez cliquer sur le lien ci-dessous\n%s\n\nSi personne ne confirme sa disponibilité après 48h, nous considérerons que personne n'est disponible.\n\nMerci",
+>>>>>>> 0f4ad188ea25a0340f6b5aff751a24b40519f0d2
 	"translator login link email subject": "Votre  lien de téléconsultation",
 	"translator login link email": "Veuillez cliquer ici pour rejoindre la consultation %s",
 	"invalid invite": "Ce lien d'invitation est invalide",
@@ -19,6 +24,7 @@
 	"fr": "Français",
 	"en": "Anglais",
 	"invite have been refused": "invite have been refused",
-  "translation request refused body": "Votre demande de traducteur n'a malheureusement pas été acceptée pour l'une de votre télé-consultation. Merci de renouveler votre demande de traduction depuis l'interface @Home.",
-  "translation request refused subject":"Indisponibilité de traducteur"
+	"translation request refused body": "Votre demande de traducteur n'a malheureusement pas été acceptée pour l'une de votre télé-consultation. Merci de renouveler votre demande de traduction depuis l'interface @Home.",
+	"translation request refused subject": "Indisponibilité de traducteur",
+	"es": "es"
 }

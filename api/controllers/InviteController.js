@@ -211,7 +211,7 @@ module.exports = {
           invitedBy: req.user.id,
           scheduledFor: req.body.scheduledFor ? new Date(req.body.scheduledFor) : undefined,
           patientLanguage: req.body.language,
-          doctorLanguage: req.body.doctorLanguage,
+          doctorLanguage: req.body.doctorLanguage || process.env.DEFAULT_DOCTOR_LOCALE,
           type: 'TRANSLATOR_REQUEST'
         };
 
