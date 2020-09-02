@@ -40,6 +40,10 @@ module.exports = {
       // default:'pending',
       required: true
     },
+    type: {
+      type: 'string',
+      isIn: ['PATIENT', 'GUEST', 'TRANSLATOR']
+    },
     queue: {
       model: 'queue',
       required: false
@@ -253,7 +257,7 @@ module.exports = {
     if (consultation.invitationToken) {
       try {
         const patientInvite = await PublicInvite.findOne({ inviteToken: consultation.invitationToken });
-        await PubicInvite.destroyPatientInvite(patientInvite);
+        await PublicInvite.destroyPatientInvite(patientInvite);
 
       } catch (error) {
         console.error('Error destroying Invite ', error);
