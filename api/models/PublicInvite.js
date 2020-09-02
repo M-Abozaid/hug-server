@@ -13,6 +13,8 @@ const SECOND_INVITE_REMINDER = 60 * 1000;
 const TRANSLATOR_REQUEST_TIMEOUT = 24 * 60 * 60 * 1000;
 const testingUrl = `${process.env.PUBLIC_URL}/#test-call`;
 const crypto = require('crypto');
+
+
 async function generateToken () {
   const buffer = await new Promise((resolve, reject) => {
     crypto.randomBytes(256, (ex, buffer) => {
@@ -301,21 +303,37 @@ module.exports = {
 
   },
   async destroyPatientInvite (invite) {
+    const db = Consultation.getDatastore().manager;
+    const userCollection = db.collection('user');
+
     if (invite.guestInvite) {
       await PublicInvite.destroyOne({ id: invite.guestInvite });
-      await User.destroyOne({ username: invite.guestInvite });
+
+      await userCollection.update({ username: invite.guestInvite }, {
+        $set: {
+          consultationClosedAtISO: new Date()
+        }
+      });
     }
     if (invite.translatorRequestInvite) {
       await PublicInvite.destroyOne({ id: invite.translatorRequestInvite });
-
     }
     if (invite.translatorInvite) {
       await PublicInvite.destroyOne({ id: invite.translatorInvite });
-      await User.destroyOne({ username: invite.translatorInvite });
+      await userCollection.update({ username: invite.translatorInvite }, {
+        $set: {
+          consultationClosedAtISO: new Date()
+        }
+      });
+
     }
 
     await PublicInvite.destroyOne({ id: invite.id });
-    await User.destroyOne({ username: invite.id });
+    await userCollection.update({ username: invite.id }, {
+      $set: {
+        consultationClosedAtISO: new Date()
+      }
+    });
   },
   async refuseTranslatorRequest (translatorRequestInvite) {
 
