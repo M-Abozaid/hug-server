@@ -96,12 +96,18 @@ module.exports = {
         // send patient invite
         const patientInvite = await PublicInvite.findOne({ id: translatorRequestInvite.patientInvite }).populate('guestInvite');
 
-        await PublicInvite.sendPatientInvite(patientInvite);
+        if (patientInvite.emailAddress || patientInvite.phoneNumber) {
+
+          await PublicInvite.sendPatientInvite(patientInvite);
+        }
         if (patientInvite.guestInvite) {
           await PublicInvite.sendGuestInvite(patientInvite.guestInvite);
         }
         if (patientInvite.scheduledFor) {
-          await PublicInvite.setPatientOrGuestInviteReminders(patientInvite);
+          if (patientInvite.emailAddress || patientInvite.phoneNumber) {
+            await PublicInvite.setPatientOrGuestInviteReminders(patientInvite);
+          }
+
           if (patientInvite.guestInvite) {
             await PublicInvite.setPatientOrGuestInviteReminders(patientInvite.guestInvite);
           }
