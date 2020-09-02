@@ -234,11 +234,14 @@ module.exports = {
   },
   sendConsultationClosed (consultation) {
     // emit consultation closed event with the consultation
-    sails.sockets.broadcast(consultation.owner, 'consultationClosed', {
-      data: {
-        consultation,
-        _id: consultation.id
-      }
+    Consultation.getConsultationParticipants(consultation).forEach(participant => {
+
+      sails.sockets.broadcast(participant, 'consultationClosed', {
+        data: {
+          consultation,
+          _id: consultation.id
+        }
+      });
     });
   },
   async closeConsultation (consultation) {
