@@ -142,13 +142,12 @@ module.exports = {
   async broadcastNewConsultation (consultation) {
     const nurse = await User.findOne({ id: consultation.owner });
     const translator = await User.findOne({ id: consultation.translator });
-    const queue = await Queue.findOne({ id: consultation.queue });
-    sails.sockets.broadcast(consultation.queue || consultation.invitedBy, 'newConsultation',
-      { event: 'newConsultation', data: { _id: consultation.id, unreadCount: 0, consultation, nurse, queue, translator } });
-    if (translator) {
-      sails.sockets.broadcast(translator.id, 'newConsultation',
-          { event: 'newConsultation', data: { _id: consultation.id, unreadCount: 0, consultation, nurse, translator } });
-    }
+    const guest = await User.findOne({ id: consultation.guest });
+
+    Consultation.getConsultationParticipants(consultation).forEach(participant => {
+      sails.sockets.broadcast(participant, 'newConsultation',
+          { event: 'newConsultation', data: { _id: consultation.id, unreadCount: 0, consultation, nurse, translator, guest } });
+    });
 
   },
   getConsultationParticipants (consultation) {
