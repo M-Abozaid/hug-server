@@ -1,12 +1,12 @@
 const schedule = require('node-schedule');
 
 
-const CONSULTATION_TIMEOUT = 20 * 1000;
+const CONSULTATION_TIMEOUT = 24 * 60 * 60 * 1000;
 const TRANSLATION_REQUEST_TIMEOUT = 48 * 60 * 60 * 1000;
 module.exports = {
 
 
-  startCron: () => schedule.scheduleJob('20,40,0  * * * * *', async () => {
+  startCron: () => schedule.scheduleJob('*/5 * * * *', async () => {
 
     const now = Date.now();
     const consultationsToBeClosed = await Consultation.find({
