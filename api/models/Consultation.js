@@ -161,7 +161,12 @@ module.exports = {
     if (consultation.guest) {
       consultationParticipants.push(consultation.guest);
     }
-
+    if (consultation.status === 'pending' && consultation.queue) {
+      consultationParticipants.push(consultation.queue);
+    }
+    if (consultation.invitedBy && consultation.invitedBy !== consultation.acceptedBy) {
+      consultationParticipants.push(consultation.invitedBy);
+    }
     return consultationParticipants;
   },
 
