@@ -98,6 +98,14 @@ module.exports = {
       if (errors.length) {
         return res.status(400).json(errors);
       }
+    } else {
+      if (!req.body.translationOrganization && !req.body.guestPhoneNumber && !req.body.guestEmailAddress) {
+
+        return res.status(400).json({
+          success: false,
+          error: 'You must invite at least a patient translator or a guest!'
+        });
+      }
     }
 
 
