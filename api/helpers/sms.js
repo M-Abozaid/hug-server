@@ -7,6 +7,8 @@
  * @returns {void}
  */
 function sendSmsWithOvh (phoneNumber, message) {
+
+  phoneNumber = phoneNumber.replace(/^00/, '+');
   const ovhConfig = {
     endpoint: process.env.SMS_OVH_ENDPOINT,
     appKey: process.env.SMS_OVH_APP_KEY,
