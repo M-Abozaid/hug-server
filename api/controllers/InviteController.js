@@ -391,10 +391,11 @@ module.exports = {
 
     const publicinvite = await PublicInvite.findOne({
       inviteToken: req.params.invitationToken
-    }).populate('translationOrganization');
+    }).populate('translationOrganization').populate('invitedBy');
     if (!publicinvite) {
       return res.notFound();
     }
+    publicinvite.invitedBy = _.pick(publicinvite.invitedBy, ['firstName', 'lastName']);
 
 
     res.json(publicinvite);
