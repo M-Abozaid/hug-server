@@ -55,10 +55,11 @@ module.exports = {
       }
 
 
-      // set invite as accepted
-      await PublicInvite.updateOne({ type: 'TRANSLATOR_REQUEST', inviteToken: req.params.translationRequestToken }).set({ status: 'ACCEPTED' });
 
       try {
+        // set invite as accepted
+        await PublicInvite.updateOne({ type: 'TRANSLATOR_REQUEST', inviteToken: req.params.translationRequestToken }).set({ status: 'ACCEPTED' });
+
         const translatorInviteData = {
           patientInvite: translatorRequestInvite.patientInvite,
           organization: translatorRequestInvite.organization,
@@ -94,7 +95,7 @@ module.exports = {
         await PublicInvite.sendTranslatorInvite(translatorInvite, newUser.email);
 
         // send patient invite
-        const patientInvite = await PublicInvite.findOne({ id: translatorRequestInvite.patientInvite }).populate('guestInvite');
+        const patientInvite = await PublicInvite.findOne({ id: translatorRequestInvite.patientInvite }).populate('guestInvite').populate('invitedBy');
 
         if (patientInvite.emailAddress || patientInvite.phoneNumber) {
 
@@ -103,6 +104,15 @@ module.exports = {
         if (patientInvite.guestInvite) {
           await PublicInvite.sendGuestInvite(patientInvite.guestInvite);
         }
+
+        const docLocal = patientInvite.invitedBy.preferredLanguage || process.env.DEFAULT_DOCTOR_LOCALE
+        // send mail notification to doctor
+        await sails.helpers.email.with({
+          to: patientInvite.invitedBy.email,
+          subject: sails._t(docLocal, 'translator is ready subject'),
+          text: sails._t(docLocal, 'translator is ready')
+        });
+
         if (patientInvite.scheduledFor) {
           if (patientInvite.emailAddress || patientInvite.phoneNumber) {
             await PublicInvite.setPatientOrGuestInviteReminders(patientInvite);
@@ -114,7 +124,7 @@ module.exports = {
         }
 
       } catch (err) {
-        console.log('Error accepting translation request', err);
+        console.error('Error accepting translation request', err);
         await PublicInvite.updateOne({ type: 'TRANSLATOR_REQUEST', inviteToken: req.params.translationRequestToken }).set({ status: 'SENT' });
 
         return res.status(500).send();
@@ -127,7 +137,7 @@ module.exports = {
       });
 
     } catch (err) {
-      console.log('Error accepting translation request', err);
+      console.error('Error accepting translation request', err);
 
       return res.status(500).send();
     }
