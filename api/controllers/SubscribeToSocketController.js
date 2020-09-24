@@ -22,21 +22,13 @@ module.exports = {
 
 
     const socketId = sails.sockets.getId(req);
-
     const socket = sails.sockets.get(socketId);
 
     socket.once('disconnect', async (reason) => {
-      // ...
-      console.log('disconnected >>>>', reason);
-      const consultations = await Consultation.update({ owner: user.id }).set({ flagPatientOnline: false }).fetch();
-      console.log('flagPatientOnline > set false', user.id);
-
-      consultations.forEach(consultation => {
-
-        sails.sockets.broadcast(consultation.acceptedBy || consultation.queue || consultation.invitedBy, 'patientOffline', { data: consultation });
-      });
+      await Consultation.changeOnlineStatus(user, false)
     });
-    sails.sockets.join(req, user.id, (err) => {
+    sails.sockets.join(req, user.id, async (err) => {
+      await Consultation.changeOnlineStatus(user, true)
       if (err) {
         sails.log('error joining session ', err);
         return res.serverError(err);

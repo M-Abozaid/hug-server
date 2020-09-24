@@ -101,6 +101,11 @@ module.exports = {
       }
     },
     {
+      $project:{
+        invitationToken: 0
+      }
+    },
+    {
       $project: {
         consultation: '$$ROOT'
       }
@@ -196,7 +201,29 @@ module.exports = {
       }
     },
     {
+      $lookup: {
+        from: 'user',
+        localField: 'consultation.translator',
+        foreignField: '_id',
+        as: 'translator'
+      }
+    },
+    {
+      $lookup: {
+        from: 'user',
+        localField: 'consultation.guest',
+        foreignField: '_id',
+        as: 'guest'
+      }
+    },
+    {
       $project: {
+        guest:{
+          phoneNumber:-1, email:-1
+        },
+        translator:{
+          firstName:-1, email:-1
+        },
         consultation: 1,
         lastMsg: 1,
         unreadCount: 1,
@@ -222,7 +249,13 @@ module.exports = {
         'doctor.phoneNumber': 1,
         'nurse.firstName': 1,
         'nurse.lastName': 1,
-        'queue.name': 1
+        'queue.name': 1,
+        guest: {
+          $arrayElemAt: ['$guest', 0]
+        },
+        translator: {
+          $arrayElemAt: ['$translator', 0]
+        },
       }
     }, {
       $skip: parseInt(req.query.skip) || 0
@@ -302,7 +335,7 @@ module.exports = {
         consultationJson.queue = invite.queue;
         consultationJson.invitedBy = invite.invitedBy;
         consultationJson.invite = invite.id;
-        consultationJson.flagPatientOnline = true;
+
 
       }
     } else if (process.env.DEFAULT_QUEUE_ID) {
@@ -346,8 +379,10 @@ module.exports = {
       }
     }
 
-    Consultation.create(consultationJson).fetch().then(consultation => {
+    Consultation.create(consultationJson).fetch().then(async consultation => {
       console.log(consultation);
+      await Consultation.changeOnlineStatus(req.user, true)
+
       res.json(consultation);
     }).catch(err => {
       console.log('ERROR WHILE CREATING CONSULTATION', err);
@@ -357,7 +392,13 @@ module.exports = {
   },
 
   async acceptConsultation (req, res) {
-    const consultation = await Consultation.updateOne({
+
+    const consultation = await Consultation.findOne({  id: req.params.consultation,
+      status: 'pending'})
+      if (!consultation) {
+        return res.notFound();
+      }
+    await Consultation.update({
       _id: req.params.consultation,
       status: 'pending'
     })
@@ -365,11 +406,8 @@ module.exports = {
         status: 'active',
         acceptedBy: req.user.id,
         acceptedAt: new Date()
-      });
+      })
 
-    if (!consultation) {
-      return res.notFound();
-    }
     Consultation.getConsultationParticipants(consultation).forEach(participant => {
 
       sails.sockets.broadcast(participant, 'consultationAccepted', {
@@ -384,20 +422,9 @@ module.exports = {
         }
       });
     });
-    sails.sockets.broadcast(consultation.queue || consultation.invitedBy, 'consultationAccepted', {
-      data: {
-        consultation,
-        _id: consultation.id,
-        doctor: {
-          firstName: req.user.firstName,
-          lastName: req.user.lastName,
-          phoneNumber: req.user.phoneNumber ? req.user.phoneNumber : ''
-        }
-      }
-    });
 
-    res.status(200);
-    return res.json({
+
+    return res.status(200).json({
       message: 'success'
     });
   },

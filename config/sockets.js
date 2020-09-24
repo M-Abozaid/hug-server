@@ -189,23 +189,8 @@ module.exports.sockets = {
             return proceed(false)
           }
 
-          if (user.role === 'nurse' || user.role === 'patient') {
-            const consultations = await Consultation.update({ owner: user.id })
-              .set({ flagPatientOnline: true })
-              .fetch()
 
-            console.log('flagPatientOnline > set true', user.id)
 
-            consultations.forEach((consultation) => {
-              sails.sockets.broadcast(
-                consultation.acceptedBy ||
-                  consultation.queue ||
-                  consultation.invitedBy,
-                'patientOnline',
-                { data: consultation },
-              )
-            })
-          }
 
           handshake.user = user
           return proceed(undefined, true)

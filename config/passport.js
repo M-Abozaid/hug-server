@@ -92,12 +92,15 @@ passport.use('invite', new CustomStrategy(
     if (invite.type === 'GUEST') {
       const patientInvite = await PublicInvite.findOne({ guestInvite: invite.id });
       if (patientInvite) {
-        await Consultation.update({ invite: patientInvite.id }).set({ guest: user.id });
+        const [consultation] = await Consultation.update({ invite: patientInvite.id }).set({ guest: user.id }).fetch();
+        Consultation.getConsultationParticipants(consultation).forEach(participant=>{
+              sails.sockets.broadcast(participant, 'consultationUpdated', {
+                data: {consultation}
+              })
+            })
 
       }
     }
-
-
 
 
     callback(null, user);

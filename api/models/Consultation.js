@@ -98,6 +98,19 @@ module.exports = {
       type: 'boolean',
       required: false
     },
+    flagGuestOnline: {
+      type: 'boolean',
+      required: false
+    },
+
+    flagTranslatorOnline: {
+      type: 'boolean',
+      required: false
+    },
+    flagDoctorOnline: {
+      type: 'boolean',
+      required: false
+    },
     scheduledFor: {
       type: 'number'
     }
@@ -107,7 +120,6 @@ module.exports = {
 
     if (!consultation.queue && !consultation.invitedBy && process.env.DEFAULT_QUEUE_ID) {
       const defaultQueue = await Queue.findOne({ id: process.env.DEFAULT_QUEUE_ID });
-      consultation.flagPatientOnline = true;
       if (defaultQueue) {
         console.log('Assigning the default queue to the consultation as no queue is set');
         consultation.queue = defaultQueue.id;
@@ -120,8 +132,7 @@ module.exports = {
   async afterCreate (consultation, proceed) {
 
     await Consultation.broadcastNewConsultation(consultation);
-    sails.sockets.broadcast(consultation.queue || consultation.invitedBy, 'patientOnline',
-      { data: consultation });
+
     return proceed();
   },
 
@@ -327,6 +338,122 @@ module.exports = {
 
     // emit consultation closed event with the consultation
     Consultation.sendConsultationClosed(consultation);
-  }
+  },
+
+  async getUserConsultationsFilter(user){
+    let match = [{
+      owner: new ObjectId(user.id)
+    }];
+    if (user && user.role === 'doctor') {
+
+      match = [{
+        acceptedBy: new ObjectId(user.id)
+      }, {
+        invitedBy: new ObjectId(user.id),
+        queue: null
+      }
+      ];
+    }
+
+    if (user && user.role === 'translator') {
+      match = [{ translator: ObjectId(user.id) }];
+    }
+
+    if (user && user.role === 'guest') {
+      match = [{ guest: ObjectId(user.id) }];
+    }
+
+
+    if (user.viewAllQueues) {
+      const queues = (await Queue.find({})).map(queue => new ObjectId(queue.id));
+      match.push(
+        {
+          status: 'pending',
+          queue: { $in: queues }
+
+        }
+      );
+    } else
+    // filter the queue of the user
+    if (user.allowedQueues && user.allowedQueues.length > 0) {
+      const queues = user.allowedQueues.map(queue => new ObjectId(queue.id));
+
+      match.push(
+        {
+          status: 'pending',
+          queue: { $in: queues }
+        }
+      );
+    }
+
+
+    return match
+
+
+  },
+
+
+  async changeOnlineStatus(user, isOnline){
+    const db = Consultation.getDatastore().manager;
+    const consultationCollection = db.collection('consultation');
+
+    const match = await Consultation.getUserConsultationsFilter(user)
+    const result = await consultationCollection.find({$or:match})
+    const userConsultations = await result.toArray()
+
+    userConsultations.forEach(async consultation => {
+      switch (user.role) {
+        case 'patient':
+        case 'nurse':
+          await Consultation.update({ id: consultation._id.toString() })
+            .set({ flagPatientOnline: isOnline })
+              consultation.flagPatientOnline = isOnline
+          break;
+        case 'guest':
+          await Consultation.update({ id: consultation._id.toString() })
+              .set({ flagGuestOnline: isOnline })
+              consultation.flagGuestOnline = isOnline
+          break;
+        case 'translator':
+          await Consultation.update({ id: consultation._id.toString() })
+              .set({ flagTranslatorOnline: isOnline })
+              consultation.flagTranslatorOnline = isOnline
+          break;
+        case 'doctor':
+          await Consultation.update({ id: consultation._id.toString() })
+              .set({ flagDoctorOnline: isOnline })
+              consultation.flagDoctorOnline = isOnline
+          break;
+        default:
+          break;
+      }
+      Consultation.getConsultationParticipants(consultation).forEach(participant => {
+
+        sails.sockets.broadcast(participant, 'onlineStatusChange', {
+          data: {
+            consultation:{
+              flagPatientOnline: consultation.flagPatientOnline,
+              flagGuestOnline: consultation.flagGuestOnline,
+              flagTranslatorOnline: consultation.flagTranslatorOnline,
+              flagDoctorOnline: consultation.flagDoctorOnline,
+              translator: consultation.translator,
+              guest: consultation.guest
+            },
+            _id: consultation._id,
+            // user
+          }
+        });
+      });
+    });
+
+  },
+
+  // afterUpdate(consultation){
+  //   Consultation.getConsultationParticipants().forEach(participant=>{
+  //     sails.sockets.broadcast(participant, 'consultationUpdated', {
+  //       data: {consultation}
+  //     })
+  //   })
+  // }
 
 };
