@@ -393,12 +393,7 @@ module.exports = {
 
   async acceptConsultation (req, res) {
 
-    const consultation = await Consultation.findOne({  id: req.params.consultation,
-      status: 'pending'})
-      if (!consultation) {
-        return res.notFound();
-      }
-    await Consultation.update({
+    const consultation = await Consultation.updateOne({
       _id: req.params.consultation,
       status: 'pending'
     })
@@ -406,7 +401,11 @@ module.exports = {
         status: 'active',
         acceptedBy: req.user.id,
         acceptedAt: new Date()
-      })
+      });
+
+    if (!consultation) {
+      return res.notFound();
+    }
 
     Consultation.getConsultationParticipants(consultation).forEach(participant => {
 
