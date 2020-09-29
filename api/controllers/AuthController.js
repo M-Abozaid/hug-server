@@ -501,7 +501,8 @@ module.exports = {
 
   getConfig (req, res) {
     res.json({
-      method: process.env.LOGIN_METHOD ? process.env.LOGIN_METHOD : 'both'
+      method: process.env.LOGIN_METHOD ? process.env.LOGIN_METHOD : 'both',
+      branding: process.env.BRANDING || '@HOME'
     });
   }
 };
