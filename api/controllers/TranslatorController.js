@@ -110,7 +110,7 @@ module.exports = {
         await sails.helpers.email.with({
           to: patientInvite.invitedBy.email,
           subject: sails._t(docLocal, 'translator is ready subject'),
-          text: sails._t(docLocal, 'translator is ready')
+          text: sails._t(docLocal, 'translator is ready',{branding:process.env.BRANDING})
         });
 
         if (patientInvite.scheduledFor) {
