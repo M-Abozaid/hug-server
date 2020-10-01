@@ -331,21 +331,21 @@ if (process.env.NODE_ENV !== 'development' && process.env.SAML_CALLBACK) {
                 if(!user){
 
                   user = await User.create({
-                    email: adUser['AD_ATTR_EMAIL'],
-                    firstName: adUser['AD_ATTR_FISTNAME'],
-                    lastName: adUser['AD_ATTR_LASTNAME'],
+                    email: adUser[process.env.AD_ATTR_EMAIL],
+                    firstName: adUser[process.env.AD_ATTR_FISTNAME],
+                    lastName: adUser[process.env.AD_ATTR_LASTNAME],
                     role: sails.config.globals.ROLE_DOCTOR,
-                    _function: adUser['AD_ATTR_FUNCTION'],
-                    department: adUser['AD_ATTR_DEPARTMENT']
+                    _function: adUser[process.env.AD_ATTR_FUNCTION],
+                    department: adUser[process.env.AD_ATTR_DEPARTMENT]
                   }).fetch();
                 }else{
                   await User.update({id: user.id}).set({
-                    email: adUser['AD_ATTR_EMAIL'],
-                    firstName: adUser['AD_ATTR_FISTNAME'],
-                    lastName: adUser['AD_ATTR_LASTNAME'],
+                    email: adUser[process.env.AD_ATTR_EMAIL],
+                    firstName: adUser[process.env.AD_ATTR_FISTNAME],
+                    lastName: adUser[process.env.AD_ATTR_LASTNAME],
                     role: sails.config.globals.ROLE_DOCTOR,
-                    _function: adUser['AD_ATTR_FUNCTION'],
-                    department: adUser['AD_ATTR_DEPARTMENT']
+                    _function: adUser[process.env.AD_ATTR_FUNCTION],
+                    department: adUser[process.env.AD_ATTR_DEPARTMENT]
                   })
                 }
 
