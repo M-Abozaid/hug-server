@@ -60,9 +60,11 @@ try {
 }// -•
 
 const path = require('path');
+const fs = require('fs')
 
+const locales = fs.readdirSync(path.join(__dirname, './config/locales')).map(f=>f.replace('.json',''))
 const i18n = new (require('i18n-2'))({
-  locales: ['fr', 'en', 'de', 'es'],
+  locales,
   directory: path.join(__dirname, './config/locales'),
   extension: '.json'
 
@@ -72,6 +74,7 @@ const { vsprintf } = require('sprintf-js');
 
 
 sails._t = function (locale) {
+  locale = locales.includes(locale)? locale: 'en'
   let msg = i18n.translate(locale, arguments[1]);
 
   if (arguments.length > 2) {
