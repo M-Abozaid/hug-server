@@ -21,7 +21,7 @@
 	"translation request refused body": "Votre demande d'interprète n'a malheureusement pas été acceptée pour l'une de votre télé-consultation. Merci de renouveler votre demande d'interprétariat depuis l'interface %(branding)s.",
 	"translation request refused subject": "Demande d'interprète refusée",
 	"es": "Espagnol",
-  "de": "Allemand",
-  "translator is ready subject":"Demande d'interprète acceptée",
-  "translator is ready":"Bonjour,\nl'interprète a accepté votre invitation à votre consultation. Merci de vous connecter à %(branding)s pour lancer sa prise en charge."
+        "de": "Allemand",
+        "translator is ready subject":"Demande d'interprète acceptée",
+        "translator is ready":"Bonjour,\nl'interprète a accepté votre invitation à votre consultation. Merci de vous connecter à %(branding)s pour lancer sa prise en charge."
 }
