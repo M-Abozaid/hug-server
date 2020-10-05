@@ -284,7 +284,7 @@ passport.use(new Strategy(options, (async (requestHeaders, cb) => {
 const SamlStrategy = require('passport-saml').Strategy;
 let samlStrategy;
 console.log('env >>>> ', process.env.NODE_ENV);
-if (process.env.NODE_ENV !== 'development' && process.env.SAML_CALLBACK) {
+// if (process.env.NODE_ENV !== 'development' && process.env.SAML_CALLBACK) {
 
 
   samlStrategy = new SamlStrategy(
@@ -408,7 +408,7 @@ if (process.env.NODE_ENV !== 'development' && process.env.SAML_CALLBACK) {
   passport.use(samlStrategy);
 
 
-}
+// }
 
 
 exports.samlStrategy = samlStrategy;
