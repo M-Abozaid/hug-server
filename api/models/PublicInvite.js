@@ -165,7 +165,7 @@ module.exports = {
           await sails.helpers.email.with({
             to: translatorRequestInvite.invitedBy.email,
             subject: sails._t(docLocale, 'translation request refused subject'),
-            text: sails._t(docLocale, 'translation request refused body')
+            text: sails._t(docLocale, 'translation request refused body', {branding: process.env.BRANDING})
           });
         }
       }
@@ -357,7 +357,7 @@ module.exports = {
       await sails.helpers.email.with({
         to: translatorRequestInvite.invitedBy.email,
         subject: sails._t(docLocale, 'translation request refused subject'),
-        text: sails._t(docLocale, 'translation request refused body')
+        text: sails._t(docLocale, 'translation request refused body', {branding: process.env.BRANDING})
       });
     }
 
