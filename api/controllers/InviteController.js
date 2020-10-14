@@ -247,6 +247,27 @@ module.exports = {
       });
     }
 
+    const url = `${process.env.PUBLIC_URL}?invite=${invite.inviteToken}`
+    const testingUrl = `${process.env.PUBLIC_URL}/#/test-call`
+
+    if (invite.emailAddress) {
+      try {
+        await sails.helpers.email.with({
+          to: invite.emailAddress,
+          subject: 'Votre lien de consultation',
+          text: invite.scheduledFor? getScheduledInviteText(testingUrl, invite.scheduledFor ):getEmailText(url),
+        })
+      } catch (error) {
+        if (!invite.phoneNumber) {
+          await PublicInvite.destroyOne({ id: invite.id })
+          return res.status(500).json({
+            error: true,
+            message: 'Error sending email'
+          });
+        }
+
+      }
+    }
 
     try {
       await PublicInvite.sendPatientInvite(invite);
