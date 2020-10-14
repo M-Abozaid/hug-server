@@ -370,6 +370,7 @@ console.log('env >>>> ', process.env.NODE_ENV);
 
                 const queueNames = adUser.groups.map(g=>g.cn.match(queueNameRgx)?g.cn.match(queueNameRgx)[1]:null).filter(q=>q)
 
+                console.log('Queues matched from ad ', queueNames)
                 if(queueNames.length){
 
                   const db = Consultation.getDatastore().manager;
@@ -380,6 +381,7 @@ console.log('env >>>> ', process.env.NODE_ENV);
 
                   const queues = await queuesCurs.toArray();
 
+                  console.log("Got queues from db", queues)
                    await Promise.all(queues.map(queue=>{
                     return  User.addToCollection(user.id, 'allowedQueues', queue._id.toString());
                    }))
