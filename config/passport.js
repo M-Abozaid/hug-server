@@ -313,7 +313,7 @@ console.log('env >>>> ', process.env.NODE_ENV);
           console.error(err)
           return cb(new Error(err))
         }
-          let user = await User.findOne({ email: profile[process.env.EMAIL_FIELD] });
+          let user = await User.findOne({ email: profile[process.env.EMAIL_FIELD] }).populate('allowedQueues');
 
           if(process.env.AD_ENABLE){
 
@@ -356,6 +356,11 @@ console.log('env >>>> ', process.env.NODE_ENV);
                     _function: adUser[process.env.AD_ATTR_FUNCTION],
                     department: adUser[process.env.AD_ATTR_DEPARTMENT]
                   })
+                }
+
+                // remove user from all queues
+                if(user.allowedQueues && user.allowedQueues.length){
+                  await Promise.all(user.allowedQueues.map(queue =>  User.removeFromCollection(user.id, 'allowedQueues', queue.id)))
                 }
 
                 // if queues
