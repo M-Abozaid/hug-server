@@ -308,7 +308,7 @@ console.log('env >>>> ', process.env.NODE_ENV);
       try {
 
         console.log('PROFILE ', profile)
-        if( profile[process.env.AD_ATTR_EMAIL] ){
+        if(!profile[process.env.AD_ATTR_EMAIL] ){
           const err = `Email field ${process.env.AD_ATTR_EMAIL} doesn't exist`
           console.error(err)
           return cb(new Error(err))
