@@ -8,38 +8,38 @@
 module.exports = {
 
 
-  async ip(req, res) {
+  ip (req, res) {
 
 
-    res.json({ ip: req.ip })
+    res.json({ ip: req.ip });
   },
 
-  async addDoctorToQueue(req, res) {
+  async addDoctorToQueue (req, res) {
 
     if (!req.body.queue) {
-      return res.status(400).json({ message: 'queue is required' })
+      return res.status(400).json({ message: 'queue is required' });
     }
 
     await User.addToCollection(req.params.user, 'allowedQueues', req.body.queue);
 
-    return res.status(200).json({ success: true })
+    return res.status(200).json({ success: true });
   },
 
-  async removeDoctorFromQueue(req, res) {
+  async removeDoctorFromQueue (req, res) {
 
     if (!req.body.queue) {
-      return res.status(400).json({ message: 'queue is required' })
+      return res.status(400).json({ message: 'queue is required' });
     }
 
     try {
-      let userAndQueueExist = await User.findOne({ id: req.params.user }).populate('allowedQueues', { id: req.body.queue });
+      const userAndQueueExist = await User.findOne({ id: req.params.user }).populate('allowedQueues', { id: req.body.queue });
 
       if (!userAndQueueExist) {
-        res.status(404)
+        res.status(404);
         return res.json({ message: 'User not found' });
       }
-      else if (userAndQueueExist.allowedQueues.length == 0) {
-        res.status(404)
+      else if (userAndQueueExist.allowedQueues.length === 0) {
+        res.status(404);
         return res.json({ message: 'Queue not found' });
       }
 
@@ -52,28 +52,28 @@ module.exports = {
     }
   },
 
-  async getDoctorQueues(req, res) {
+  async getDoctorQueues (req, res) {
 
 
     const user = await User.findOne({ id: req.params.user }).populate('allowedQueues');
 
-    return res.status(200).json(user.allowedQueues)
+    return res.status(200).json(user.allowedQueues);
   },
 
-  async getUser(req, res) {
+  async getUser (req, res) {
     const user = await User.findOne({ id: req.params.user });
     return res.status(200).json(user);
   },
 
-  async updateNotif(req, res) {
-    let valuesToUpdate = {};
-    if (req.body.enableNotif !=undefined) {
+  async updateNotif (req, res) {
+    const valuesToUpdate = {};
+    if (req.body.enableNotif !== undefined) {
       valuesToUpdate.enableNotif = req.body.enableNotif;
     }
     if (req.body.notifPhoneNumber) {
       valuesToUpdate.notifPhoneNumber = req.body.notifPhoneNumber;
     }
-    const user = await User.updateOne({ id : req.user.id}).set(valuesToUpdate);
+    const user = await User.updateOne({ id: req.user.id }).set(valuesToUpdate);
     return res.status(200).json({ success: true });
   }
 

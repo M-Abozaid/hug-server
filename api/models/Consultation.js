@@ -5,6 +5,9 @@
  * @docs        :: https://sailsjs.com/docs/concepts/models-and-orm/models
  */
 
+const ObjectId = require('mongodb').ObjectID;
+
+
 module.exports = {
 
   attributes: {
@@ -37,6 +40,10 @@ module.exports = {
       // default:'pending',
       required: true
     },
+    type: {
+      type: 'string',
+      isIn: ['PATIENT', 'GUEST', 'TRANSLATOR']
+    },
     queue: {
       model: 'queue',
       required: false
@@ -45,6 +52,14 @@ module.exports = {
       model: 'user'
     },
     owner: {
+      model: 'user',
+      required: false
+    },
+    translator: {
+      model: 'user',
+      required: false
+    },
+    guest: {
       model: 'user',
       required: false
     },
@@ -83,15 +98,30 @@ module.exports = {
       type: 'boolean',
       required: false
     },
+    flagGuestOnline: {
+      type: 'boolean',
+      required: false
+    },
+
+    flagTranslatorOnline: {
+      type: 'boolean',
+      required: false
+    },
+    flagDoctorOnline: {
+      type: 'boolean',
+      required: false
+    },
+    scheduledFor: {
+      type: 'number'
+    }
   },
 
-  async beforeCreate(consultation, cb) {
+  async beforeCreate (consultation, cb) {
 
     if (!consultation.queue && !consultation.invitedBy && process.env.DEFAULT_QUEUE_ID) {
       const defaultQueue = await Queue.findOne({ id: process.env.DEFAULT_QUEUE_ID });
-      consultation.flagPatientOnline = true;
       if (defaultQueue) {
-        console.log("Assigning the default queue to the consultation as no queue is set");
+        console.log('Assigning the default queue to the consultation as no queue is set');
         consultation.queue = defaultQueue.id;
       }
     }
@@ -99,20 +129,16 @@ module.exports = {
   },
 
 
-  async afterCreate(consultation, proceed) {
+  async afterCreate (consultation, proceed) {
 
-    const nurse = await User.findOne({ id: consultation.owner });
-    const queue = await Queue.findOne({ id: consultation.queue })
-    sails.sockets.broadcast(consultation.queue || consultation.invitedBy, 'newConsultation',
-      { event: 'newConsultation', data: { _id: consultation.id, unreadCount: 0, consultation, nurse, queue } });
-    sails.sockets.broadcast(consultation.queue || consultation.invitedBy, 'patientOnline',
-      {data: consultation });
+    await Consultation.broadcastNewConsultation(consultation);
+
     return proceed();
   },
 
 
-  async beforeDestroy(criteria, proceed) {
-    console.log("DELETE CONSULTATION", criteria);
+  async beforeDestroy (criteria, proceed) {
+    console.log('DELETE CONSULTATION', criteria);
     const consultation = await Consultation.findOne({ _id: criteria.where.id });
     await Message.destroy({ consultation: criteria.where.id });
     if (consultation.invitationToken) {
@@ -122,6 +148,312 @@ module.exports = {
     sails.sockets.broadcast(consultation.queue || consultation.invitedBy, 'consultationCanceled',
       { event: 'consultationCanceled', data: { _id: criteria.where.id, consultation: criteria.where } });
     return proceed();
-  }
+  },
+
+  async broadcastNewConsultation (consultation) {
+    const nurse = await User.findOne({ id: consultation.owner });
+    const translator = await User.findOne({ id: consultation.translator });
+    const guest = await User.findOne({ id: consultation.guest });
+
+    Consultation.getConsultationParticipants(consultation).forEach(participant => {
+      sails.sockets.broadcast(participant, 'newConsultation',
+          { event: 'newConsultation', data: { _id: consultation.id, unreadCount: 0, consultation, nurse, translator, guest } });
+    });
+
+  },
+  getConsultationParticipants (consultation) {
+    const consultationParticipants = [consultation.owner];
+    if (consultation.translator) {
+      consultationParticipants.push(consultation.translator);
+    }
+    if (consultation.acceptedBy) {
+      consultationParticipants.push(consultation.acceptedBy);
+    }
+    if (consultation.guest) {
+      consultationParticipants.push(consultation.guest);
+    }
+    if (consultation.status === 'pending' && consultation.queue) {
+      consultationParticipants.push(consultation.queue);
+    }
+    if (consultation.invitedBy && consultation.invitedBy !== consultation.acceptedBy) {
+      consultationParticipants.push(consultation.invitedBy);
+    }
+    return consultationParticipants;
+  },
+
+  async saveAnonymousDetails (consultation) {
+
+    // consultation = await Consultation.findOne({id:'5e81e3838475f6352ef40aec'})
+    const anonymousConsultation = {
+
+      consultationId: consultation.id,
+      IMADTeam: consultation.IMADTeam,
+      acceptedAt: consultation.acceptedAt,
+      closedAt: consultation.closedAt || Date.now(),
+      consultationCreatedAt: consultation.createdAt,
+      queue: consultation.queue,
+      owner: consultation.owner,
+      acceptedBy: consultation.acceptedBy,
+
+      patientRating: consultation.patientRating,
+      patientComment: consultation.patientComment,
+      doctorRating: consultation.doctorRating,
+      doctorComment: consultation.doctorComment
+
+    };
+    if (consultation.invite) {
+
+      try {
+
+        const invite = await PublicInvite.findOne({ id: consultation.invite });
+        if (invite) {
+          anonymousConsultation.inviteScheduledFor = invite.scheduledFor;
+          anonymousConsultation.invitedBy = invite.invitedBy;
+          anonymousConsultation.inviteCreatedAt = invite.createdAt;
+        }
+      } catch (error) {
+        console.log('Error finding invite ', error);
+
+      }
+    }
+
+    try {
+
+      const doctorTextMessagesCount = await Message.count({ from: consultation.acceptedBy, consultation: consultation.id, type: 'text' });
+      const patientTextMessagesCount = await Message.count({ from: consultation.owner, consultation: consultation.id, type: 'text' });
+      const missedCallsCount = await Message.count({ consultation: consultation.id, type: { in: ['videoCall', 'audioCall'] }, acceptedAt: 0 });
+      const successfulCalls = await Message.find({ consultation: consultation.id, type: { in: ['videoCall', 'audioCall'] }, acceptedAt: { '!=': 0 }, closedAt: { '!=': 0 } });
+      const successfulCallsCount = await Message.count({ consultation: consultation.id, type: { in: ['videoCall', 'audioCall'] }, acceptedAt: { '!=': 0 } });
+
+      const callDurations = successfulCalls.map(c => c.closedAt - c.acceptedAt);
+      const sum = callDurations.reduce((a, b) => a + b, 0);
+      const averageCallDurationMs = (sum / callDurations.length) || 0;
+      const averageCallDuration = averageCallDurationMs / 60000;
+
+
+      anonymousConsultation.doctorTextMessagesCount = doctorTextMessagesCount;
+      anonymousConsultation.patientTextMessagesCount = patientTextMessagesCount;
+      anonymousConsultation.missedCallsCount = missedCallsCount;
+      anonymousConsultation.successfulCallsCount = successfulCallsCount;
+      anonymousConsultation.averageCallDuration = averageCallDuration;
+
+      console.log('anonymous consultation ', anonymousConsultation);
+    } catch (error) {
+
+      console.log('Error counting messages ', error);
+    }
+    console.log('create anonymous ', anonymousConsultation);
+    await AnonymousConsultation.create(anonymousConsultation);
+
+
+  },
+  sendConsultationClosed (consultation) {
+    // emit consultation closed event with the consultation
+    Consultation.getConsultationParticipants(consultation).forEach(participant => {
+
+      sails.sockets.broadcast(participant, 'consultationClosed', {
+        data: {
+          consultation,
+          _id: consultation.id
+        }
+      });
+    });
+  },
+  async closeConsultation (consultation) {
+    const db = Consultation.getDatastore().manager;
+
+    const closedAt = new Date();
+
+
+    try {
+
+      await Consultation.saveAnonymousDetails(consultation);
+    } catch (error) {
+      console.error('Error Saving anonymous details ', error);
+    }
+
+    if (consultation.invitationToken) {
+      try {
+        const patientInvite = await PublicInvite.findOne({ inviteToken: consultation.invitationToken });
+        await PublicInvite.destroyPatientInvite(patientInvite);
+
+      } catch (error) {
+        console.error('Error destroying Invite ', error);
+      }
+    }
+
+
+
+    const messageCollection = db.collection('message');
+    const consultationCollection = db.collection('consultation');
+    try {
+
+
+      const callMessages = await Message.find({ consultation: consultation.id, type: { in: ['videoCall', 'audioCall'] } });
+      // const callMessages = await callMessagesCursor.toArray();
+      // save info for stats
+      try {
+
+        await AnonymousCall.createEach(callMessages.map(m => {
+          delete m.id;
+          return m;
+        }));
+      } catch (error) {
+        console.log('Error creating anonymous calls ', error);
+      }
+
+    } catch (error) {
+      console.log('Error finding messages ', error);
+    }
+    if (!consultation.queue) {
+      consultation.queue = null;
+    }
+
+
+    // mark consultation as closed and set closedAtISO for mongodb ttl
+    const { result } = await consultationCollection.update({ _id: new ObjectId(consultation.id) }, {
+      $set: {
+        status: 'closed',
+        closedAtISO: closedAt,
+        closedAt: closedAt.getTime()
+      }
+    });
+
+
+
+    // set consultationClosedAtISO for mongodb ttl index
+    await messageCollection.update({ consultation: new ObjectId(consultation.id) }, {
+      $set: {
+        consultationClosedAtISO: closedAt,
+        consultationClosedAt: closedAt.getTime()
+      }
+    }, { multi: true });
+
+
+
+
+    consultation.status = 'closed';
+    consultation.closedAtISO = closedAt;
+    consultation.closedAt = closedAt.getTime();
+
+    // emit consultation closed event with the consultation
+    Consultation.sendConsultationClosed(consultation);
+  },
+
+  async getUserConsultationsFilter(user){
+    let match = [{
+      owner: new ObjectId(user.id)
+    }];
+    if (user && user.role === 'doctor') {
+
+      match = [{
+        acceptedBy: new ObjectId(user.id)
+      }, {
+        invitedBy: new ObjectId(user.id),
+        queue: null
+      }
+      ];
+    }
+
+    if (user && user.role === 'translator') {
+      match = [{ translator: ObjectId(user.id) }];
+    }
+
+    if (user && user.role === 'guest') {
+      match = [{ guest: ObjectId(user.id) }];
+    }
+
+
+    if (user.viewAllQueues) {
+      const queues = (await Queue.find({})).map(queue => new ObjectId(queue.id));
+      match.push(
+        {
+          status: 'pending',
+          queue: { $in: queues }
+
+        }
+      );
+    } else
+    // filter the queue of the user
+    if (user.allowedQueues && user.allowedQueues.length > 0) {
+      const queues = user.allowedQueues.map(queue => new ObjectId(queue.id));
+
+      match.push(
+        {
+          status: 'pending',
+          queue: { $in: queues }
+        }
+      );
+    }
+
+
+    return match
+
+
+  },
+
+
+  async changeOnlineStatus(user, isOnline){
+    const db = Consultation.getDatastore().manager;
+    const consultationCollection = db.collection('consultation');
+
+    const match = await Consultation.getUserConsultationsFilter(user)
+    const result = await consultationCollection.find({$or:match})
+    const userConsultations = await result.toArray()
+
+    userConsultations.forEach(async consultation => {
+      switch (user.role) {
+        case 'patient':
+        case 'nurse':
+          await Consultation.update({ id: consultation._id.toString() })
+            .set({ flagPatientOnline: isOnline })
+              consultation.flagPatientOnline = isOnline
+          break;
+        case 'guest':
+          await Consultation.update({ id: consultation._id.toString() })
+              .set({ flagGuestOnline: isOnline })
+              consultation.flagGuestOnline = isOnline
+          break;
+        case 'translator':
+          await Consultation.update({ id: consultation._id.toString() })
+              .set({ flagTranslatorOnline: isOnline })
+              consultation.flagTranslatorOnline = isOnline
+          break;
+        case 'doctor':
+          await Consultation.update({ id: consultation._id.toString() })
+              .set({ flagDoctorOnline: isOnline })
+              consultation.flagDoctorOnline = isOnline
+          break;
+        default:
+          break;
+      }
+      Consultation.getConsultationParticipants(consultation).forEach(participant => {
+
+        sails.sockets.broadcast(participant, 'onlineStatusChange', {
+          data: {
+            consultation:{
+              flagPatientOnline: consultation.flagPatientOnline,
+              flagGuestOnline: consultation.flagGuestOnline,
+              flagTranslatorOnline: consultation.flagTranslatorOnline,
+              flagDoctorOnline: consultation.flagDoctorOnline,
+              translator: consultation.translator,
+              guest: consultation.guest
+            },
+            _id: consultation._id,
+            // user
+          }
+        });
+      });
+    });
+
+  },
+
+  // afterUpdate(consultation){
+  //   Consultation.getConsultationParticipants().forEach(participant=>{
+  //     sails.sockets.broadcast(participant, 'consultationUpdated', {
+  //       data: {consultation}
+  //     })
+  //   })
+  // }
 
 };

@@ -21,9 +21,9 @@ module.exports = async function (req, res, proceed) {
   if (!consultation) {
     return res.forbidden();
   }
-  //if consultation it's closed it's forbiden to add a comment
-  else if(consultation.status == 'closed'){
-    res.status(403)
+  // if consultation it's closed it's forbiden to add a comment
+  else if (consultation.status === 'closed') {
+    res.status(403);
     return res.json({ message: 'closed' });
   }
 

@@ -18,13 +18,13 @@ module.exports.policies = {
 
   '*': false,
   DashboardController: {
-    get: true,
+    get: true
   },
   SubscribeToSocketController: {
-    subscribe: ['isLoggedIn'],
+    subscribe: ['isLoggedIn']
   },
   SubscribeToDoctorsController: {
-    subscribe: ['isLoggedIn', 'isDoctor'],
+    subscribe: ['isLoggedIn', 'isDoctor']
   },
   // '/api/v1/subscribe-to-socket':['isLoggedIn'],
   UserController: {
@@ -44,34 +44,37 @@ module.exports.policies = {
     remove: ['isLoggedIn', 'isAdmin'],
     replace: ['isLoggedIn', 'isAdmin'],
     getUser: ['isLoggedIn', 'isDoctorOrAdmin'],
-    updateNotif: ['isLoggedIn', 'isDoctor'],
+    updateNotif: ['isLoggedIn', 'isDoctor']
   },
   countController: {
-    count: ['isLoggedIn', 'isAdmin'],
+    count: ['isLoggedIn', 'isAdmin']
   },
   MessageController: {
     '*': false,
     create: ['isLoggedIn', 'setMessageDestination'],
     find: ['isLoggedIn', 'isConsultationOwner'],
-    readMessages: ['isLoggedIn', 'isConsultationOwner'],
+    readMessages: ['isLoggedIn', 'isConsultationOwner']
   },
   ConsultationController: {
     '*': false,
     consultationOverview: ['isLoggedIn'],
     acceptConsultation: ['isLoggedIn', 'isDoctor', 'isAssignedTo'],
     closeConsultation: ['isLoggedIn', 'isDoctor', 'isConsultationOwner'],
-    create: ['isLoggedIn', 'isNurseOrPatient', 'setConsultationOwner'],
+    create: ['isLoggedIn', 'setConsultationOwner'],
     destroy: ['isLoggedIn', 'isNurseOrPatient'],
     uploadFile: ['isLoggedIn', 'setMessageDestination'],
     attachment: ['isLoggedIn', 'isConsultationOwner'],
     sendReport: ['isLoggedIn', 'isDoctor', 'isConsultationOwner'],
     call: ['isLoggedIn', 'isConsultationOwner'],
-    rejectCall: ['isLoggedIn', 'isConsultationOwner'],
-    acceptCall: ['isLoggedIn', 'isConsultationOwner'],
+    rejectCall: ['isLoggedIn', 'isConsultationParticipant'],
+    acceptCall: ['isLoggedIn', 'isConsultationParticipant'],
     patientFeedback: ['isLoggedIn', 'isNurseOrPatient'],
     doctorFeedback: ['isLoggedIn', 'isConsultationOwner'],
     consultationsCSV: ['isLoggedIn', 'isAdmin'],
     testCall: true,
+    getCurrentCall: ['isLoggedIn', 'isConsultationParticipant']
+    // findOne: ['isLoggedIn', 'isConsultationOwnerOrTranslator']
+
   },
   AuthController: {
     loginLocal: true,
@@ -85,10 +88,10 @@ module.exports.policies = {
     resetPassword: true,
     getUser: true,
     samlCallback: true,
-    getConfig: true,
+    getConfig: true
   },
   SupportController: {
-    supportRequest: ['isLoggedIn'],
+    supportRequest: ['isLoggedIn']
   },
   InviteController: {
     '*': false,
@@ -96,12 +99,12 @@ module.exports.policies = {
     resend: ['isLoggedIn', 'isDoctor'],
     revoke: ['isLoggedIn', 'isDoctor'],
     findByConsultation: ['isLoggedIn', 'isDoctor'],
-    findByToken: true,
+    findByToken: true
   },
 
   PublicInviteController: {
     '*': false,
-    find: ['isLoggedIn', 'isDoctorOrAdmin'],
+    find: ['isLoggedIn', 'isDoctorOrAdmin', 'isInviteOwner']
   },
 
   QueueController: {
@@ -109,6 +112,30 @@ module.exports.policies = {
     find: ['isLoggedIn', 'isDoctorOrAdmin'],
     create: ['isLoggedIn', 'isAdmin'],
     destroy: ['isLoggedIn', 'isAdmin'],
-    update: ['isLoggedIn', 'isAdmin'],
+    update: ['isLoggedIn', 'isAdmin']
   },
-}
+
+  TranslationOrganizationController: {
+    '*': false,
+    find: ['isLoggedIn', 'isDoctorOrAdmin'],
+    create: ['isLoggedIn', 'isAdmin'],
+    destroy: ['isLoggedIn', 'isAdmin'],
+    update: ['isLoggedIn', 'isAdmin']
+  },
+
+  Translator: {
+    '*': ['isLoggedIn', 'isDoctorOrAdmin']
+  },
+  TranslatorController: {
+    acceptRequest: true,
+    refuseRequest: true,
+    findConsultation: ['isLoggedIn']
+  },
+  Language: {
+    '*': false,
+    find: ['isLoggedIn', 'isDoctorOrAdmin'],
+    create: ['isLoggedIn', 'isAdmin'],
+    destroy: ['isLoggedIn', 'isAdmin'],
+    update: ['isLoggedIn', 'isAdmin']
+  }
+};

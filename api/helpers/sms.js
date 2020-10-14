@@ -6,12 +6,14 @@
  * @param {string} message
  * @returns {void}
  */
-function sendSmsWithOvh(phoneNumber, message) {
+function sendSmsWithOvh (phoneNumber, message) {
+
+  phoneNumber = phoneNumber.replace(/^00/, '+');
   const ovhConfig = {
     endpoint: process.env.SMS_OVH_ENDPOINT,
     appKey: process.env.SMS_OVH_APP_KEY,
     appSecret: process.env.SMS_OVH_APP_SECRET,
-    consumerKey: process.env.SMS_OVH_APP_CONSUMER_KEY,
+    consumerKey: process.env.SMS_OVH_APP_CONSUMER_KEY
   };
   console.log(ovhConfig);
   const ovh = require('ovh')(ovhConfig);
@@ -34,13 +36,13 @@ function sendSmsWithOvh(phoneNumber, message) {
       }, (errsend, result) => {
         console.error(errsend, result);
         if (errsend) {
-          return reject(errsend)
+          return reject(errsend);
         }
-        return resolve()
+        return resolve();
       });
     });
 
-  })
+  });
 
 }
 
@@ -51,8 +53,8 @@ function sendSmsWithOvh(phoneNumber, message) {
  * @param {string} message - The short message to send.
  * @returns {void}
  */
-function sendSmsWithSwisscom(phoneNumber, message) {
-  const https = require('https')
+function sendSmsWithSwisscom (phoneNumber, message) {
+  const https = require('https');
 
   const payload = {
     destination_addr: phoneNumber.replace(/[^0-9\+]/g, ''),
@@ -79,19 +81,19 @@ function sendSmsWithSwisscom(phoneNumber, message) {
         res.setEncoding('utf8');
         res.on('data', (chunk) => { rawData += chunk; });
         res.on('end', () => {
-          console.log("Will get raw data");
-          console.log("raw data", rawData);
+          console.log('Will get raw data');
+          console.log('raw data', rawData);
           try {
             const parsedData = JSON.parse(rawData);
-            console.log("GOT SWISSCOM DATA", parsedData);
+            console.log('GOT SWISSCOM DATA', parsedData);
             if ('message_ids' in parsedData || 'message_id' in parsedData) {
               return resolve();
             }
             console.error(parsedData);
-            return reject(parsedData)
+            return reject(parsedData);
           } catch (e) {
             console.error(e.message);
-            return reject(e)
+            return reject(e);
           }
         });
       }
@@ -99,21 +101,21 @@ function sendSmsWithSwisscom(phoneNumber, message) {
 
     try {
       request.on('error', (e) => {
-        console.error("ERROR", e.message);
-        return reject(e)
+        console.error('ERROR', e.message);
+        return reject(e);
       });
-      console.log('Siss come auth header  ', `${process.env.SMS_SWISSCOM_ACCOUNT}:${process.env.SMS_SWISSCOM_PASSWORD}`)
-      console.log('SISSCOME URI', `https://messagingproxy.swisscom.ch:4300/rest/1.0.0/submit_sm/${process.env.SMS_SWISSCOM_ACCOUNT}`)
-      console.log('SWISSCOM JSON PAYLOAD..............')
-      console.log(JSON.stringify(payload))
+      console.log('Siss come auth header  ', `${process.env.SMS_SWISSCOM_ACCOUNT}:${process.env.SMS_SWISSCOM_PASSWORD}`);
+      console.log('SISSCOME URI', `https://messagingproxy.swisscom.ch:4300/rest/1.0.0/submit_sm/${process.env.SMS_SWISSCOM_ACCOUNT}`);
+      console.log('SWISSCOM JSON PAYLOAD..............');
+      console.log(JSON.stringify(payload));
       request.write(JSON.stringify(payload));
       request.end();
     } catch (error) {
 
-      console.log('error write to request ', error)
-      return reject(error)
+      console.log('error write to request ', error);
+      return reject(error);
     }
-  })
+  });
 
 }
 
@@ -132,10 +134,10 @@ module.exports = {
       type: 'string',
       required: true
     },
-    message:{
+    message: {
       type: 'string',
       required: true
-    },
+    }
 
   },
 
@@ -143,16 +145,16 @@ module.exports = {
   exits: {
 
     success: {
-      description: 'All done.',
-    },
+      description: 'All done.'
+    }
 
   },
 
 
-  fn: async function (inputs, exits) {
+  async fn (inputs, exits) {
 
     try {
-      const {message, phoneNumber} = inputs
+      const { message, phoneNumber } = inputs;
 
       if ('SMS_OVH_ENDPOINT' in process.env
         && 'SMS_OVH_APP_KEY' in process.env
@@ -161,24 +163,24 @@ module.exports = {
         console.log(`Sending an SMS to ${phoneNumber} through OVH`);
         await sendSmsWithOvh(phoneNumber, message);
 
-        return exits.success()
+        return exits.success();
       } else if ('SMS_SWISSCOM_ACCOUNT' in process.env
         && 'SMS_SWISSCOM_PASSWORD' in process.env
         && 'SMS_SWISSCOM_SENDER' in process.env) {
         console.log(`Sending an SMS to ${phoneNumber} through Swisscom`);
         await sendSmsWithSwisscom(phoneNumber, message);
 
-        return exits.success()
+        return exits.success();
       } else {
         console.error('No SMS gateway configured');
-        if(process.env.NODE_ENV === 'development'){
-          console.log('SENDING SMS ', message, ' to ', phoneNumber )
+        if (process.env.NODE_ENV === 'development') {
+          console.log('SENDING SMS ', message, ' to ', phoneNumber);
 
-          exits.success()
+          exits.success();
         }
       }
     } catch (error) {
-      exits.error(error)
+      exits.error(error);
     }
 
   }

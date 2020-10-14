@@ -33,6 +33,7 @@ module.exports.routes = {
   // 'delete /api/v1/consultation/:consultation': 'ConsultationController.destroy',
   'post /api/v1/consultation/:consultation/close': 'ConsultationController.closeConsultation',
   'post /api/v1/consultation/:consultation/call': 'ConsultationController.call',
+  'GET /api/v1/consultation/:consultation/current-call': 'ConsultationController.getCurrentCall',
   'post /api/v1/consultation/:consultation/:message/reject-call': 'ConsultationController.rejectCall',
   'post /api/v1/consultation/:consultation/:message/accept-call': 'ConsultationController.acceptCall',
   'post /api/v1/consultation/:consultation/upload-file': 'ConsultationController.uploadFile',
@@ -65,6 +66,10 @@ module.exports.routes = {
   'POST /api/v1/invite/:invite/resend': 'InviteController.resend',
   'POST /api/v1/invite/:invite/revoke': 'InviteController.revoke',
   'GET /api/v1/invite/by-token/:invitationToken': 'InviteController.findByToken',
+
+  'POST /api/v1/translator/accept/:translationRequestToken': 'TranslatorController.acceptRequest',
+  'POST /api/v1/translator/refuse/:translationRequestToken': 'TranslatorController.refuseRequest',
+  'GET /api/v1/translator/consultation': 'TranslatorController.findConsultation',
 
   '/logout': 'AuthController.logout'
 

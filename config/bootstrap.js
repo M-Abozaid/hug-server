@@ -36,8 +36,10 @@ module.exports.bootstrap = async function () {
 
   const consultationCollection = db.collection('consultation');
   const messageCollection = db.collection('message');
+  const userCollection = db.collection('user');
   await consultationCollection.createIndex({ closedAtISO: 1 }, { expireAfterSeconds: 86400 }); // expires after a day
   await messageCollection.createIndex({ consultationClosedAtISO: 1 }, { expireAfterSeconds: 86400 }); // expires after a day
+  await userCollection.createIndex({ consultationClosedAtISO: 1 }, { expireAfterSeconds: 86400 }); // expires after a day
 
 
   // check and delete expired files

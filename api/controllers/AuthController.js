@@ -12,20 +12,20 @@ const { samlStrategy } = require('../../config/passport');
 const jwt = require('jsonwebtoken');
 
 
-const SMS_CODE_LIFESPAN = 5 * 60
-function generateVerificationCode() {
-  let possible = '0123456789'
-  let string = ''
+const SMS_CODE_LIFESPAN = 5 * 60;
+function generateVerificationCode () {
+  const possible = '0123456789';
+  let string = '';
   for (let i = 0; i < 6; i++) {
-    string += possible.charAt(Math.floor(Math.random() * possible.length))
+    string += possible.charAt(Math.floor(Math.random() * possible.length));
   }
-  return string
+  return string;
 }
 
 module.exports = {
 
   // login using client certificate
-  loginCert(req, res) {
+  loginCert (req, res) {
 
     // return res.status(401).send()
     passport.authenticate('trusted-header', async (err, user, info = {}) => {
@@ -37,9 +37,9 @@ module.exports = {
       }
       try {
 
-        await User.updateOne({ id: user.id }).set({ lastLoginType: 'sslcert' })
+        await User.updateOne({ id: user.id }).set({ lastLoginType: 'sslcert' });
       } catch (error) {
-        console.log('error Updating user login type ', error)
+        console.log('error Updating user login type ', error);
       }
 
       return res.json({
@@ -52,7 +52,7 @@ module.exports = {
     });
   },
 
-  loginInvite(req, res) {
+  loginInvite (req, res) {
     passport.authenticate('invite', async (err, user) => {
       if ((err) || (!user)) {
         return res.status(401).send({
@@ -62,16 +62,16 @@ module.exports = {
 
       try {
 
-        await User.updateOne({ id: user.id }).set({ lastLoginType: 'invite' })
+        await User.updateOne({ id: user.id }).set({ lastLoginType: 'invite' });
       } catch (error) {
-        console.log('error Updating user login type ', error)
+        console.log('error Updating user login type ', error);
       }
-      //When a patient accept an invitation if the doctor enable the notif he recieve a sms
+      // When a patient accept an invitation if the doctor enable the notif he recieve a sms
       try {
-        let publicInvite = await PublicInvite.findOne({ id: user.inviteToken });
+        const publicInvite = await PublicInvite.findOne({ id: user.inviteToken });
         console.log(publicInvite);
 
-        let doctorToNotif = await User.findOne({ id: publicInvite.invitedBy });
+        const doctorToNotif = await User.findOne({ id: publicInvite.invitedBy });
         console.log(publicInvite, doctorToNotif);
         if (doctorToNotif && doctorToNotif.enableNotif && doctorToNotif.notifPhoneNumber) {
           a = await sails.helpers.sms.with({
@@ -89,10 +89,11 @@ module.exports = {
       });
 
     })(req, res, (err) => {
+      console.log('error Login invite ', err);
     });
   },
 
-  async forgotPassword(req, res) {
+  async forgotPassword (req, res) {
 
     const emailRegex = new RegExp(`${req.body.email}`, 'i');
     const db = sails.getDatastore().manager;
@@ -106,14 +107,14 @@ module.exports = {
 
     const user = await db.collection('user').findOne({
       email: {
-        '$regex': emailRegex
+        $regex: emailRegex
       }
     });
 
     if (user) {
       await db.collection('user').update({
         email: {
-          '$regex': emailRegex
+          $regex: emailRegex
         }
       }, {
         $set: {
@@ -126,28 +127,28 @@ module.exports = {
       await sails.helpers.email.with({
         to: user.email,
         subject: 'Mot de passe oublié',
-        text: `Vous nous avez indiqué que vous avez oublié votre mot de passe. Merci de cliquer sur le lien suivant afin de changer votre mot de passe ${url}. Ce lien ne fonctionnera que 5 minutes.`,
+        text: `Vous nous avez indiqué que vous avez oublié votre mot de passe. Merci de cliquer sur le lien suivant afin de changer votre mot de passe ${url}. Ce lien ne fonctionnera que 5 minutes.`
       });
     }
   },
 
-  async resetPassword(req, res) {
-    const passwordFormat = new RegExp("^(((?=.*[a-z])(?=.*[A-Z]))|((?=.*[a-z])(?=.*[0-9]))|((?=.*[A-Z])(?=.*[0-9])))(?=.{6,})");
+  async resetPassword (req, res) {
+    const passwordFormat = new RegExp('^(((?=.*[a-z])(?=.*[A-Z]))|((?=.*[a-z])(?=.*[0-9]))|((?=.*[A-Z])(?=.*[0-9])))(?=.{6,})');
 
     if (!req.body.token) {
       return res.status(400).json({
-        message: "token-missing"
+        message: 'token-missing'
       });
     }
 
     if (!passwordFormat.test(req.body.password)) {
       return res.status(400).json({
-        message: "password-too-weak"
+        message: 'password-too-weak'
       });
     }
 
     try {
-      //const decoded = jwt.verify(req.body.token, sails.config.globals.APP_SECRET);
+      // const decoded = jwt.verify(req.body.token, sails.config.globals.APP_SECRET);
 
       const password = await User.generatePassword(req.body.password);
 
@@ -157,22 +158,22 @@ module.exports = {
       }).set({
         password,
         resetPasswordToken: ''
-      })
-      console.log("GOT USER", user);
+      });
+      console.log('GOT USER', user);
 
       if (!user) {
-        throw new Error("token-expired");
+        throw new Error('token-expired');
       }
 
     } catch (err) {
-      console.log("ERROR", err);
+      console.log('ERROR', err);
       if (err.name == 'TokenExpiredError') {
         return res.status(400).json({
-          message: "token-expired"
+          message: 'token-expired'
         });
       } else {
         return res.status(400).json({
-          message: "unknown"
+          message: 'unknown'
         });
       }
     }
@@ -183,31 +184,31 @@ module.exports = {
   },
 
   // used only for admin
-  async loginLocal(req, res) {
+  async loginLocal (req, res) {
     if (!process.env.LOGIN_METHOD || (process.env.LOGIN_METHOD !== 'password' && process.env.LOGIN_METHOD !== 'both')) {
       console.log('Password login is disabled');
       return res.status(500).json({
-        message: 'Password login is disabled',
+        message: 'Password login is disabled'
       });
     }
 
-    const isAdmin = await User.count({ email: req.body.email, role: 'admin' })
+    const isAdmin = await User.count({ email: req.body.email, role: 'admin' });
     if (req.body._version) {
-      await User.updateOne({ email: req.body.email, role: { in: ['doctor', 'admin'] } }).set({ doctorClientVersion: req.body._version })
+      await User.updateOne({ email: req.body.email, role: { in: ['doctor', 'admin'] } }).set({ doctorClientVersion: req.body._version });
     } else {
       if (!isAdmin) {
-        await User.updateOne({ email: req.body.email }).set({ doctorClientVersion: 'invalid' })
+        await User.updateOne({ email: req.body.email, role: { in: ['doctor', 'admin'] } }).set({ doctorClientVersion: 'invalid' });
         return res.status(400).json({
-          message: "Le cache de votre navigateur n'est pas à jour, vous devez le raffraichir avec CTRL+F5 !",
+          message: 'Le cache de votre navigateur n\'est pas à jour, vous devez le raffraichir avec CTRL+F5 !'
         });
       }
     }
 
     passport.authenticate('local', async (err, user, info = {}) => {
-      console.log("Authenticate now", err, user);
+      console.log('Authenticate now', err, user);
       if (err) {
         return res.status(500).json({
-          message: info.message || 'Server Error',
+          message: info.message || 'Server Error'
         });
       }
       if ((!user)) {
@@ -219,31 +220,31 @@ module.exports = {
 
 
       try {
-        await User.updateOne({ id: user.id }).set({ lastLoginType: 'local' })
+        await User.updateOne({ id: user.id }).set({ lastLoginType: 'local' });
       } catch (error) {
-        console.log('error Updating user login type ', error)
+        console.log('error Updating user login type ', error);
       }
 
 
 
       // factor one
       if (process.env.NODE_ENV !== 'development' && user.role === 'doctor'
-        //|| user.role === 'admin'
+      // || user.role === 'admin'
       ) {
         const localLoginDetails = {
           id: user.id,
           localLoginToken: true,
-          singleFactor: true,
-        }
+          singleFactor: true
+        };
         const localLoginToken = jwt.sign(localLoginDetails, sails.config.globals.APP_SECRET);
 
         let verificationCode;
         if (user.smsVerificationCode) {
           try {
             const decoded = jwt.verify(user.smsVerificationCode, sails.config.globals.APP_SECRET);
-            verificationCode = decoded.code
+            verificationCode = decoded.code;
           } catch (error) {
-            console.error(error)
+            console.error(error);
 
           }
         }
@@ -252,17 +253,17 @@ module.exports = {
         // const hash = await bcrypt.hash(verificationCode, salt)
         const smsToken = jwt.sign({ code: verificationCode }, sails.config.globals.APP_SECRET, { expiresIn: SMS_CODE_LIFESPAN });
 
-        await User.updateOne({ id: user.id }).set({ smsVerificationCode: smsToken, smsAttempts: 0 })
+        await User.updateOne({ id: user.id }).set({ smsVerificationCode: smsToken, smsAttempts: 0 });
 
         try {
           await sails.helpers.sms.with({
             phoneNumber: user.authPhoneNumber,
             message: `Votre code de vérification est ${verificationCode}. Ce code est utilisable ${SMS_CODE_LIFESPAN / 60} minutes`
-          })
+          });
         } catch (err) {
           return res.status(500).json({
-            message: "Echec d'envoi du SMS"
-          })
+            message: 'Echec d\'envoi du SMS'
+          });
         }
 
         return res.status(200).json({
@@ -287,19 +288,19 @@ module.exports = {
   },
 
   // used only for admin
-  loginSms(req, res) {
+  loginSms (req, res) {
     if (!process.env.LOGIN_METHOD || (process.env.LOGIN_METHOD !== 'password' && process.env.LOGIN_METHOD !== 'both')) {
       console.log('Password login is disabled');
       return res.status(500).json({
-        message: 'Password login is disabled',
+        message: 'Password login is disabled'
       });
     }
 
     passport.authenticate('sms', async (err, user, info = {}) => {
-      console.log("Authenticate now", err, user);
+      console.log('Authenticate now', err, user);
       if (err) {
         return res.status(500).json({
-          message: info.message || 'Server Error',
+          message: info.message || 'Server Error'
         });
       }
       if ((!user)) {
@@ -309,14 +310,14 @@ module.exports = {
         });
       }
 
-      await User.updateOne({ id: user.id }).set({ smsVerificationCode: '' })
+      await User.updateOne({ id: user.id }).set({ smsVerificationCode: '' });
 
 
       const localLoginDetails = {
         id: user.id,
         smsToken: true,
-        singleFactor: true,
-      }
+        singleFactor: true
+      };
       const smsLoginToken = jwt.sign(localLoginDetails, sails.config.globals.APP_SECRET);
       return res.status(200).json({
         smsLoginToken,
@@ -330,19 +331,19 @@ module.exports = {
   },
 
 
-  login2FA(req, res) {
+  login2FA (req, res) {
     if (!process.env.LOGIN_METHOD || (process.env.LOGIN_METHOD !== 'password' && process.env.LOGIN_METHOD !== 'both')) {
       console.log('Password login is disabled');
       return res.status(500).json({
-        message: 'Password login is disabled',
+        message: 'Password login is disabled'
       });
     }
 
-    passport.authenticate('2FA', async (err, user, info = {}) => {
-      console.log("Authenticate now", err, user);
+    passport.authenticate('2FA', (err, user, info = {}) => {
+      console.log('Authenticate now', err, user);
       if (err) {
         return res.status(500).json({
-          message: info.message || 'Server Error',
+          message: info.message || 'Server Error'
         });
       }
       if ((!user)) {
@@ -363,49 +364,49 @@ module.exports = {
     });
   },
 
-  logout(req, res) {
+  logout (req, res) {
     req.logout();
     res.redirect('/');
   },
 
-  getUser(req, res) {
+  getUser (req, res) {
 
-    if (!req.headers['x-access-token'] && !req.query.token) { return res.status(401).json({ error: "Unauthorized" }); }
+    if (!req.headers['x-access-token'] && !req.query.token) { return res.status(401).json({ error: 'Unauthorized' }); }
     jwt.verify(req.headers['x-access-token'] || req.query.token, sails.config.globals.APP_SECRET, async (err, decoded) => {
       if (err) {
         console.error('error ', err);
-        return res.status(401).json({ error: "Unauthorized" });
+        return res.status(401).json({ error: 'Unauthorized' });
       }
 
       if (decoded.singleFactor) {
-        return res.status(401).json({ error: "Unauthorized" });
+        return res.status(401).json({ error: 'Unauthorized' });
       }
 
       try {
 
 
         if (req.query._version) {
-          await User.updateOne({ email: decoded.email, role: { in: ['doctor', 'admin'] } }).set({ doctorClientVersion: req.query._version })
+          await User.updateOne({ email: decoded.email, role: { in: ['doctor', 'admin'] } }).set({ doctorClientVersion: req.query._version });
         } else {
-          await User.updateOne({ email: decoded.email }).set({ doctorClientVersion: 'invalid' })
+          await User.updateOne({ email: decoded.email }).set({ doctorClientVersion: 'invalid' });
           return res.status(400).json({
-            message: "Le cache de votre navigateur n'est pas à jour, vous devez le raffraichir avec CTRL+F5 !",
+            message: 'Le cache de votre navigateur n\'est pas à jour, vous devez le raffraichir avec CTRL+F5 !'
           });
         }
 
 
         const user = await User.findOne({
           id: decoded.id
-        })
+        });
 
         if (!user) {
-          console.error('No user from a valid token ')
-          res.status(500).json({ message: 'UNKNOWN ERROR' })
+          console.error('No user from a valid token ');
+          res.status(500).json({ message: 'UNKNOWN ERROR' });
         }
 
         if (user.role === 'doctor') {
           if (!user.doctorClientVersion) {
-            return res.status(401).json({ error: "Unauthorized App version needs to be updated" });
+            return res.status(401).json({ error: 'Unauthorized App version needs to be updated' });
           }
         }
 
@@ -415,19 +416,19 @@ module.exports = {
           user
         });
       } catch (error) {
-        console.error(error)
-        res.status(500).json({ message: 'UNKNOWN ERROR' })
+        console.error(error);
+        res.status(500).json({ message: 'UNKNOWN ERROR' });
 
       }
-    })
+    });
 
   },
 
-  loginSaml(req, res) {
+  loginSaml (req, res) {
     if (!process.env.LOGIN_METHOD || (process.env.LOGIN_METHOD !== 'saml' && process.env.LOGIN_METHOD !== 'both')) {
       console.log('SAML login is disabled');
       return res.status(500).json({
-        message: 'SAML login is disabled',
+        message: 'SAML login is disabled'
       });
     }
 
@@ -444,11 +445,11 @@ module.exports = {
 
 
 
-  samlCallback(req, res) {
+  samlCallback (req, res) {
     if (!process.env.LOGIN_METHOD || (process.env.LOGIN_METHOD !== 'saml' && process.env.LOGIN_METHOD !== 'both')) {
       console.log('SAML login is disabled');
       return res.status(500).json({
-        message: 'SAML login is disabled',
+        message: 'SAML login is disabled'
       });
     }
 
@@ -470,9 +471,9 @@ module.exports = {
 
 
         try {
-          await User.updateOne({ id: user.id }).set({ lastLoginType: 'saml' })
+          await User.updateOne({ id: user.id }).set({ lastLoginType: 'saml' });
         } catch (error) {
-          console.log('error Updating user login type ', error)
+          console.log('error Updating user login type ', error);
         }
 
 
@@ -494,13 +495,14 @@ module.exports = {
 
   },
 
-  metadata(req, res) {
+  metadata (req, res) {
     res.send(samlStrategy.generateServiceProviderMetadata(process.env.SAML_CERT, process.env.SAML_CERT));
   },
 
-  getConfig(req, res) {
+  getConfig (req, res) {
     res.json({
       method: process.env.LOGIN_METHOD ? process.env.LOGIN_METHOD : 'both',
-    })
+      branding: process.env.BRANDING || '@HOME'
+    });
   }
 };

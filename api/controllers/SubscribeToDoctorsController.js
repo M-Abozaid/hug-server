@@ -12,16 +12,16 @@
  * @param {object} req
  * @param {string} room
  */
-function joinP(req, room){
-  console.log('join ', room)
-  return new Promise((resolve, reject)=>{
+function joinP (req, room) {
+  console.log('join ', room);
+  return new Promise((resolve, reject) => {
     sails.sockets.join(req, room, (err) => {
       if (err) {
-        return reject(err)
+        return reject(err);
       }
-      return resolve()
+      return resolve();
     });
-  })
+  });
 }
 module.exports = {
 
@@ -37,12 +37,12 @@ module.exports = {
     }
 
 
-    let queues = req.user.allowedQueues && req.user.allowedQueues.map(q=>q.id)
-    if(req.user.viewAllQueues){
+    let queues = req.user.allowedQueues && req.user.allowedQueues.map(q => q.id);
+    if (req.user.viewAllQueues) {
 
-      queues = (await Queue.find()).map(q=>q.id)
+      queues = (await Queue.find()).map(q => q.id);
     }
-    if(!queues || !queues.length){
+    if (!queues || !queues.length) {
       res.status(200);
       return res.json({
         message: 'Subscribed to doctors! No queues '
@@ -50,16 +50,16 @@ module.exports = {
     }
     try {
 
-      await Promise.all(queues.map(q=> joinP(req, q.toString())))
+      await Promise.all(queues.map(q => joinP(req, q.toString())));
     } catch (err) {
       return res.serverError(err);
 
     }
 
-      res.status(200);
-      return res.json({
-        message: 'Subscribed to doctors!'
-      });
+    res.status(200);
+    return res.json({
+      message: 'Subscribed to doctors!'
+    });
 
   }
 

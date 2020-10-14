@@ -1,7 +1,7 @@
 const {
   OpenVidu
 } = require('openvidu-node-client');
-const FETCH_TIMEOUT = 3000
+const FETCH_TIMEOUT = 3000;
 
 // const servers = [
 //   {
@@ -17,9 +17,9 @@ const FETCH_TIMEOUT = 3000
 // ]
 
 const fallbackOpenvidu = {
-  url:sails.config.OPENVIDU_URL,
+  url: sails.config.OPENVIDU_URL,
   password: sails.config.OPENVIDU_SECRET
-}
+};
 
 
 module.exports = {
@@ -39,64 +39,64 @@ module.exports = {
   exits: {
 
     success: {
-      description: 'All done.',
-    },
+      description: 'All done.'
+    }
 
   },
 
 
-  fn: async function (inputs, exits) {
+  async fn (inputs, exits) {
     // TODO
 
     const servers = await OpenviduServer.find();
 
     try {
-      const serversStatues =  await  Promise.all(servers.map(async server=>{
-        const start = Date.now()
+      const serversStatues = await Promise.all(servers.map(async server => {
+        const start = Date.now();
         try {
 
-            const openvidu = new OpenVidu(server.url, server.password);
-            console.log('getting server info ', server.url)
-            await timeoutPromise(FETCH_TIMEOUT, openvidu.fetch());
-            console.log('got server info ', server.url, Date.now()- start)
+          const openvidu = new OpenVidu(server.url, server.password);
+          console.log('getting server info ', server.url);
+          await timeoutPromise(FETCH_TIMEOUT, openvidu.fetch());
+          console.log('got server info ', server.url, Date.now() - start);
 
-            server.activeSessions = openvidu.activeSessions.length
-            server.reachable = true
-            return server
+          server.activeSessions = openvidu.activeSessions.length;
+          server.reachable = true;
+          return server;
 
         } catch (error) {
-          console.log(error)
-          console.log('Server ', server.url, ' is Not reachable', Date.now()-start)
-          return Promise.resolve({reachable:false})
+          console.log(error);
+          console.log('Server ', server.url, ' is Not reachable', Date.now() - start);
+          return Promise.resolve({ reachable: false });
         }
 
-      }))
+      }));
 
 
 
 
-      const availableServers = serversStatues.filter(server=>{
-        return (server.activeSessions < server.maxNumberOfSessions) && server.reachable
-      })
+      const availableServers = serversStatues.filter(server => {
+        return (server.activeSessions < server.maxNumberOfSessions) && server.reachable;
+      });
 
-      console.log('AVAILABLE SERVERS:: ', JSON.stringify(availableServers))
-      if(!availableServers.length){
-        return exits.success([fallbackOpenvidu])
+      console.log('AVAILABLE SERVERS:: ', JSON.stringify(availableServers));
+      if (!availableServers.length) {
+        return exits.success([fallbackOpenvidu]);
       }
 
-      exits.success(availableServers)
+      exits.success(availableServers);
     } catch (error) {
-      console.log('Error with getting openvidu server ',error)
+      console.log('Error with getting openvidu server ', error);
     }
   }
 
 
 };
 
-function timeoutPromise(ms, promise) {
+function timeoutPromise (ms, promise) {
   return new Promise((resolve, reject) => {
     const timeoutId = setTimeout(() => {
-      reject(new Error("promise timeout"))
+      reject(new Error('promise timeout'));
     }, ms);
     promise.then(
       (res) => {
@@ -108,5 +108,5 @@ function timeoutPromise(ms, promise) {
         reject(err);
       }
     );
-  })
+  });
 }

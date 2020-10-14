@@ -7,9 +7,10 @@ const { Strategy } = require('passport-trusted-header');
 
 
 const passportCustom = require('passport-custom');
+
 const CustomStrategy = passportCustom.Strategy;
 
-function getUserDetails(user){
+function getUserDetails (user) {
   return {
     email: user.email,
     username: user.username,
@@ -21,8 +22,8 @@ function getUserDetails(user){
     authPhoneNumber: user.authPhoneNumber,
     viewAllQueues: user.viewAllQueues,
     doctorClientVersion: user.doctorClientVersion,
-    notifPhoneNumber : user.notifPhoneNumber,
-    enableNotif : user.enableNotif
+    notifPhoneNumber: user.notifPhoneNumber,
+    enableNotif: user.enableNotif
   };
 }
 
@@ -37,48 +38,86 @@ passport.deserializeUser((id, cb) => {
 
 
 passport.use('invite', new CustomStrategy(
-  async function (req, callback) {
+  (async (req, callback) => {
     // Do your custom user finding logic here, or set to false based on req object
-
     const invite = await PublicInvite.findOne({ inviteToken: req.body.inviteToken });
 
     if (!invite) {
-      return callback({ inviteToken: "not-found" }, null);
+      return callback({ invite: 'not-found' }, null);
     }
+
+
+    if (invite.type === 'TRANSLATOR_REQUEST') {
+      return callback({ invite: 'cannot use this invite for login' }, null);
+    }
+
+    if (invite.status === 'ACCEPTED' || invite.status === 'COMPLETED' || invite.status === 'REFUSED') {
+      return callback({ invite: 'invite have already been accepted' }, null);
+    }
+
     if (invite.status === 'SENT') {
-      await PublicInvite.updateOne({ inviteToken: req.body.inviteToken }).set({ status: 'ACCEPTED' })
+      await PublicInvite.updateOne({ inviteToken: req.body.inviteToken }).set({ status: 'ACCEPTED' });
+    }
+
+    let user = await User.findOne({ username: invite.id });
+
+    if (user) {
+      return callback(null, user);
     }
 
     const newUser = {
       username: invite.id,
-      email: invite.emailAddress,
-      firstName: "",
-      lastName: "",
-      role: 'patient',
-      password: "",
-      phoneNumber: invite.phoneNumber,
-      phoneNumberEnteredByPatient: req.body.phoneNumber,
+      firstName: '',
+      lastName: '',
+      role: invite.type.toLowerCase(),
+      password: '',
       temporaryAccount: true,
-      inviteToken: invite.id,
+      inviteToken: invite.id
+    };
+
+    if (invite.emailAddress) {
+      newUser.email = invite.emailAddress;
+    }
+    if (invite.phoneNumber) {
+
+      newUser.phoneNumber = invite.phoneNumber;
+    }
+    if (req.body.phoneNumber) {
+
+      newUser.phoneNumberEnteredByPatient = req.body.phoneNumber;
     }
 
-    let user = await User.findOne({ username: invite.id });
-    if (!user) {
-      user = await User.create(newUser).fetch();
+    user = await User.create(newUser).fetch();
+
+    if (invite.type === 'GUEST') {
+      const patientInvite = await PublicInvite.findOne({ guestInvite: invite.id });
+      if (patientInvite) {
+        const [consultation] = await Consultation.update({ invite: patientInvite.id }).set({ guest: user.id }).fetch();
+        if(consultation){
+
+          Consultation.getConsultationParticipants(consultation).forEach(participant=>{
+                sails.sockets.broadcast(participant, 'consultationUpdated', {
+                  data: {consultation}
+                })
+              })
+        }
+
+      }
     }
 
-    callback(null, user)
-  }
-))
+
+    callback(null, user);
+  })
+));
 
 passport.use('sms', new CustomStrategy(
-  async function (req, cb) {
+  (async (req, cb) => {
 
     const user = await User.findOne({ id: req.body.user });
     if (!user) { return cb(null, false, { message: 'User not found' }); }
     jwt.verify(user.smsVerificationCode, sails.config.globals.APP_SECRET, async (err, decoded) => {
       if (err) {
-        if (err.name === "TokenExpiredError") {
+        if (err.name === 'TokenExpiredError') {
           return cb(null, false, { message: 'Expired code' });
         }
         console.error('error ', err);
@@ -101,7 +140,7 @@ passport.use('sms', new CustomStrategy(
 
       return cb(null, user, { message: 'SMS Login Successful' });
 
-    })
+    });
     // bcrypt.compare(req.body.smsVerificationCode, user.smsVerificationCode, (err, res) => {
     //   if (err) { return cb(err); }
 
@@ -109,18 +148,18 @@ passport.use('sms', new CustomStrategy(
 
     //   return cb(null, user, { message: 'SMS Login Successful' });
     // });
-  }
-))
+  })
+));
 
 passport.use('2FA', new CustomStrategy(
-  async function (req, cb) {
+  (async (req, cb) => {
 
     const user = await User.findOne({ id: req.body.user });
     if (!user) { return cb(null, false, { message: 'User not found' }); }
 
     jwt.verify(req.body.localLoginToken, sails.config.globals.APP_SECRET, async (err, decoded) => {
       if (err) {
-        if (err.name === "TokenExpiredError") {
+        if (err.name === 'TokenExpiredError') {
           return cb(null, false, { message: 'Expired token' });
         }
         console.error('error ', err);
@@ -134,7 +173,7 @@ passport.use('2FA', new CustomStrategy(
 
       jwt.verify(req.body.smsLoginToken, sails.config.globals.APP_SECRET, async (err, decoded) => {
         if (err) {
-          if (err.name === "TokenExpiredError") {
+          if (err.name === 'TokenExpiredError') {
             return cb(null, false, { message: 'Expired token' });
           }
           console.error('error ', err);
@@ -151,34 +190,34 @@ passport.use('2FA', new CustomStrategy(
         userDetails.token = token;
 
         return cb(null, userDetails, { message: '2FA Login Successful' });
-      })
+      });
 
-    })
+    });
 
-  }
-))
+  })
+));
 passport.use(new LocalStrategy({
   usernameField: 'email',
   passportField: 'password'
 }, ((email, password, cb) => {
-  User.findOne({ email: email.toLowerCase(), temporaryAccount: {'!=': true} }, (err, user) => {
+  User.findOne({ email: email.toLowerCase(), temporaryAccount: { '!=': true } }, (err, user) => {
     if (err) { return cb(err); }
     if (!user) { return cb(null, false, { message: 'Email ou mot de passe incorrect' }); }
     bcrypt.compare(password, user.password, (err, res) => {
       if (err) { return cb(err); }
 
       if (!res) { return cb(null, false, { message: 'Email ou mot de passe incorrect' }); }
-      if(user.role === 'doctor' ){
-        if(!user.doctorClientVersion){
-          return cb(null, false, { message: "Le cache de votre navigateur n'est pas à jour, vous devez le raffraichir avec CTRL+F5 !" });
+      if (user.role === 'doctor') {
+        if (!user.doctorClientVersion) {
+          return cb(null, false, { message: 'Le cache de votre navigateur n\'est pas à jour, vous devez le raffraichir avec CTRL+F5 !' });
         }
 
       }
-      const userDetails = getUserDetails(user)
+      const userDetails = getUserDetails(user);
 
       const token = jwt.sign(userDetails, sails.config.globals.APP_SECRET);
       userDetails.token = token;
-      userDetails.smsVerificationCode = user.smsVerificationCode
+      userDetails.smsVerificationCode = user.smsVerificationCode;
       return cb(null, userDetails, { message: 'Login Successful' });
     });
   });
@@ -236,8 +275,8 @@ passport.use(new Strategy(options, (async (requestHeaders, cb) => {
 
 
 const SamlStrategy = require('passport-saml').Strategy;
-let samlStrategy
-console.log('env >>>> ', process.env.NODE_ENV)
+let samlStrategy;
+console.log('env >>>> ', process.env.NODE_ENV);
 if (process.env.NODE_ENV !== 'development' && process.env.SAML_CALLBACK) {
 
 
@@ -260,7 +299,7 @@ if (process.env.NODE_ENV !== 'development' && process.env.SAML_CALLBACK) {
 
 
       try {
-        let user = await User.findOne({ email: profile[process.env.EMAIL_FIELD] });
+        const user = await User.findOne({ email: profile[process.env.EMAIL_FIELD] });
 
         if (!user) {
           // user = await User.create({
@@ -269,7 +308,7 @@ if (process.env.NODE_ENV !== 'development' && process.env.SAML_CALLBACK) {
           //   lastName: profile[process.env.LASTNAME_FIELD],
           //   role: sails.config.globals.ROLE_DOCTOR
           // }).fetch();
-          return cb(new Error('User not found'))
+          return cb(new Error('User not found'));
         }
 
 

@@ -35,12 +35,12 @@ module.exports.security = {
       'http://localhost:8080',
       'http://localhost:8100',
       'http://localhost:4200',
-      ...((process.env.ALLOW_ORIGINS && process.env.ALLOW_ORIGINS.split(',')) || []),
+      ...((process.env.ALLOW_ORIGINS && process.env.ALLOW_ORIGINS.split(',')) || [])
     ],
     allowCredentials: true,
     // allowAnyOriginWithCredentialsUnsafe: true,
-    allowRequestHeaders: 'content-type,id,x-csrf-token,x-access-token,X-SSL-client-s-dn,X-SSL-client-i-dn,X-SSL-client-session-id,X-SSL-client-verify,id,mime-type,filename,inviteToken'
-  },
+    allowRequestHeaders: 'content-type,id,x-csrf-token,x-access-token,X-SSL-client-s-dn,X-SSL-client-i-dn,X-SSL-client-session-id,X-SSL-client-verify,id,mime-type,filename,inviteToken,locale'
+  }
 
 
   /** **************************************************************************

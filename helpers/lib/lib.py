@@ -8,9 +8,8 @@ import bcrypt, string, random
 import re
 import time
 
-api_token =
-api_id =
-api_url_base =
+
+
 
 
 print("UPDATING URL (in 5 seconds): " + api_url_base)
@@ -24,7 +23,7 @@ class accounts():
            'id': api_id,
            'x-access-token': api_token}
         self.email = email
-        self.data = self.getAccountInfo(filter='role=doctor&email='+self.email)["results"]
+        self.data = self.getAccountInfo(filter='role=doctor&email='+self.email)
 
 
 
@@ -50,12 +49,16 @@ class accounts():
     def createAccount(self,data):
         api_url = api_url_base + '/user'
         response = requests.post(api_url, headers=self.headers, json=data)
+        print(d[0]['id'])
+        print(json.dumps(data))
         return response.status_code
 
     def updateAccount(self,data):
         d = self.returnAccountInfo()
         api_url = api_url_base + '/user/' + d[0]['id']
         response = requests.put(api_url, headers=self.headers, data=json.dumps(data))
+        print(d[0]['id'])
+        print(json.dumps(data))
         return response.status_code
 
     def addToQueue(self,queueID):
@@ -97,7 +100,7 @@ class queues():
            'id': api_id,
            'x-access-token': api_token}
         
-        self.data = self.getQueues()["results"]
+        self.data = self.getQueues()
 
     def getQueues(self):
 
@@ -125,7 +128,7 @@ class allDoctors():
         self.headers = {'Content-Type': 'application/json',
            'id': api_id,
            'x-access-token': api_token}
-        self.data = self.getAccountInfo(filter='role=doctor&limit=1000')["results"]
+        self.data = self.getAccountInfo(filter='role=doctor&limit=1000')
 
 
     def getAccountInfo(self, filter):

@@ -4,65 +4,26 @@
  * @description :: Server-side actions for handling incoming requests.
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
-
-const schedule = require('node-schedule');
-const moment = require('moment');
-moment.locale('fr');
-
-/**
- * Creates the invitation SMS text to be sent to a patient.
- *
- * @param {string} inviteUrl - The URL of the invitation.
- * @returns {string} - The invitation SMS message.
- */
-function getSmsText(inviteUrl) {
-  return `Cliquez ici pour accéder à votre vidéo consultation avec votre médecin : ${inviteUrl}`;
-}
-
-/**
- *
- *
- * @param {string} inviteUrl - The URL of the invitation.
- * @returns {string} - The invitation SMS message.
- */
-function getInviteReminderText(inviteUrl) {
-  return `Votre consultation démarre dans une minute : ${inviteUrl}`;
-}
-
-/**
- *
- *
- * @param {number} scheduledFor -
- * @returns {string} - The invitation SMS message.
- */
-function getInvite24HReminderText(scheduledFor) {
-  return `Rappel J-1
-  Votre consultation de télémédecine @home aura lieu demain à ${moment(scheduledFor).format('HH:mm')}.`;
-}
-
-/**
- *
- *
- * @param {string} testingUrl - The URL to hit the test page.
- * @returns {string} - The invitation SMS message.
- */
-function getScheduledInviteText(testingUrl, scheduledFor) {
-  return `Bonjour, Vous avez été invité pour une consultation de télémédecine @Home le ` +
-  `${moment(scheduledFor).format('D MMMM à HH:mm')}. ` +
-  `Nous vous conseillons dors et déjà de tester la compatibilité de votre appareil avec le lien suivant. ${testingUrl}`
-  ;
-}
+const db = PublicInvite.getDatastore().manager;
+const ObjectId = require('mongodb').ObjectID;
 
 
-/**
- * Creates the invitation email content to be sent to a patient.
- *
- * @param {string} inviteUrl - The URL of the invitation.
- * @returns {string} - The invitation email content.
- */
-function getEmailText(inviteUrl) {
-  return `Cliquez ici pour accéder à votre vidéo consultation avec votre médecin : ${inviteUrl}`;
-}
+
+
+
+// /**
+//  *
+//  *
+//  * @param {string} inviteUrl the url for the translator invite page
+//  * @returns {string} - The invitation Email text
+//  */
+// function getTranslationInviteText (inviteUrl, scheduledFor, languageOne, languageTwo) {
+//   const scheduledForText = (scheduledFor ? ` at ${moment(scheduledFor).format('D MMMM à HH:mm')}. ` : ' ');
+//   return `Bonjour, You have been invited to translate between ${languageOne} and ${languageTwo}${
+//     scheduledForText
+//   } Please visit this url to accept the invite ${inviteUrl}`;
+// }
+
 
 /**
  *
@@ -70,52 +31,92 @@ function getEmailText(inviteUrl) {
  *
  * @param {object} invite
  */
-function validateInviteRequest(invite) {
-  const errors = []
+function validateInviteRequest (invite) {
+  const errors = [];
   if (!invite.phoneNumber && !invite.emailAddress) {
-    errors.push({ message: 'emailAddress or phoneNumber are required' })
+    errors.push({ message: 'emailAddress or phoneNumber are required' });
   }
 
   if (!invite.gender) {
-    errors.push({ message: 'gender is required' })
+    errors.push({ message: 'gender is required' });
 
   }
   if (invite.gender) {
     if (!['male', 'female'].includes(invite.gender)) {
-      errors.push({ message: 'gender must be either male or female' })
+      errors.push({ message: 'gender must be either male or female' });
     }
   }
   if (!invite.firstName) {
-    errors.push({ message: 'firstName is required' })
+    errors.push({ message: 'firstName is required' });
 
   }
   if (!invite.lastName) {
-    errors.push({ message: 'lastName is required' })
+    errors.push({ message: 'lastName is required' });
 
   }
 
 
-  return errors
+  return errors;
 }
 
-module.exports = {
-  async invite(req, res) {
-    let invite = null;
-    console.log("create invite now");
 
-    const errors = validateInviteRequest(req.body)
-    if (errors.length) {
-      return res.status(400).json(errors)
+
+async function createTranslationRequest (translationInvite, organization) {
+
+  // if organization has main email sent to that email
+  if (organization.mainEmail) {
+    await PublicInvite.sendTranslationRequestInvite(translationInvite, organization.mainEmail);
+    return PublicInvite.setTranslatorRequestTimer(translationInvite);
+  }
+  // if not
+  // get all translators under organization
+  const translatorCollection = db.collection('translator');
+  const translator = await translatorCollection.findOne({ organization: new ObjectId(organization.id), languages: { $all: [translationInvite.doctorLanguage, translationInvite.patientLanguage] } });
+
+  if (!translator) {
+    return Promise.reject(`There are no translators for ${ translationInvite.patientLanguage }${translationInvite.doctorLanguage}`);
+  }
+
+  await PublicInvite.sendTranslationRequestInvite(translationInvite, translator.email);
+  return PublicInvite.setTranslatorRequestTimer(translationInvite);
+
+}
+
+// createTranslationRequest({patientLanguage:'fr', doctorLanguage:'en'},{id:"5f1aca5ff9c3b531dd462f5c"})
+
+
+
+
+module.exports = {
+  async invite (req, res) {
+    let invite = null;
+    console.log('create invite now');
+
+    if (req.body.isPatientInvite) {
+
+      const errors = validateInviteRequest(req.body);
+      if (errors.length) {
+        return res.status(400).json(errors);
+      }
+    } else {
+      if (!req.body.translationOrganization && !req.body.guestPhoneNumber && !req.body.guestEmailAddress) {
+
+        return res.status(400).json({
+          success: false,
+          error: 'You must invite at least a patient translator or a guest!'
+        });
+      }
     }
 
+
     let queue;
-    if(req.body.queue){
+    if (req.body.queue) {
       queue = await Queue.findOne({
         or: [
           { name: req.body.queue },
           { id: req.body.queue }
         ]
-      })
+      });
     }
 
 
@@ -123,10 +124,41 @@ module.exports = {
       return res.status(400).json({
         error: true,
         message: `queue ${req.body.queue} doesn't exist`
-      })
+      });
     }
 
+    let translationOrganization;
+    if (req.body.translationOrganization) {
+      translationOrganization = await TranslationOrganization.findOne({
+        or: [
+          { name: req.body.translationOrganization },
+          { id: req.body.translationOrganization }
+        ]
+      });
+    }
+
+    if (req.body.translationOrganization && !translationOrganization) {
+      return res.status(400).json({
+        error: true,
+        message: `translationOrganization ${req.body.translationOrganization} doesn't exist`
+      });
+    }
+
+
+
+    if (translationOrganization && (translationOrganization.languages || []).indexOf(req.body.language) === -1) {
+      return res.status(400).json({
+        error: true,
+        message: `patientLanguage ${req.body.language} doesn't exist`
+      });
+    }
+
+
+    let guestInvite;
+
     try {
+      // add other invite info
+      // send invite to translator and guest
       const inviteData = {
         phoneNumber: req.body.phoneNumber,
         emailAddress: req.body.emailAddress,
@@ -134,98 +166,107 @@ module.exports = {
         firstName: req.body.firstName,
         lastName: req.body.lastName,
         invitedBy: req.user.id,
-        scheduledFor: req.body.scheduledFor? new Date(req.body.scheduledFor): undefined
+        scheduledFor: req.body.scheduledFor ? new Date(req.body.scheduledFor) : undefined,
+        patientLanguage: req.body.language,
+        type: 'PATIENT'
+      };
+      if (queue) {
+        inviteData.queue = queue.id;
       }
-      if(queue){
-        inviteData.queue = queue.id
+
+
+      if (translationOrganization) {
+        inviteData.translationOrganization = translationOrganization.id;
       }
+
+      if (req.body.guestEmailAddress) {
+        inviteData.guestEmailAddress = req.body.guestEmailAddress;
+      }
+
+      if (req.body.guestPhoneNumber) {
+        inviteData.guestPhoneNumber = req.body.guestPhoneNumber;
+      }
+
 
       invite = await PublicInvite.create(inviteData).fetch();
 
+
+      if (inviteData.guestPhoneNumber || inviteData.guestEmailAddress) {
+
+        const guestInviteDate = {
+
+          patientInvite: invite.id,
+          invitedBy: req.user.id,
+          scheduledFor: req.body.scheduledFor ? new Date(req.body.scheduledFor) : undefined,
+          type: 'GUEST',
+          guestEmailAddress: inviteData.guestEmailAddress,
+          guestPhoneNumber: inviteData.guestPhoneNumber,
+          emailAddress: inviteData.guestEmailAddress,
+          phoneNumber: inviteData.guestPhoneNumber,
+          patientLanguage: req.body.language
+        };
+
+        guestInvite = await PublicInvite.create(guestInviteDate).fetch();
+
+        await PublicInvite.updateOne({ id: invite.id }).set({ guestInvite: guestInvite.id });
+      }
+
+      if (translationOrganization) {
+        // create and send translator invite
+        const translatorRequestInviteData = {
+          patientInvite: invite.id,
+          translationOrganization: translationOrganization.id,
+          invitedBy: req.user.id,
+          scheduledFor: req.body.scheduledFor ? new Date(req.body.scheduledFor) : undefined,
+          patientLanguage: req.body.language,
+          doctorLanguage: req.body.doctorLanguage || process.env.DEFAULT_DOCTOR_LOCALE,
+          type: 'TRANSLATOR_REQUEST'
+        };
+
+        const translatorRequestInvite = await PublicInvite.create(translatorRequestInviteData).fetch();
+
+        await PublicInvite.updateOne({ id: invite.id }).set({ translatorRequestInvite: translatorRequestInvite.id });
+
+        createTranslationRequest(translatorRequestInvite, translationOrganization);
+
+        return res.status(200).json({
+          success: true,
+          invite
+        });
+      }
+
+
+
+      // send gust invite
+      // guestInvite;
+
     } catch (e) {
-      console.log("error", e);
+      console.log('error', e);
       return res.status(500).json({
         error: true
       });
     }
 
-    const url = `${process.env.PUBLIC_URL}?invite=${invite.inviteToken}`
-    const testingUrl = `${process.env.PUBLIC_URL}/#/test-call`
 
-    if (invite.emailAddress) {
-      try {
-        await sails.helpers.email.with({
-          to: invite.emailAddress,
-          subject: 'Votre lien de consultation',
-          text: invite.scheduledFor? getScheduledInviteText(testingUrl, invite.scheduledFor ):getEmailText(url),
-        })
-      } catch (error) {
-        if (!invite.phoneNumber) {
-          await PublicInvite.destroyOne({ id: invite.id })
-          return res.status(500).json({
-            error: true,
-            message: 'Error sending email'
-          });
-        }
-
+    try {
+      await PublicInvite.sendPatientInvite(invite);
+      if (guestInvite) {
+        await PublicInvite.sendGuestInvite(guestInvite);
       }
+    } catch (error) {
+      console.log('ERROR SENDING Invite>>>>>>>> ', error);
+      await PublicInvite.destroyOne({ id: invite.id });
+      return res.status(500).json({
+        error: true,
+        message: 'Error sending Invite'
+      });
     }
 
-    if (invite.phoneNumber) {
-      try {
-        await sails.helpers.sms.with({
-          phoneNumber: req.body.phoneNumber,
-          message: invite.scheduledFor? getScheduledInviteText(testingUrl, invite.scheduledFor ): getSmsText(url)
-        })
 
-      } catch (error) {
-        console.log('ERROR SENDING SMS>>>>>>>> ', error)
-        await PublicInvite.destroyOne({ id: invite.id })
-        return res.status(500).json({
-          error: true,
-          message: 'Error sending SMS'
-        });
-      }
-    }
-
-    if(invite.scheduledFor){
-      if (invite.phoneNumber) {
-
-        if(invite.scheduledFor - Date.now() > 24*60*60*1000){
-          schedule.scheduleJob(new Date(invite.scheduledFor - 24*60*60*1000), async function(){
-            await sails.helpers.sms.with({
-              phoneNumber: req.body.phoneNumber,
-              message: getInvite24HReminderText(invite.scheduledFor)
-            })
-          })
-        }
-        schedule.scheduleJob(new Date(invite.scheduledFor - 60*1000), async function(){
-          await sails.helpers.sms.with({
-            phoneNumber: req.body.phoneNumber,
-            message: getInviteReminderText(url)
-          })
-        })
-      }
-
-      if (invite.emailAddress) {
-        if(invite.scheduledFor - Date.now() > 24*60*60*1000){
-          schedule.scheduleJob(new Date(invite.scheduledFor - 24*60*60*1000), async function(){
-            await sails.helpers.email.with({
-              to: invite.emailAddress,
-              subject: 'Votre lien de consultation',
-              text: getInvite24HReminderText(invite.scheduledFor),
-            })
-
-          })
-        }
-        schedule.scheduleJob(new Date(invite.scheduledFor - 60*1000), async function(){
-          await sails.helpers.email.with({
-            to: invite.emailAddress,
-            subject: 'Votre lien de consultation',
-            text: getInviteReminderText(url),
-          })
-
-        })
+    if (invite.scheduledFor) {
+      await PublicInvite.setPatientOrGuestInviteReminders(invite);
+      if (guestInvite) {
+        await PublicInvite.setPatientOrGuestInviteReminders(guestInvite);
       }
     }
 
@@ -233,24 +274,6 @@ module.exports = {
       success: true,
       invite
     });
-    // const invite = {
-    //   firename: req.query.firstname
-    // }
-    // try {
-    //   await Message.updateOne({
-    //     _id: req.params.message,
-    //     consultation: req.params.consultation
-    //   })
-    //     .set({
-    //       acceptedAt: new Date()
-    //     });
-
-    //   res.json({
-    //     status: 200
-    //   });
-    // } catch (error) {
-    //   return res.json(error);
-    // }
 
   },
 
@@ -261,48 +284,74 @@ module.exports = {
    * @param {*} req
    * @param {*} res
    */
-  async resend(req, res) {
+  async resend (req, res) {
     try {
-      const invite = await PublicInvite.findOne({ id: req.params.invite })
-      const url = `${process.env.PUBLIC_URL}?invite=${invite.inviteToken}`
+      const patientInvite = await PublicInvite.findOne({ id: req.params.invite }).populate('guestInvite').populate('translatorInvite').populate('translatorRequestInvite');
 
-      if (invite.emailAddress) {
-        await sails.helpers.email.with({
-          to: invite.emailAddress,
-          subject: 'Votre lien de consultation',
-          text: getEmailText(url),
-        })
+      if (!patientInvite) {
+        return res.notFound();
       }
 
-      if (invite.phoneNumber) {
-        await sails.helpers.sms.with({
-          phoneNumber: invite.phoneNumber,
-          message: getSmsText(url)
-        })
+      if (patientInvite.translatorRequestInvite &&
+        patientInvite.translatorRequestInvite.status !== 'ACCEPTED') {
+        return res.status(400).json({
+          success: false,
+          error: 'Translation invite have NOT been accepted'
+        });
+      }
+
+      await PublicInvite.updateOne({ id: req.params.invite }).set({
+        status: 'SENT'
+      });
+      await PublicInvite.sendPatientInvite(patientInvite);
+
+
+
+      if (patientInvite.translatorInvite) {
+        const translator = await User.findOne({ username: patientInvite.translatorInvite.id });
+        await PublicInvite.updateOne({ id: patientInvite.translatorInvite.id }).set({
+          status: 'SENT'
+        });
+
+        await PublicInvite.sendTranslatorInvite(patientInvite.translatorInvite, translator.email);
+      }
+
+
+      if (patientInvite.guestInvite) {
+        await PublicInvite.updateOne({ id: patientInvite.guestInvite.id }).set({
+          status: 'SENT'
+        });
+
+        await PublicInvite.sendGuestInvite(patientInvite.guestInvite);
       }
 
 
       return res.json({
         success: true,
-        invite
+        patientInvite
       });
     } catch (error) {
-      console.log('error ', error)
-      res.send()
+      console.log('error ', error);
+      res.json({
+        success: false,
+        error: error.message
+      });
     }
 
   },
 
-  async revoke(req, res) {
+  async revoke (req, res) {
 
     try {
-      await PublicInvite.destroyOne({ id: req.params.invite })
+      const invite = await PublicInvite.findOne({ id: req.params.invite });
 
-      return res.status(200).send()
+      await PublicInvite.destroyPatientInvite(invite);
+
+      return res.status(200).send();
     } catch (error) {
       sails.log('error deleting Invite ', error);
 
-      return res.status(500).send()
+      return res.status(500).send();
     }
 
   },
@@ -310,7 +359,7 @@ module.exports = {
   /**
    * Finds the public invite linked to a consultation
    */
-  async findByConsultation(req, res) {
+  async findByConsultation (req, res) {
     req.params.consultation;
 
     const consultation = await Consultation.findOne({
@@ -320,7 +369,7 @@ module.exports = {
       return res.notFound();
     }
 
-    if(!consultation.invitationToken){
+    if (!consultation.invitationToken) {
       return res.notFound();
 
     }
@@ -335,18 +384,21 @@ module.exports = {
   },
 
 
-    /**
+  /**
    * Finds the public invite By token
    */
-  async findByToken(req, res) {
+  async findByToken (req, res) {
 
     const publicinvite = await PublicInvite.findOne({
       inviteToken: req.params.invitationToken
-    });
+    }).populate('translationOrganization').populate('invitedBy');
     if (!publicinvite) {
       return res.notFound();
     }
+    publicinvite.invitedBy = _.pick(publicinvite.invitedBy, ['firstName', 'lastName']);
+
 
     res.json(publicinvite);
   }
+
 };

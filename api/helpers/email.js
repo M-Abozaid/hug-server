@@ -4,7 +4,7 @@ const mailerConfig = {
   host: process.env.MAIL_SMTP_HOST,
   port: parseInt(process.env.MAIL_SMTP_PORT),
   secure: Boolean('MAIL_SMTP_SECURE' in process.env && process.env.MAIL_SMTP_SECURE === 'true'),
-  auth: {},
+  auth: {}
 };
 if (process.env.MAIL_SMTP_USER) {
   mailerConfig.auth.user = process.env.MAIL_SMTP_USER;
@@ -45,18 +45,20 @@ module.exports = {
   exits: {
 
     success: {
-      description: 'All done.',
-    },
+      description: 'All done.'
+    }
 
   },
 
 
-  fn: async function (inputs, exits) {
+  // eslint-disable-next-line require-await
+  async fn (inputs, exits) {
 
 
     if (process.env.NODE_ENV === 'development') {
-      console.log("Email not sent because of development env", inputs)
-      return exits.success()
+      console.log('Email not sent because of development env', inputs);
+      console.log('Sending email>', inputs.text);
+      return exits.success();
     }
 
 
@@ -64,7 +66,7 @@ module.exports = {
       from: process.env.MAIL_SMTP_SENDER,
       to: inputs.to,
       subject: inputs.subject,
-      text: inputs.text,
+      text: inputs.text
 
     };
 
@@ -72,7 +74,7 @@ module.exports = {
       options.attachments = [{
         fileName: 'Report.pdf',
         path: uploadedFiles[0].fd
-      }]
+      }];
     }
 
     transporter.sendMail(options, (error, info) => {
@@ -80,11 +82,11 @@ module.exports = {
         // ...
 
         sails.log('error sending email ', error);
-        exits.error(error)
+        exits.error(error);
       } else {
         // ...
         sails.log('email send successfully ');
-        exits.success()
+        exits.success();
       }
 
       // fs.unlinkSync(uploadedFiles[0].fd);

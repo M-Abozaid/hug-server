@@ -9,10 +9,10 @@
  * https://sailsjs.com/config/http
  */
 
-var express = require('express');
+const express = require('express');
 module.exports.http = {
 
-  /****************************************************************************
+  /** **************************************************************************
   *                                                                           *
   * Sails/Express middleware to run for every HTTP request.                   *
   * (Only applies to HTTP requests -- not virtual WebSocket requests.)        *
@@ -23,7 +23,7 @@ module.exports.http = {
 
   middleware: {
 
-    /***************************************************************************
+    /** *************************************************************************
     *                                                                          *
     * The order in which middleware should be run for HTTP requests.           *
     * (This Sails app's routes are handled by the "router" middleware below.)  *
@@ -42,8 +42,8 @@ module.exports.http = {
     // ],
 
 
-    passportInit    : require('passport').initialize(),
-    passportSession : require('passport').session(),
+    passportInit: require('passport').initialize(),
+    passportSession: require('passport').session(),
     paginate: require('../api/middlewares/count'),
     order: [
       'paginate',
@@ -56,12 +56,12 @@ module.exports.http = {
       'poweredBy',
       'router',
       'www',
-      'favicon',
-    ],
+      'favicon'
+    ]
 
 
 
-    /***************************************************************************
+    /** *************************************************************************
     *                                                                          *
     * The body parser that will handle incoming multipart HTTP requests.       *
     *                                                                          *
@@ -75,7 +75,7 @@ module.exports.http = {
     //   return middlewareFn;
     // })(),
 
-  },
+  }
 
 
 };
