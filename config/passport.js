@@ -331,6 +331,8 @@ console.log('env >>>> ', process.env.NODE_ENV);
               if(results.users && results.users.length){
 
                 const adUser = results.users[0]
+                console.log('AD USER ', adUser);
+
                 const isHugMember = adUser.groups.find(g=> g.cn === process.env.AD_DOCTOR_GROUP)
                 if(!isHugMember){
                   console.log(`user is not a member of ${process.env.AD_DOCTOR_GROUP} group `)
