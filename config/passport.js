@@ -374,7 +374,7 @@ console.log('env >>>> ', process.env.NODE_ENV);
                 if(queueNames.length){
 
                   const db = Consultation.getDatastore().manager;
-                  const queuesCollection = db.collection('consultation');
+                  const queuesCollection = db.collection('queue');
 
                   // get queues by names regardless of case
                   const queuesCurs = await queuesCollection.find({name:{$in:queueNames.map(qn=> new RegExp(qn, 'i'))}})
