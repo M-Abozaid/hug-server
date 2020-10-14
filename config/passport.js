@@ -349,7 +349,7 @@ console.log('env >>>> ', process.env.NODE_ENV);
                   }).fetch();
                 }else{
                   await User.update({id: user.id}).set({
-                    email: adUser[process.env.AD_ATTR_EMAIL],
+                    // email: adUser[process.env.AD_ATTR_EMAIL],
                     firstName: adUser[process.env.AD_ATTR_FISTNAME],
                     lastName: adUser[process.env.AD_ATTR_LASTNAME],
                     role: sails.config.globals.ROLE_DOCTOR,
