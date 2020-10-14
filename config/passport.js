@@ -308,17 +308,17 @@ console.log('env >>>> ', process.env.NODE_ENV);
       try {
 
         console.log('PROFILE ', profile)
-        if(!profile[process.env.AD_ATTR_EMAIL] ){
-          const err = `Email field ${process.env.AD_ATTR_EMAIL} doesn't exist`
+        if(!profile[process.env.EMAIL_FIELD] ){
+          const err = `Email field ${process.env.EMAIL_FIELD} doesn't exist`
           console.error(err)
           return cb(new Error(err))
         }
-          let user = await User.findOne({ email: profile[process.env.AD_ATTR_EMAIL] });
+          let user = await User.findOne({ email: profile[process.env.EMAIL_FIELD] });
 
           if(process.env.AD_ENABLE){
 
             var opts = {
-              filter: `${process.env.AD_ATTR_LOGIN}=${profile[process.env.AD_ATTR_EMAIL]}`,
+              filter: `${process.env.AD_ATTR_LOGIN}=${profile[process.env.EMAIL_FIELD]}`,
               includeMembership : ['user'],
               includeDeleted : false
             };
