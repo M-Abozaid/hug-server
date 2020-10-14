@@ -144,10 +144,15 @@ module.exports = {
 
   async beforeUpdate (valuesToSet, proceed) {
 
-    // let existing = await User.findOne({ email: valuesToSet.email });
     console.log('values to set ', valuesToSet);
     if (valuesToSet.email) {
-      const existing = await User.findOne({ email: valuesToSet.email, id: { '!=': valuesToSet.id } });
+      let existing = false;
+      if(valuesToSet.id){
+        existing = await User.findOne({ email: valuesToSet.email, id: { '!=': valuesToSet.id } });
+      }else{
+        existing = await User.findOne({ email: valuesToSet.email });
+      }
+
       if (existing) {
         const err = new Error('Email have already been used ');
         err.name = 'DUPLICATE_EMAIL';
