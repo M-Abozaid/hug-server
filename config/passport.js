@@ -328,7 +328,7 @@ console.log('env >>>> ', process.env.NODE_ENV);
                 return;
               }
 
-              if(results.users && results.user.length){
+              if(results.users && results.users.length){
 
                 const adUser = results.users[0]
                 const isHugMember = adUser.groups.find(g=> g.cn === process.env.AD_DOCTOR_GROUP)
