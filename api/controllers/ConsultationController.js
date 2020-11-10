@@ -485,6 +485,7 @@ module.exports = {
 
       const serverIndex = Math.floor(Math.random() * openviduServers.length);
 
+      console.log('using openvidu server ', openviduServers[serverIndex].url)
       const openvidu = new OpenVidu(openviduServers[serverIndex].url, openviduServers[serverIndex].password);
 
       // the consultation this call belongs to
