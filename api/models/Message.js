@@ -72,6 +72,7 @@ module.exports = {
       type: 'string'
     }
   },
+  CALL_DURATION_TIMEOUT,
   async endCall (message, consultation, reason) {
     console.log('End call');
     await Message.updateOne({
@@ -123,5 +124,59 @@ module.exports = {
 
     return proceed();
 
+  },
+
+  async leaveCall(callMessage, user){
+       // if conference remove them from participants
+       if (callMessage.isConferenceCall) {
+
+        if (!callMessage.participants.length || callMessage.status === 'ended') {
+
+          return
+        }
+
+        await Message.removeFromCollection(callMessage.id, 'participants', user.id);
+        // if this is the last participant end the call and destroy the session
+        const isParticipant = callMessage.participants.find(p => p.id === user.id);
+
+        if (user.role === 'doctor' && isParticipant) {
+          await Message.endCall(callMessage, callMessage.consultation, 'DOCTOR_LEFT');
+
+        } else
+        // and set closed at
+        if (callMessage.participants.length <= 2 && isParticipant) {
+          await Message.endCall(callMessage, callMessage.consultation, 'MEMBERS_LEFT');
+
+        }
+
+        return
+      }
+
+      await Message.updateOne({
+        _id:  callMessage.id,
+        consultation: callMessage.consultation.id
+      })
+      .set({
+        closedAt: new Date()
+      });
+
+      await Message.endCall(callMessage, callMessage.consultation, 'MEMBERS_LEFT');
+
+      sails.sockets.broadcast(callMessage.consultation.acceptedBy, 'rejectCall', {
+        data: {
+          consultation: callMessage.consultation,
+          callMessage
+        }
+      });
+
+      sails.sockets.broadcast(callMessage.consultation.owner, 'rejectCall', {
+        data: {
+          consultation: callMessage.consultation,
+          callMessage
+        }
+      });
+
   }
+
+
 };

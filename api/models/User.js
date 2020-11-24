@@ -93,6 +93,10 @@ module.exports = {
     },
     direct: {
       type: 'string'
+    },
+    isOnline: {
+      type: 'boolean',
+      defaultsTo: false
     }
   },
 

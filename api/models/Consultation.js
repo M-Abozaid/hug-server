@@ -5,6 +5,8 @@
  * @docs        :: https://sailsjs.com/docs/concepts/models-and-orm/models
  */
 
+const schedule = require('node-schedule');
+
 const ObjectId = require('mongodb').ObjectID;
 
 
@@ -401,6 +403,8 @@ module.exports = {
     const result = await consultationCollection.find({$or:match})
     const userConsultations = await result.toArray()
 
+    await User.updateOne({id: user.id}).set({isOnline})
+
     userConsultations.forEach(async consultation => {
       switch (user.role) {
         case 'patient':
@@ -445,6 +449,30 @@ module.exports = {
         });
       });
     });
+
+    if(!isOnline){
+
+      const callMessages = await Message.find({type:{in:['videoCall', 'audioCall']}, status: 'ongoing', consultation:{in: userConsultations.map(c=>c._id.toString())}}).populate('participants').populate('consultation');
+
+      if(callMessages.length){
+
+        console.log('User disconnected while in call')
+        // leave call
+        schedule.scheduleJob(new Date(Date.now() + 10 * 1000), async () => {
+
+          const isBack = await sails.models.user.findOne({id: user.id, isOnline: true})
+          if(!isBack){
+            console.log('user has been disconnected for 10 seconds remove user from call', user)
+            callMessages.forEach(async message=>{
+              await Message.leaveCall(message, user)
+            })
+          }
+
+        });
+      }
+
+    }
+
 
   },
 

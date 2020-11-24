@@ -597,66 +597,10 @@ module.exports = {
 
   async rejectCall (req, res) {
     try {
-      const consultation = await Consultation.findOne({
-        _id: req.params.consultation
-      });
 
+      const message = await Message.findOne({ id: req.params.message }).populate('participants').populate('consultation');
 
-      const message = await Message.findOne({ id: req.params.message }).populate('participants');
-
-      // if conference remove them from participants
-      if (message.isConferenceCall) {
-
-        if (!message.participants.length || message.status === 'ended') {
-
-          return res.json({
-            status: 200
-          });
-        }
-
-        await Message.removeFromCollection(message.id, 'participants', req.user.id);
-        // if this is the last participant end the call and destroy the session
-        const isParticipant = message.participants.find(p => p.id === req.user.id);
-
-        if (req.user.role === 'doctor' && isParticipant) {
-          await Message.endCall(message, consultation, 'DOCTOR_LEFT');
-
-        } else
-        // and set closed at
-        if (message.participants.length <= 2 && isParticipant) {
-          await Message.endCall(message, consultation, 'MEMBERS_LEFT');
-
-        }
-
-        return res.json({
-          status: 200
-        });
-      }
-
-      await Message.updateOne({
-        _id: req.params.message,
-        consultation: req.params.consultation
-      })
-      .set({
-        closedAt: new Date()
-      });
-
-      await Message.endCall(message, consultation, 'MEMBERS_LEFT');
-
-      sails.sockets.broadcast(consultation.acceptedBy, 'rejectCall', {
-        data: {
-          consultation,
-          message
-        }
-      });
-
-      sails.sockets.broadcast(consultation.owner, 'rejectCall', {
-        data: {
-          consultation,
-          message
-        }
-      });
-
+      await Message.leaveCall(message, req.user)
 
       res.json({
         status: 200
