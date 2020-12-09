@@ -469,7 +469,6 @@ module.exports = {
       const session = await openvidu.createSession(data1);
       const token = await session.generateToken();
 
-      console.log('sessoin tokens', session, token);
       return res.json({ token });
     } catch (err) {
       console.error(err);
