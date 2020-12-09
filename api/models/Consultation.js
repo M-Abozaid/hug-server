@@ -429,6 +429,8 @@ module.exports = {
       }
       Consultation.getConsultationParticipants(consultation).forEach(participant => {
 
+        // don't echo the event
+        if(participant === user.id) return;
         sails.sockets.broadcast(participant, 'onlineStatusChange', {
           data: {
             consultation:{
