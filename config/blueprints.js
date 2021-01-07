@@ -9,6 +9,8 @@
  * https://sailsjs.com/config/blueprints
  */
 
+var sanitize = require('mongo-sanitize');
+
 module.exports.blueprints = {
 
   /** *************************************************************************
@@ -45,6 +47,9 @@ module.exports.blueprints = {
   parseBlueprintOptions (req) {
     const queryOptions = req._sails.hooks.blueprints.parseBlueprintOptions(req);
 
+    if(queryOptions.criteria){
+      queryOptions.criteria = sanitize(queryOptions.criteria)
+    }
     if (!req.param('populate', false) && !queryOptions.alias) {
       queryOptions.populates = {};
     }
