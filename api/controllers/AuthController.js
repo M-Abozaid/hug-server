@@ -95,11 +95,17 @@ module.exports = {
 
   async forgotPassword (req, res) {
 
+    try {
+      User.validate('email', req.body.email)
+    } catch (error) {
+      return res.status(401).json({message: 'Email is invalid'})
+    }
+
     const emailRegex = new RegExp(`${req.body.email}`, 'i');
     const db = sails.getDatastore().manager;
     const resetPasswordToken = jwt.sign({ email: req.body.email.toLowerCase() }, sails.config.globals.APP_SECRET, { expiresIn: SMS_CODE_LIFESPAN });
 
-    // Always return succes directly, so an attacker could not guess if the email exists or not...
+    // Always return success directly, so an attacker could not guess if the email exists or not...
     res.json({
       success: true
     });
