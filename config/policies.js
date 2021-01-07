@@ -28,9 +28,8 @@ module.exports.policies = {
   },
   // '/api/v1/subscribe-to-socket':['isLoggedIn'],
   UserController: {
-    login: true,
-    ip: ['isLoggedIn'],
     '*': false,
+    ip: ['isLoggedIn'],
     find: ['isLoggedIn', 'isAdmin'],
     findOne: ['isLoggedIn', 'isAdmin'],
     populate: ['isLoggedIn', 'isAdmin'],
@@ -127,6 +126,7 @@ module.exports.policies = {
     '*': ['isLoggedIn', 'isDoctorOrAdmin']
   },
   TranslatorController: {
+    '*': false,
     acceptRequest: true,
     refuseRequest: true,
     findConsultation: ['isLoggedIn']
