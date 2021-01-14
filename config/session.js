@@ -37,7 +37,6 @@ module.exports.session = {
   //   return !!req.path.match(req._sails.LOOKS_LIKE_ASSET_RX);
   // },
   cookie: {
-    // maxAge: 0
-    secure: true
+    secure: process.env.NODE_ENV === 'development'? false: true
   }
 };
