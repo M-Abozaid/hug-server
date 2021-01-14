@@ -42,16 +42,12 @@ module.exports.http = {
     // ],
 
 
-    trustProxyMiddleware: function(app){
-      app.enable('trust proxy')
-    },
     passportInit: require('passport').initialize(),
     passportSession: require('passport').session(),
     paginate: require('../api/middlewares/count'),
     order: [
       'paginate',
       'cookieParser',
-      'trustProxyMiddleware',
       'session',
       'passportInit',
       'passportSession',
@@ -81,7 +77,9 @@ module.exports.http = {
 
   },
 
-  trustProxy : true
+  trustProxy : function(app){
+    app.set('trust proxy', 'loopback')
+  }
 
 };
 
