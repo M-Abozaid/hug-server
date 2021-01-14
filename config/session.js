@@ -38,6 +38,6 @@ module.exports.session = {
   // },
   cookie: {
     // maxAge: 0
-    secure: false
+    secure: true
   }
 };
