@@ -88,6 +88,7 @@ module.exports = {
       catch (e) {
       }
       req.logIn(user, function(err) {
+        req.session.cookie.expires =  7*24*60*50*1000;
         if (err) {
           console.log('Error login in ' , err)
           return res.status(500).send()
