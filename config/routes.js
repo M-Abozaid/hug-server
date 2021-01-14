@@ -50,7 +50,7 @@ module.exports.routes = {
   'GET /api/v1/login-saml': 'AuthController.loginSaml',
   'POST /api/v1/login-sms': 'AuthController.loginSms',
   'POST /api/v1/login-2fa': 'AuthController.login2FA',
-  'GET /api/v1/current-user': 'AuthController.getUser',
+  'GET /api/v1/current-user': 'AuthController.getCurrentUser',
   'GET /api/v1/config': 'AuthController.getConfig',
   'GET /api/v1/user/ip': 'UserController.ip',
   'POST /api/v1/user/notif': 'UserController.updateNotif',
@@ -71,7 +71,7 @@ module.exports.routes = {
   'POST /api/v1/translator/refuse/:translationRequestToken': 'TranslatorController.refuseRequest',
   'GET /api/v1/translator/consultation': 'TranslatorController.findConsultation',
 
-  '/logout': 'AuthController.logout'
+  'GET /api/v1/logout': 'AuthController.logout'
 
   /** *************************************************************************
   *                                                                          *

@@ -41,11 +41,16 @@ module.exports = {
       } catch (error) {
         console.log('error Updating user login type ', error);
       }
-
-      return res.json({
-        message: info.message,
-        user
-      });
+      req.logIn(user, function(err) {
+        if (err) {
+          console.log('Error login in ' , err)
+          return res.status(500).send()
+        }
+        return res.json({
+          message: info.message,
+          user
+        });
+      })
 
     })(req, res, (err) => {
       console.log('Error with LOGIN CERT', err);
@@ -82,11 +87,17 @@ module.exports = {
       }
       catch (e) {
       }
-      user.token = jwt.sign(user, sails.config.globals.APP_SECRET);
+      req.logIn(user, function(err) {
+        if (err) {
+          console.log('Error login in ' , err)
+          return res.status(500).send()
+        }
+        user.token = jwt.sign(user, sails.config.globals.APP_SECRET);
 
-      return res.json({
-        user
-      });
+        return res.json({
+          user
+        });
+      })
 
     })(req, res, (err) => {
       console.log('error Login invite ', err);
@@ -226,7 +237,7 @@ module.exports = {
 
 
       try {
-        await User.updateOne({ id: user.id }).set({ lastLoginType: 'local' });
+          await User.updateOne({ id: user.id }).set({ lastLoginType: 'local' });
       } catch (error) {
         console.log('error Updating user login type ', error);
       }
@@ -282,10 +293,15 @@ module.exports = {
           delete user.smsVerificationCode;
         }
 
-        return res.status(200).send({
-          message: info.message,
-          user
-        });
+        req.logIn(user, function(err) {
+          if (err) {
+            console.log('Error login in ' , err)
+          }
+          return res.status(200).send({
+            message: info.message,
+            user
+          });
+        })
       }
 
     })(req, res, (err) => {
@@ -359,10 +375,16 @@ module.exports = {
         });
       }
 
-      return res.status(200).send({
-        message: info.message,
-        user
-      });
+      req.logIn(user, function(err) {
+        if (err) {
+          console.log('Error login in ' , err)
+          return res.status(500).send()
+        }
+        return res.status(200).send({
+          message: info.message,
+          user
+        });
+      })
 
 
     })(req, res, (err) => {
@@ -371,63 +393,86 @@ module.exports = {
   },
 
   logout (req, res) {
-    req.logout();
-    res.redirect('/');
+    req.logOut();
+    req.session.destroy(function(err) {
+      res.status(200).send()
+    })
+
   },
 
-  getUser (req, res) {
 
-    if (!req.headers['x-access-token'] && !req.query.token) { return res.status(401).json({ error: 'Unauthorized' }); }
-    jwt.verify(req.headers['x-access-token'] || req.query.token, sails.config.globals.APP_SECRET, async (err, decoded) => {
-      if (err) {
-        console.error('error ', err);
-        return res.status(401).json({ error: 'Unauthorized' });
-      }
+    /**
+   *
+   * @param {*} req
+   * @param {*} res
+   *
+   * get user from session or token
+   */
+  async getCurrentUser(req, res){
+    if(!req.user && (!req.headers['x-access-token'] && !req.query.token)){
+      return res.notFound();
+    }
 
-      if (decoded.singleFactor) {
-        return res.status(401).json({ error: 'Unauthorized' });
-      }
-
-      try {
-
-
-        if (req.query._version) {
-          await User.updateOne({ email: decoded.email, role: { in: ['doctor', 'admin'] } }).set({ doctorClientVersion: req.query._version });
-        } else {
-          await User.updateOne({ email: decoded.email }).set({ doctorClientVersion: 'invalid' });
-          return res.status(400).json({
-            message: 'Le cache de votre navigateur n\'est pas à jour, vous devez le raffraichir avec CTRL+F5 !'
-          });
+    if(req.headers['x-access-token'] || req.query.token){
+      jwt.verify(req.headers['x-access-token'] || req.query.token, sails.config.globals.APP_SECRET, async (err, decoded) => {
+        if (err) {
+          console.error('error ', err);
+          return res.status(401).json({ error: 'Unauthorized' });
         }
 
-
-        const user = await User.findOne({
-          id: decoded.id
-        });
-
-        if (!user) {
-          console.error('No user from a valid token ');
-          res.status(500).json({ message: 'UNKNOWN ERROR' });
+        if (decoded.singleFactor) {
+          return res.status(401).json({ error: 'Unauthorized' });
         }
 
-        if (user.role === 'doctor') {
-          if (!user.doctorClientVersion) {
-            return res.status(401).json({ error: 'Unauthorized App version needs to be updated' });
+        try {
+
+
+          if (req.query._version) {
+            await User.updateOne({ email: decoded.email, role: { in: ['doctor', 'admin'] } }).set({ doctorClientVersion: req.query._version });
+          } else {
+            await User.updateOne({ email: decoded.email }).set({ doctorClientVersion: 'invalid' });
+            return res.status(400).json({
+              message: 'Le cache de votre navigateur n\'est pas à jour, vous devez le raffraichir avec CTRL+F5 !'
+            });
           }
+
+
+          const user = await User.findOne({
+            id: decoded.id
+          });
+
+          if (!user) {
+            console.error('No user from a valid token ');
+            res.status(500).json({ message: 'UNKNOWN ERROR' });
+          }
+
+          if (user.role === 'doctor') {
+            if (!user.doctorClientVersion) {
+              return res.status(401).json({ error: 'Unauthorized App version needs to be updated' });
+            }
+          }
+
+          const token = jwt.sign(user, sails.config.globals.APP_SECRET);
+          user.token = token;
+          res.json({
+            user
+          });
+        } catch (error) {
+          console.error(error);
+          res.status(500).json({ message: 'UNKNOWN ERROR' });
+
         }
+      });
 
-        const token = jwt.sign(user, sails.config.globals.APP_SECRET);
-        user.token = token;
-        res.json({
-          user
-        });
-      } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'UNKNOWN ERROR' });
+    }else{
+      const user = Object.assign({}, req.user);
 
-      }
-    });
+      const token = jwt.sign(user, sails.config.globals.APP_SECRET);
+      user.token = token;
 
+      return res.json({user})
+
+    }
   },
 
   loginSaml (req, res) {

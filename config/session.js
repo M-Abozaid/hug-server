@@ -20,7 +20,7 @@ module.exports.session = {
   ***************************************************************************/
   secret: '819f0bd67d1e61bd2acfbd067e8975e3',
 
-  adapter:'@sailshq/connect-redis'
+  adapter:'@sailshq/connect-redis',
 
   /** *************************************************************************
   *                                                                          *
@@ -36,5 +36,7 @@ module.exports.session = {
   // isSessionDisabled: function (req){
   //   return !!req.path.match(req._sails.LOOKS_LIKE_ASSET_RX);
   // },
-
+  // cookie: {
+  //   maxAge: 0
+  // }
 };
