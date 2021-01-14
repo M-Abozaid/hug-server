@@ -77,9 +77,7 @@ module.exports.http = {
 
   },
 
-  trustProxy : function(app){
-    app.set('trust proxy', 'loopback')
-  }
+  trustProxy : true
 
 };
 
