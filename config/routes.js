@@ -18,7 +18,11 @@ module.exports.routes = {
   * `assets` directory)                                                      *
   *                                                                          *
   ***************************************************************************/
-  'get /app/*': 'DashboardController.get',
+  'get /app/*': {
+    skipAssets: true,
+    controller: 'DashboardController',
+    action: 'get'
+  },
   'get /app': '/app/dashboard',
   'get /': '/app/dashboard',
   // '/dashboard': { view: 'pages/homepage' },
