@@ -134,4 +134,4 @@ lib-cov
 .tmp
 .env
 assets
-views/layouts
+views
