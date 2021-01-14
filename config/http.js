@@ -57,7 +57,7 @@ module.exports.http = {
       'router',
       'www',
       'favicon'
-    ]
+    ],
 
 
 
@@ -75,8 +75,9 @@ module.exports.http = {
     //   return middlewareFn;
     // })(),
 
-  }
+  },
 
+  trustProxy : true
 
 };
 
