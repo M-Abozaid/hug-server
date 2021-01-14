@@ -85,9 +85,10 @@ module.exports.policies = {
     metadata: true,
     forgotPassword: true,
     resetPassword: true,
-    getUser: true,
+    getCurrentUser: true,
     samlCallback: true,
-    getConfig: true
+    getConfig: true,
+    logout: true,
   },
   SupportController: {
     supportRequest: ['isLoggedIn']
