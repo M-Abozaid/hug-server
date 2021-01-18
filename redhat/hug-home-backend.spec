@@ -1,7 +1,7 @@
 Summary: Front end for Hug@Home Backend application
 Name: hug-home-backend
-Version: 3.5.0
-Release: 3
+Version: 3.5.2
+Release: 4
 Group: Web Application
 License: HUG
 Source: %{name}-%{version}.tar.gz
