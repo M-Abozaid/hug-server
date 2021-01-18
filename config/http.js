@@ -48,6 +48,9 @@ module.exports.http = {
     handleDeserializeUserError: function(err, req, res, next) {
       if (err && err.message === 'Failed to deserialize user out of session') {
           req.logout(); // So deserialization won't continue to fail.
+          req.session.destroy(function(err) {
+            res.status(200).send()
+          })
       } else {
           next();
       }
