@@ -45,12 +45,20 @@ module.exports.http = {
     passportInit: require('passport').initialize(),
     passportSession: require('passport').session(),
     paginate: require('../api/middlewares/count'),
+    handleDeserializeUserError: function(err, req, res, next) {
+      if (err && err.message === 'Failed to deserialize user out of session') {
+          req.logout(); // So deserialization won't continue to fail.
+      } else {
+          next();
+      }
+    },
     order: [
       'paginate',
       'cookieParser',
       'session',
       'passportInit',
       'passportSession',
+      'handleDeserializeUserError',
       'bodyParser',
       'compress',
       'poweredBy',

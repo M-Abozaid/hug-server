@@ -39,6 +39,9 @@ passport.serializeUser((user, cb) => {
 });
 passport.deserializeUser((id, cb) => {
   User.findOne({ id }, (err, user) => {
+    if(err){
+      console.log('ERROR getting user ', err)
+    }
     cb(err, user);
   });
 });
