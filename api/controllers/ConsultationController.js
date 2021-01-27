@@ -58,7 +58,7 @@ module.exports = {
       match = [{
         acceptedBy: new ObjectId(req.user.id)
       }, {
-        invitedBy: new ObjectId(req.user.id),
+        doctor: new ObjectId(req.user.id),
         queue: null
       }
       ];
@@ -333,7 +333,7 @@ module.exports = {
         consultationJson.lastName = invite.lastName ? invite.lastName : 'No lastname';
         consultationJson.gender = invite.gender ? invite.gender : 'unknown';
         consultationJson.queue = invite.queue;
-        consultationJson.invitedBy = invite.invitedBy;
+        consultationJson.doctor = invite.doctor;
         consultationJson.invite = invite.id;
 
 

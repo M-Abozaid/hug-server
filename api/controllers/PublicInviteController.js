@@ -33,7 +33,7 @@ module.exports = {
   //     where: {
   //       or: [
   //         {
-  //           invitedBy: req.user.id
+  //           doctor: req.user.id
   //         }, {
   //           queue: queues
   //         }

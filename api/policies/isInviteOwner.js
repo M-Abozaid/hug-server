@@ -17,10 +17,14 @@ module.exports = async function (req, res, proceed) {
 
     or: [
       {
-        invitedBy: req.user.id
-      }, {
+        doctor: req.user.id
+      },
+      {
 
         queue: queues
+      },
+      {
+        invitedBy: req.user.id
       }
     ]
   });

@@ -100,7 +100,7 @@ module.exports = {
     const consultation = await Consultation.findOne({ id: message.consultation });
 
 
-    sails.sockets.broadcast(message.to || consultation.queue || consultation.invitedBy, 'newMessage', { data: message });
+    sails.sockets.broadcast(message.to || consultation.queue || consultation.doctor, 'newMessage', { data: message });
 
     if (message.type === 'audioCall' || message.type === 'videoCall') {
 

@@ -86,7 +86,7 @@ module.exports = {
       required: false
     },
     // the doctor who sent the invite
-    invitedBy: {
+    doctor: {
       model: 'user',
       required: false
     },
@@ -118,7 +118,7 @@ module.exports = {
 
   async beforeCreate (consultation, cb) {
 
-    if (!consultation.queue && !consultation.invitedBy && process.env.DEFAULT_QUEUE_ID) {
+    if (!consultation.queue && !consultation.doctor && process.env.DEFAULT_QUEUE_ID) {
       const defaultQueue = await Queue.findOne({ id: process.env.DEFAULT_QUEUE_ID });
       if (defaultQueue) {
         console.log('Assigning the default queue to the consultation as no queue is set');
@@ -145,7 +145,7 @@ module.exports = {
       await PublicInvite.updateOne({ inviteToken: consultation.invitationToken }).set({ status: 'SENT' });
     }
 
-    sails.sockets.broadcast(consultation.queue || consultation.invitedBy, 'consultationCanceled',
+    sails.sockets.broadcast(consultation.queue || consultation.doctor, 'consultationCanceled',
       { event: 'consultationCanceled', data: { _id: criteria.where.id, consultation: criteria.where } });
     return proceed();
   },
@@ -175,8 +175,8 @@ module.exports = {
     if (consultation.status === 'pending' && consultation.queue) {
       consultationParticipants.push(consultation.queue);
     }
-    if (consultation.invitedBy && consultation.invitedBy !== consultation.acceptedBy) {
-      consultationParticipants.push(consultation.invitedBy);
+    if (consultation.doctor && consultation.doctor !== consultation.acceptedBy) {
+      consultationParticipants.push(consultation.doctor);
     }
     return consultationParticipants;
   },
@@ -208,7 +208,7 @@ module.exports = {
         const invite = await PublicInvite.findOne({ id: consultation.invite });
         if (invite) {
           anonymousConsultation.inviteScheduledFor = invite.scheduledFor;
-          anonymousConsultation.invitedBy = invite.invitedBy;
+          anonymousConsultation.doctor = invite.doctor;
           anonymousConsultation.inviteCreatedAt = invite.createdAt;
         }
       } catch (error) {
@@ -349,7 +349,7 @@ module.exports = {
       match = [{
         acceptedBy: new ObjectId(user.id)
       }, {
-        invitedBy: new ObjectId(user.id),
+        doctor: new ObjectId(user.id),
         queue: null
       }
       ];

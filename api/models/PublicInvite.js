@@ -66,7 +66,7 @@ module.exports = {
       type: 'number'
     },
     // the doctor who sent the invite
-    invitedBy: {
+    doctor: {
       model: 'user',
       required: false
     },
@@ -150,7 +150,7 @@ module.exports = {
 
 
       const translatorRequestInvite = await PublicInvite.findOne({ type: 'TRANSLATOR_REQUEST',
-        id: invite.id }).populate('invitedBy').populate('patientInvite').populate('translationOrganization');
+        id: invite.id }).populate('doctor').populate('patientInvite').populate('translationOrganization');
       if (translatorRequestInvite.status === 'SENT') {
 
         await PublicInvite.updateOne({ type: 'TRANSLATOR_REQUEST', id: invite.id }).set({ status: 'REFUSED' });
@@ -160,10 +160,10 @@ module.exports = {
           await PublicInvite.updateOne({ id: translatorRequestInvite.patientInvite.guestInvite }).set({ status: 'CANCELED' });
         }
 
-        if (translatorRequestInvite.invitedBy.email) {
-          const docLocale = translatorRequestInvite.invitedBy.preferredLanguage || process.env.DEFAULT_DOCTOR_LOCALE;
+        if (translatorRequestInvite.doctor.email) {
+          const docLocale = translatorRequestInvite.doctor.preferredLanguage || process.env.DEFAULT_DOCTOR_LOCALE;
           await sails.helpers.email.with({
-            to: translatorRequestInvite.invitedBy.email,
+            to: translatorRequestInvite.doctor.email,
             subject: sails._t(docLocale, 'translation request refused subject'),
             text: sails._t(docLocale, 'translation request refused body', {branding: process.env.BRANDING})
           });
@@ -343,7 +343,7 @@ module.exports = {
   async refuseTranslatorRequest (translatorRequestInvite) {
 
 
-    translatorRequestInvite = await PublicInvite.findOne({ id: translatorRequestInvite.id }).populate('invitedBy').populate('patientInvite').populate('translationOrganization');
+    translatorRequestInvite = await PublicInvite.findOne({ id: translatorRequestInvite.id }).populate('doctor').populate('patientInvite').populate('translationOrganization');
 
     await PublicInvite.updateOne({ type: 'TRANSLATOR_REQUEST', id: translatorRequestInvite.id }).set({ status: 'REFUSED' });
     await PublicInvite.updateOne({ id: translatorRequestInvite.patientInvite.id }).set({ status: 'CANCELED' });
@@ -352,10 +352,10 @@ module.exports = {
       await PublicInvite.updateOne({ id: translatorRequestInvite.patientInvite.guestInvite }).set({ status: 'CANCELED' });
     }
 
-    if (translatorRequestInvite.invitedBy.email) {
-      const docLocale = translatorRequestInvite.invitedBy.preferredLanguage || process.env.DEFAULT_DOCTOR_LOCALE;
+    if (translatorRequestInvite.doctor.email) {
+      const docLocale = translatorRequestInvite.doctor.preferredLanguage || process.env.DEFAULT_DOCTOR_LOCALE;
       await sails.helpers.email.with({
-        to: translatorRequestInvite.invitedBy.email,
+        to: translatorRequestInvite.doctor.email,
         subject: sails._t(docLocale, 'translation request refused subject'),
         text: sails._t(docLocale, 'translation request refused body', {branding: process.env.BRANDING})
       });
