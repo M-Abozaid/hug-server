@@ -436,6 +436,11 @@ module.exports = {
     if(!consultation){
       return res.notFound()
     }
+    if(consultation.closedAt){
+      consultation.duration = consultation.createAt = consultation.closedAt
+    }
+
+    consultation.doctorURL  = process.env.DOCTOR_URL + '/app/consultation' + consultation.id
 
     return res.status(200).json(consultation)
   }
