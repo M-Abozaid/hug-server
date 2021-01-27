@@ -76,7 +76,7 @@ module.exports = {
         const publicInvite = await PublicInvite.findOne({ id: user.inviteToken });
         console.log(publicInvite);
 
-        const doctorToNotif = await User.findOne({ id: publicInvite.invitedBy });
+        const doctorToNotif = await User.findOne({ id: publicInvite.doctor });
         console.log(publicInvite, doctorToNotif);
         if (doctorToNotif && doctorToNotif.enableNotif && doctorToNotif.notifPhoneNumber) {
           a = await sails.helpers.sms.with({

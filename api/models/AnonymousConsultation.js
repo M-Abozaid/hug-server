@@ -67,7 +67,7 @@ module.exports = {
     inviteScheduledFor: {
       type: 'number'
     },
-    invitedBy: {
+    doctor: {
       model: 'user',
       required: false
     },

@@ -63,7 +63,7 @@ module.exports = {
         const translatorInviteData = {
           patientInvite: translatorRequestInvite.patientInvite,
           organization: translatorRequestInvite.organization,
-          invitedBy: translatorRequestInvite.invitedBy,
+          doctor: translatorRequestInvite.doctor,
           scheduledFor: translatorRequestInvite.scheduledFor,
           patientLanguage: translatorRequestInvite.patientLanguage,
           doctorLanguage: translatorRequestInvite.doctorLanguage,
@@ -95,7 +95,7 @@ module.exports = {
         await PublicInvite.sendTranslatorInvite(translatorInvite, newUser.email);
 
         // send patient invite
-        const patientInvite = await PublicInvite.findOne({ id: translatorRequestInvite.patientInvite }).populate('guestInvite').populate('invitedBy');
+        const patientInvite = await PublicInvite.findOne({ id: translatorRequestInvite.patientInvite }).populate('guestInvite').populate('doctor');
 
         if (patientInvite.emailAddress || patientInvite.phoneNumber) {
 
@@ -105,10 +105,10 @@ module.exports = {
           await PublicInvite.sendGuestInvite(patientInvite.guestInvite);
         }
 
-        const docLocal = patientInvite.invitedBy.preferredLanguage || process.env.DEFAULT_DOCTOR_LOCALE
+        const docLocal = patientInvite.doctor.preferredLanguage || process.env.DEFAULT_DOCTOR_LOCALE
         // send mail notification to doctor
         await sails.helpers.email.with({
-          to: patientInvite.invitedBy.email,
+          to: patientInvite.doctor.email,
           subject: sails._t(docLocal, 'translator is ready subject'),
           text: sails._t(docLocal, 'translator is ready',{branding:process.env.BRANDING})
         });
@@ -157,7 +157,7 @@ module.exports = {
   async refuseRequest (req, res) {
 
     const translatorRequestInvite = await PublicInvite.findOne({ type: 'TRANSLATOR_REQUEST',
-      inviteToken: req.params.translationRequestToken }).populate('invitedBy').populate('patientInvite').populate('translationOrganization');
+      inviteToken: req.params.translationRequestToken }).populate('doctor').populate('patientInvite').populate('translationOrganization');
 
     const locale = req.headers.locale || process.env.DEFAULT_PATIENT_LOCALE;
 

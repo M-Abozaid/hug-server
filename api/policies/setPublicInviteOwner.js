@@ -1,5 +1,5 @@
 module.exports = function (req, res, proceed) {
 
-  req.body.invitedBy = req.user.id;
+  req.body.doctor = req.user.id;
   return proceed();
 };

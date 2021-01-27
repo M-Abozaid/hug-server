@@ -32,8 +32,8 @@ module.exports = async function (req, res, proceed) {
 
     }
 
-  }else if(consultation.invitedBy){
-    if(req.user.id !== consultation.invitedBy){
+  }else if(consultation.doctor){
+    if(req.user.id !== consultation.doctor){
       return res.forbidden();
     }
   }

@@ -109,6 +109,26 @@ module.exports = {
     }
 
 
+    if(req.user.role === 'scheduler'){
+      if(!req.body.doctorEmail){
+        return res.status(400).json({
+          success: false,
+          error: 'doctorEmail is required.'
+        });
+      }
+    }
+
+    let doctor;
+    if(req.body.doctorEmail){
+      // get doctor
+      [doctor] = await User.find({role: 'doctor', email: req.body.doctorEmail})
+
+      if(!doctor){
+        return res.status(400).json({success: false, error: `Doctor with email ${req.body.doctorEmail} not found`})
+      }
+      // a
+    }
+
     let queue;
     if (req.body.queue) {
       queue = await Queue.findOne({
@@ -165,6 +185,7 @@ module.exports = {
         gender: req.body.gender,
         firstName: req.body.firstName,
         lastName: req.body.lastName,
+        doctor: doctor? doctor.id: req.user.id,
         invitedBy: req.user.id,
         scheduledFor: req.body.scheduledFor ? new Date(req.body.scheduledFor) : undefined,
         patientLanguage: req.body.language,
@@ -196,6 +217,7 @@ module.exports = {
         const guestInviteDate = {
 
           patientInvite: invite.id,
+          doctor: doctor? doctor.id: req.user.id,
           invitedBy: req.user.id,
           scheduledFor: req.body.scheduledFor ? new Date(req.body.scheduledFor) : undefined,
           type: 'GUEST',
@@ -216,6 +238,7 @@ module.exports = {
         const translatorRequestInviteData = {
           patientInvite: invite.id,
           translationOrganization: translationOrganization.id,
+          doctor: doctor? doctor.id: req.user.id,
           invitedBy: req.user.id,
           scheduledFor: req.body.scheduledFor ? new Date(req.body.scheduledFor) : undefined,
           patientLanguage: req.body.language,
@@ -249,7 +272,9 @@ module.exports = {
 
 
     try {
-      await PublicInvite.sendPatientInvite(invite);
+      if(req.user.role !== 'scheduler'){
+        await PublicInvite.sendPatientInvite(invite);
+      }
       if (guestInvite) {
         await PublicInvite.sendGuestInvite(guestInvite);
       }
@@ -270,6 +295,9 @@ module.exports = {
       }
     }
 
+
+    invite.patientURL = `${process.env.PUBLIC_URL}?invite=${invite.inviteToken}`;
+    invite.doctorURL  = process.env.DOCTOR_URL
     return res.json({
       success: true,
       invite
@@ -391,14 +419,25 @@ module.exports = {
 
     const publicinvite = await PublicInvite.findOne({
       inviteToken: req.params.invitationToken
-    }).populate('translationOrganization').populate('invitedBy');
+    }).populate('translationOrganization').populate('doctor');
     if (!publicinvite) {
       return res.notFound();
     }
-    publicinvite.invitedBy = _.pick(publicinvite.invitedBy, ['firstName', 'lastName']);
+    publicinvite.doctor = _.pick(publicinvite.doctor, ['firstName', 'lastName']);
 
 
     res.json(publicinvite);
+  },
+
+  async getConsultation(req, res){
+
+    const consultation = await Consultation.findOne({inviteToken: req.params.invite})
+
+    if(!consultation){
+      return res.notFound()
+    }
+
+    return res.status(200).json(consultation)
   }
 
 };
