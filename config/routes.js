@@ -74,6 +74,7 @@ module.exports.routes = {
   'POST /api/v1/invite/:invite/resend': 'InviteController.resend',
   'POST /api/v1/invite/:invite/revoke': 'InviteController.revoke',
   'GET /api/v1/invite/:invite/consultation': 'InviteController.getConsultation',
+  'POST /api/v1/invite/:invite/consultation/close': 'InviteController.closeConsultation',
   'GET /api/v1/invite/by-token/:invitationToken': 'InviteController.findByToken',
 
   'POST /api/v1/translator/accept/:translationRequestToken': 'TranslatorController.acceptRequest',
