@@ -55,6 +55,9 @@ module.exports = {
       model: 'user',
       required: false
     },
+    invitedBy: {
+      model: 'user'
+    },
     translator: {
       model: 'user',
       required: false

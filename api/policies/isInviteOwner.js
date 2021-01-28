@@ -1,4 +1,6 @@
 
+const parseInviteId = require('./utils/parseInviteId')
+
 const ownerFilter = {
 
   type: 'PATIENT',
@@ -28,7 +30,7 @@ module.exports = async function (req, res, proceed) {
     }
   ]
 
-  const inviteId = req.params.invite || req.params.id;
+  const inviteId = parseInviteId(req, res)
   if(inviteId){
     ownerFilter.id = inviteId
     const exists = await PublicInvite.count(ownerFilter)
