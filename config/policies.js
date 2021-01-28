@@ -108,6 +108,7 @@ module.exports.policies = {
     find: ['isLoggedIn', 'canInvite', 'isInviteOwner'],
     destroy: ['isLoggedIn', 'canInvite','isInviteOwner'],
     update: ['isLoggedIn', 'canInvite','isInviteOwner'],
+    findOne: ['isLoggedIn', 'canInvite','isInviteOwner'],
   },
 
   QueueController: {
