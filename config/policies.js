@@ -108,7 +108,7 @@ module.exports.policies = {
     '*': false,
     find: ['isLoggedIn', 'canInvite', 'isInviteOwner'],
     destroy: ['isLoggedIn', 'canInvite','isInviteOwner'],
-    update: ['isLoggedIn', 'canInvite','isInviteOwner'],
+    update: ['isLoggedIn', 'canInvite','isInviteOwner', 'validateInviteUpdate'],
     findOne: ['isLoggedIn', 'canInvite','isInviteOwner'],
   },
 
