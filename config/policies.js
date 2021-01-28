@@ -100,6 +100,7 @@ module.exports.policies = {
     revoke: ['isLoggedIn', 'canInvite'],
     findByConsultation: ['isLoggedIn', 'isConsultationOwner'],
     getConsultation: ['isLoggedIn', 'isInviteOwner'],
+    getInvite: ['isLoggedIn', 'canInvite','isInviteOwner'],
     findByToken: true
   },
 

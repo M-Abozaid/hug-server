@@ -443,6 +443,26 @@ module.exports = {
     consultation.doctorURL  = process.env.DOCTOR_URL + '/app/consultation' + consultation.id
 
     return res.status(200).json(consultation)
+  },
+  async getInvite(req, res, next){
+
+    const inviteId = req.params.invite || req.params.id;
+    const invite = await PublicInvite.findOne({id: inviteId});
+
+    if(!invite){
+      return res.notFound()
+    }
+    const [consultation] = await Consultation.find({invite: req.params.invite})
+
+    if(consultation){
+
+      invite.doctorURL  = process.env.DOCTOR_URL + '/app/consultation' + consultation.id
+    }
+
+
+    invite.patientURL = `${process.env.PUBLIC_URL}?invite=${invite.inviteToken}`;
+
+    return res.json(invite)
   }
 
 };
