@@ -431,7 +431,9 @@ module.exports = {
 
   async getConsultation(req, res){
 
-    const [consultation] = await Consultation.find({invite: req.params.invite})
+    const inviteId = req.params.invite || req.params.id;
+    if(!inviteId) return res.status(500).send();
+    const [consultation] = await Consultation.find({invite: inviteId})
 
     if(!consultation){
       return res.notFound()
@@ -447,22 +449,38 @@ module.exports = {
   async getInvite(req, res, next){
 
     const inviteId = req.params.invite || req.params.id;
+    if(!inviteId) return res.status(500).send();
     const invite = await PublicInvite.findOne({id: inviteId});
 
     if(!invite){
       return res.notFound()
     }
-    const [consultation] = await Consultation.find({invite: req.params.invite})
+    const [consultation] = await Consultation.find({invite: inviteId})
 
     if(consultation){
 
-      invite.doctorURL  = process.env.DOCTOR_URL + '/app/consultation' + consultation.id
+      invite.doctorURL  = process.env.DOCTOR_URL + '/app/consultation/' + consultation.id
     }
 
 
     invite.patientURL = `${process.env.PUBLIC_URL}?invite=${invite.inviteToken}`;
 
     return res.json(invite)
+  },
+
+  async closeConsultation(req, res, next){
+    const [consultation] = await Consultation.find({invite: req.params.invite})
+
+    if(!consultation || consultation.status !== 'active'){
+      return res.status(404).json({success: false, error: 'Consultation not found'})
+    }
+
+
+    await Consultation.closeConsultation(consultation);
+
+
+    res.status(200);
+    return res.json(consultation);
   }
 
 };

@@ -263,6 +263,10 @@ module.exports = {
     });
   },
   async closeConsultation (consultation) {
+
+    if(consultation.status === 'closed'){
+      return;
+    }
     const db = Consultation.getDatastore().manager;
 
     const closedAt = new Date();

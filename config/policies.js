@@ -101,6 +101,7 @@ module.exports.policies = {
     findByConsultation: ['isLoggedIn', 'isConsultationOwner'],
     getConsultation: ['isLoggedIn', 'isInviteOwner'],
     getInvite: ['isLoggedIn', 'canInvite','isInviteOwner'],
+    closeConsultation: ['isLoggedIn', 'canInvite', 'isScheduler' ,'isInviteOwner'],
     findByToken: true
   },
 
