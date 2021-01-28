@@ -1,4 +1,4 @@
-module.exports = async function (req, res) {
+module.exports = function (req, res) {
 
   let consultationId = (req.body ? req.body.consultation : null) || req.params.consultation || req.query.consultation;
   if(consultationId) return consultationId;

@@ -30,8 +30,19 @@ module.exports = async function (req, res, proceed) {
       id: consultationId,
       invitedBy: req.user.id
     });
+  }else if(role === 'translator'){
+    consultation = await Consultation.count({
+      id: consultationId,
+      translator: req.user.id
+    });
+  }else if (role === 'guest'){
+    consultation = await Consultation.count({
+      id: consultationId,
+      guest: req.user.id
+    });
+  }else{
+    return res.notFound()
   }
-
   if (!consultation) {
 
     return res.forbidden();

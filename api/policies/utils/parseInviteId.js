@@ -1,6 +1,6 @@
-module.exports = async function (req, res) {
+module.exports = function (req, res) {
 
-  let inviteId = (req.body ? req.body.invite : null) || req.params.invite || req.query.invite;
+  let inviteId = (req.body ? req.body.invite : null) || req.params.invite || req.query.invite || req.params.id;
   if(inviteId) return inviteId;
   if (req.query.where) {
     try {

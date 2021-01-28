@@ -431,7 +431,7 @@ module.exports = {
 
   async getConsultation(req, res){
 
-    const consultation = await Consultation.findOne({inviteToken: req.params.invite})
+    const [consultation] = await Consultation.find({invite: req.params.invite})
 
     if(!consultation){
       return res.notFound()

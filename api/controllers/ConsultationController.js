@@ -335,6 +335,7 @@ module.exports = {
         consultationJson.queue = invite.queue;
         consultationJson.doctor = invite.doctor;
         consultationJson.invite = invite.id;
+        consultationJson.invitedBy = invite.invitedBy;
 
 
       }

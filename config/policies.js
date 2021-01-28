@@ -58,7 +58,7 @@ module.exports.policies = {
     '*': false,
     consultationOverview: ['isLoggedIn'],
     acceptConsultation: ['isLoggedIn', 'isDoctor', 'isAssignedTo'],
-    closeConsultation: ['isLoggedIn', 'isDoctor', 'isConsultationOwner'],
+    closeConsultation: ['isLoggedIn',  'isConsultationOwner'],
     create: ['isLoggedIn', 'setConsultationOwner'],
     destroy: ['isLoggedIn', 'isNurseOrPatient'],
     uploadFile: ['isLoggedIn', 'setMessageDestination'],
@@ -99,7 +99,7 @@ module.exports.policies = {
     resend: ['isLoggedIn', 'canInvite'],
     revoke: ['isLoggedIn', 'canInvite'],
     findByConsultation: ['isLoggedIn', 'isConsultationOwner'],
-    getConsultation: ['isLoggedIn', 'isTheInviter'],
+    getConsultation: ['isLoggedIn', 'isInviteOwner'],
     findByToken: true
   },
 
