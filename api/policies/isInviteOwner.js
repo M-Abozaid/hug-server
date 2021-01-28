@@ -1,13 +1,13 @@
 
 const parseInviteId = require('./utils/parseInviteId')
 
-const ownerFilter = {
-
-  type: 'PATIENT',
-
-}
-
 module.exports = async function (req, res, proceed) {
+
+  const ownerFilter = {
+
+    type: 'PATIENT',
+
+  }
 
   let queues = [];
   if (req.user.allowedQueues && req.user.allowedQueues.length > 0) {
