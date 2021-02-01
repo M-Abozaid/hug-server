@@ -439,10 +439,10 @@ module.exports = {
       return res.notFound()
     }
     if(consultation.closedAt){
-      consultation.duration = consultation.createAt = consultation.closedAt
+      consultation.duration = consultation.createAt - consultation.closedAt
     }
 
-    consultation.doctorURL  = process.env.DOCTOR_URL + '/app/consultation' + consultation.id
+    consultation.doctorURL  = process.env.DOCTOR_URL + '/app/consultation/' + consultation.id
 
     return res.status(200).json(consultation)
   },
@@ -474,6 +474,10 @@ module.exports = {
     if(!consultation || consultation.status !== 'active'){
       return res.status(404).json({success: false, error: 'Consultation not found'})
     }
+
+
+    consultation.duration = Date.now() - consultation.acceptedAt
+
 
 
     await Consultation.closeConsultation(consultation);
