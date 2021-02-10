@@ -439,13 +439,18 @@ module.exports = {
         id: req.params.consultation
       });
       if (!consultation || consultation.status !== 'active') {
-        return res.notFound();
+        const anonymousConsultation = await AnonymousConsultation.find({consultationId: req.params.consultation})
+        if(anonymousConsultation){
+          return res.status(200).json(anonymousConsultation);
+        }else{
+          return res.notFound();
+        }
       }
       await Consultation.closeConsultation(consultation);
 
 
-      res.status(200);
-      return res.json(consultation);
+
+      return res.status(200).json(consultation);
 
     } catch (error) {
       sails.log('error ', error);

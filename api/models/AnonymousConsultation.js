@@ -73,7 +73,15 @@ module.exports = {
     },
     inviteCreatedAt: {
       type: 'number'
-    }
+    },
+    invitedBy: {
+      model: 'user',
+      required: false
+    },
+    invite: {
+      model: 'PublicInvite',
+      required: false
+    },
   }
 
 };
