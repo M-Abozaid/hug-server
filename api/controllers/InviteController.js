@@ -472,7 +472,14 @@ module.exports = {
     const [consultation] = await Consultation.find({invite: req.params.invite})
 
     if(!consultation || consultation.status !== 'active'){
-      return res.status(404).json({success: false, error: 'Consultation not found'})
+      const [anonymousConsultation] = await AnonymousConsultation.find({invite: req.params.invite})
+      if(anonymousConsultation){
+        anonymousConsultation.duration = anonymousConsultation.closedAt - anonymousConsultation.acceptedAt
+        return res.status(200).json(anonymousConsultation);
+      }else{
+
+        return res.status(404).json({success: false, error: 'Consultation not found'})
+      }
     }
 
 

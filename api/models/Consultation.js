@@ -201,7 +201,10 @@ module.exports = {
       patientRating: consultation.patientRating,
       patientComment: consultation.patientComment,
       doctorRating: consultation.doctorRating,
-      doctorComment: consultation.doctorComment
+      doctorComment: consultation.doctorComment,
+      doctor: consultation.doctor,
+      invite: consultation.invite,
+      invitedBy: consultation.invitedBy
 
     };
     if (consultation.invite) {
