@@ -486,29 +486,31 @@ module.exports = {
   async call (req, res) {
     try {
 
-      const openviduServers = await sails.helpers.openviduServer();
+      // const openviduServers = await sails.helpers.openviduServer();
 
-      const serverIndex = Math.floor(Math.random() * openviduServers.length);
+      // const serverIndex = Math.floor(Math.random() * openviduServers.length);
 
-      const openvidu = new OpenVidu(openviduServers[serverIndex].url, openviduServers[serverIndex].password);
+      // const openvidu = new OpenVidu(openviduServers[serverIndex].url, openviduServers[serverIndex].password);
 
-      // the consultation this call belongs to
-      console.log('Start call');
+      // // the consultation this call belongs to
+      // console.log('Start call');
       const consultation = await Consultation.findOne({
         _id: req.params.consultation
       });
       console.log('Got consultation', consultation.id);
-      const session = await openvidu.createSession({
-        customSessionId: req.params.consultation
-      });
-      console.log('Caller session', session);
+      // const session = await openvidu.createSession({
+      //   customSessionId: req.params.consultation
+      // });
+      // console.log('Caller session', session);
 
-      const callerToken = await session.generateToken();
-      console.log('Caller token', callerToken);
+      const callerToken = "test"
+      // await session.generateToken();
+      // console.log('Caller token', callerToken);
 
 
-      const patientToken = await session.generateToken();
-      console.log('callee token', patientToken);
+      const patientToken = "test"
+      // await session.generateToken();
+      // console.log('callee token', patientToken);
 
 
       // the current user
@@ -529,7 +531,7 @@ module.exports = {
         participants: [req.user.id],
         isConferenceCall: !!((consultation.translator || consultation.guest)),
         status: 'ringing',
-        openViduURL: openviduServers[serverIndex].url
+        // openViduURL: openviduServers[serverIndex].url
       }).fetch();
 
       const patientMsg = Object.assign({}, msg);
@@ -542,7 +544,7 @@ module.exports = {
         data: {
           consultation: req.params.consultation,
           token: patientToken,
-          id: session.id,
+          id: req.params.consultation,
           user: {
             firstName: user.firstName,
             lastName: user.lastName
@@ -553,7 +555,7 @@ module.exports = {
       });
 
       if (consultation.translator) {
-        const translatorToken = await session.generateToken();
+        const translatorToken = "test"//await session.generateToken();
         const translatorMsg = Object.assign({}, msg);
         translatorMsg.token = translatorToken;
 
@@ -561,7 +563,7 @@ module.exports = {
           data: {
             consultation: req.params.consultation,
             token: translatorToken,
-            id: session.id,
+            id: req.params.consultation,
             audioOnly: req.query.audioOnly === 'true',
             msg: translatorMsg
           }
@@ -570,7 +572,7 @@ module.exports = {
       }
 
       if (consultation.guest) {
-        const guestToken = await session.generateToken();
+        const guestToken = "test"//await session.generateToken();
         const guestMsg = Object.assign({}, msg);
         guestMsg.token = guestToken;
 
@@ -578,7 +580,7 @@ module.exports = {
           data: {
             consultation: req.params.consultation,
             token: guestToken,
-            id: session.id,
+            id: req.params.consultation,
             audioOnly: req.query.audioOnly === 'true',
             msg: guestMsg
           }
@@ -589,7 +591,7 @@ module.exports = {
       msg.token = callerToken;
       return res.json({
         token: callerToken,
-        id: session.id,
+        id: req.params.consultation,
         msg
       });
 
