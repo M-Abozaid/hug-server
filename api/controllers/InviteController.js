@@ -289,7 +289,9 @@ module.exports = {
 
 
     if (invite.scheduledFor) {
-      await PublicInvite.setPatientOrGuestInviteReminders(invite);
+      if(req.user.role !== 'scheduler'){
+        await PublicInvite.setPatientOrGuestInviteReminders(invite);
+      }
       if (guestInvite) {
         await PublicInvite.setPatientOrGuestInviteReminders(guestInvite);
       }
