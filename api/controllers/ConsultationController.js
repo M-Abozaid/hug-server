@@ -503,12 +503,15 @@ module.exports = {
       // });
       // console.log('Caller session', session);
 
-      const callerToken = "test"
+
+
+      const callerToken = await sails.helpers.getMediasoupToken.with({roomId: consultation.id, peerId: req.user.id})
       // await session.generateToken();
       // console.log('Caller token', callerToken);
 
+      const calleeId = (req.user.id === consultation.owner) ? consultation.acceptedBy : consultation.owner;
 
-      const patientToken = "test"
+      const patientToken = await sails.helpers.getMediasoupToken.with({roomId: consultation.id, peerId: calleeId});
       // await session.generateToken();
       // console.log('callee token', patientToken);
 
@@ -519,7 +522,6 @@ module.exports = {
       });
 
 
-      const calleeId = (req.user.id === consultation.owner) ? consultation.acceptedBy : consultation.owner;
       console.log('Callee id', calleeId);
 
       // create a new message
@@ -555,7 +557,7 @@ module.exports = {
       });
 
       if (consultation.translator) {
-        const translatorToken = "test"//await session.generateToken();
+        const translatorToken = await sails.helpers.getMediasoupToken.with({roomId: consultation.id, peerId: consultation.translator});
         const translatorMsg = Object.assign({}, msg);
         translatorMsg.token = translatorToken;
 
@@ -572,7 +574,7 @@ module.exports = {
       }
 
       if (consultation.guest) {
-        const guestToken = "test"//await session.generateToken();
+        const guestToken = await sails.helpers.getMediasoupToken.with({roomId: consultation.id, peerId: consultation.guest});
         const guestMsg = Object.assign({}, msg);
         guestMsg.token = guestToken;
 
