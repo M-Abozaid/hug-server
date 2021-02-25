@@ -19,6 +19,10 @@ module.exports = {
 
       required: true
     },
+    server: {
+      type: {},
+      required: true
+    }
   },
 
 
@@ -31,25 +35,26 @@ module.exports = {
   },
 
 
-  fn: async function (inputs) {
+  fn: async function (inputs, exists) {
 
 
 
     const response = await axios.post(
-      process.env.MEDIASOUP_URL+'/session',
+      inputs.server.url+'/session',
       {
         roomId:inputs.roomId,
         peerId: inputs.peerId
       },
       {
         headers: {
-          'Authorization': 'Basic ' + Buffer(process.env.MEDIASOUP_USER+':' + process.env.MEDIASOUP_SECRET).toString('base64'),
+          'Authorization': 'Basic ' + Buffer(inputs.server.username+':' + inputs.server.password).toString('base64'),
           'Content-Type': 'application/json'
         }
       }
     );
 
-    return response.data.token;
+    return inputs.server.url.replace(/^.+?\:/,'wss:') + `?token=${response.data.token}`
+
   }
 
 
