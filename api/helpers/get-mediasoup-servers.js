@@ -63,8 +63,8 @@ module.exports = {
         return exits.success([fallbackMediasoup]);
       }
 
-       exits.success(mediasoupServers);
-    }catch{
+      exits.success(availableServers);
+    }catch(error){
       console.log('Error with getting Mediasoup server ', error);
 
     }
@@ -94,7 +94,7 @@ function timeoutPromise (ms, promise) {
 
 async function getRoomsCount(server){
   const response = await axios.get(
-    server.url+'/session',
+    server.url+'/rooms-count',
     {
       headers: {
         'Authorization': 'Basic ' + Buffer(process.env.MEDIASOUP_USER+':' + process.env.MEDIASOUP_SECRET).toString('base64'),
