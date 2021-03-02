@@ -460,20 +460,15 @@ module.exports = {
   async testCall (req, res) {
     try {
 
-      const data1 = {};
-      data1['mediaMode'] = 'ROUTED';
-      data1['recordingMode'] = 'MANUAL';
-      data1['RECORDING_LAYOUT'] = 'BEST_FIT';
-      data1['recordingLayout'] = 'BEST_FIT';
 
-      const openviduServers = await sails.helpers.openviduServer();
+      const mediasoupServers = await sails.helpers.getMediasoupServers();
 
-      const serverIndex = Math.floor(Math.random() * openviduServers.length);
+      const serverIndex = Math.floor(Math.random() * mediasoupServers.length);
 
-      const openvidu = new OpenVidu(openviduServers[serverIndex].url, openviduServers[serverIndex].password);
+      const mediasoupServer = mediasoupServers[serverIndex]
+      const token = await sails.helpers.getMediasoupToken.with({roomId: req.user.id, peerId: req.user.id, server: mediasoupServer})
 
-      const session = await openvidu.createSession(data1);
-      const token = await session.generateToken();
+      return res.json({ token });
 
       return res.json({ token });
     } catch (err) {

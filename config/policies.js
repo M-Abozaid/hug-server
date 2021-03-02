@@ -70,7 +70,7 @@ module.exports.policies = {
     patientFeedback: ['isLoggedIn', 'isNurseOrPatient'],
     doctorFeedback: ['isLoggedIn', 'isConsultationOwner'],
     consultationsCSV: ['isLoggedIn', 'isAdmin'],
-    testCall: true,
+    testCall: ['isLoggedIn'],
     getCurrentCall: ['isLoggedIn', 'isConsultationParticipant']
     // findOne: ['isLoggedIn', 'isConsultationOwnerOrTranslator']
 
