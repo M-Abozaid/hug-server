@@ -7,7 +7,7 @@ License: HUG
 Source: %{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-root
 #BuildRequires: nodejs
-Requires: nodejs (= 10.22.1-1nodesource1)
+Requires: nodejs (>= 10)
 BuildArch: noarch
 
 %global __requires_exclude dtrace
