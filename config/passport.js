@@ -323,7 +323,8 @@ console.log('env >>>> ', process.env.NODE_ENV);
             var opts = {
               filter: `${process.env.AD_ATTR_LOGIN}=${profile[process.env.EMAIL_FIELD]}`,
               includeMembership : ['user'],
-              includeDeleted : false
+              includeDeleted : false,
+              attributes: []
             };
             ad.find(opts, async function(err, results) {
               if (err) {
