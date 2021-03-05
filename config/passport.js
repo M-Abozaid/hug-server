@@ -346,7 +346,7 @@ console.log('env >>>> ', process.env.NODE_ENV);
 
                   user = await User.create({
                     email: adUser[process.env.AD_ATTR_EMAIL],
-                    firstName: adUser[process.env.AD_ATTR_FISTNAME],
+                    firstName: adUser[process.env.AD_ATTR_FIRSTNAME],
                     lastName: adUser[process.env.AD_ATTR_LASTNAME],
                     role: sails.config.globals.ROLE_DOCTOR,
                     _function: adUser[process.env.AD_ATTR_FUNCTION],
@@ -355,7 +355,7 @@ console.log('env >>>> ', process.env.NODE_ENV);
                 }else{
                   await User.update({id: user.id}).set({
                     // email: adUser[process.env.AD_ATTR_EMAIL],
-                    firstName: adUser[process.env.AD_ATTR_FISTNAME],
+                    firstName: adUser[process.env.AD_ATTR_FIRSTNAME],
                     lastName: adUser[process.env.AD_ATTR_LASTNAME],
                     role: sails.config.globals.ROLE_DOCTOR,
                     _function: adUser[process.env.AD_ATTR_FUNCTION],
