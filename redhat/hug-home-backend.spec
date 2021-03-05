@@ -1,13 +1,13 @@
 Summary: Front end for Hug@Home Backend application
 Name: hug-home-backend
-Version: 3.5.2
-Release: 4
+Version: 3.6.0
+Release: 2
 Group: Web Application
 License: HUG
 Source: %{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-root
 #BuildRequires: nodejs
-Requires: nodejs
+Requires: nodejs = 2:10.24.0-1nodesource
 BuildArch: noarch
 
 %global __requires_exclude dtrace
@@ -37,7 +37,7 @@ SPECS version 1
 %defattr(-,root,root, 0755)
 %{_datadir}/%{name}/
 /lib/systemd/system/
-%{_sysconfdir}/hug-home/
+%config(noreplace) %{_sysconfdir}/hug-home/
 
 %post
 ## Commands to for the post install
