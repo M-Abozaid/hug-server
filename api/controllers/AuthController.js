@@ -485,13 +485,17 @@ module.exports = {
     }
 
     passport.authenticate('saml', { failureRedirect: '/app/login' })(req, res, (err) => {
-      console.log('Error with SAML ', err);
-      // res.serverError();
-      return res.view('pages/error', {
 
-        error: err
+      if(err){
 
-      });
+        console.log('Error with SAML ', err);
+        // res.serverError();
+        return res.view('pages/error', {
+
+          error: err
+
+        });
+      }
     });
   },
 
@@ -521,6 +525,17 @@ module.exports = {
           });
         }
 
+
+        req.logIn(user, function(err) {
+          if (err) {
+            console.log('Error login in ' , err)
+            return res.status(500).send()
+          }
+          return res.json({
+            message: info.message,
+            user
+          });
+        })
 
         try {
           await User.updateOne({ id: user.id }).set({ lastLoginType: 'saml' });
