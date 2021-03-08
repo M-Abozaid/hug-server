@@ -529,22 +529,19 @@ module.exports = {
         req.logIn(user, function(err) {
           if (err) {
             console.log('Error login in ' , err)
-            return res.status(500).send()
+            return res.redirect('/app/login');
           }
-          return res.json({
-            message: info.message,
-            user
-          });
+
+          try {
+            await User.updateOne({ id: user.id }).set({ lastLoginType: 'saml' });
+          } catch (error) {
+            console.log('error Updating user login type ', error);
+          }
+
+
+          return res.redirect(`/app?tk=${user.token}`);
         })
 
-        try {
-          await User.updateOne({ id: user.id }).set({ lastLoginType: 'saml' });
-        } catch (error) {
-          console.log('error Updating user login type ', error);
-        }
-
-
-        return res.redirect(`/app?tk=${user.token}`);
 
       })(req, res, (err) => {
         if (err) {
