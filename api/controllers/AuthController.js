@@ -526,7 +526,7 @@ module.exports = {
         }
 
 
-        req.logIn(user, function(err) {
+        req.logIn(user, async function(err) {
           if (err) {
             console.log('Error login in ' , err)
             return res.redirect('/app/login');
