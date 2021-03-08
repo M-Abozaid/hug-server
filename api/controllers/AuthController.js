@@ -455,6 +455,18 @@ module.exports = {
 
           const token = jwt.sign(user, sails.config.globals.APP_SECRET);
           user.token = token;
+          if(!req.user){
+            req.logIn(user, function(err) {
+              if (err) {
+                console.log('Error login in ' , err)
+                return res.status(500).send()
+              }
+              res.json({
+                user
+              });
+            })
+
+          }
           res.json({
             user
           });
@@ -526,21 +538,17 @@ module.exports = {
         }
 
 
-        req.logIn(user, async function(err) {
-          if (err) {
-            console.log('Error login in ' , err)
-            return res.redirect('/app/login');
-          }
-
-          try {
-            await User.updateOne({ id: user.id }).set({ lastLoginType: 'saml' });
-          } catch (error) {
-            console.log('error Updating user login type ', error);
-          }
 
 
-          return res.redirect(`/app?tk=${user.token}`);
-        })
+        try {
+          await User.updateOne({ id: user.id }).set({ lastLoginType: 'saml' });
+        } catch (error) {
+          console.log('error Updating user login type ', error);
+        }
+
+
+        return res.redirect(`/app?tk=${user.token}`);
+
 
 
       })(req, res, (err) => {
