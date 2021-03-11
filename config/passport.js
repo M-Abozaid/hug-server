@@ -316,7 +316,7 @@ console.log('env >>>> ', process.env.NODE_ENV);
           console.error(err)
           return cb(new Error(err))
         }
-          let user = await User.findOne({ email: profile[process.env.EMAIL_FIELD] }).populate('allowedQueues');
+          let user = await User.findOne({ email: profile[process.env.EMAIL_FIELD], role:"doctor" }).populate('allowedQueues');
 
           if(process.env.AD_ENABLE){
 
