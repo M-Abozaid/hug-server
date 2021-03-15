@@ -71,10 +71,11 @@ async function createTranslationRequest (translationInvite, organization) {
   // if not
   // get all translators under organization
   const translatorCollection = db.collection('translator');
-  const translators = await translatorCollection.find({ organization: new ObjectId(organization.id), languages: { $all: [translationInvite.doctorLanguage, translationInvite.patientLanguage] } });
+  const translatorsCursor = await translatorCollection.find({ organization: new ObjectId(organization.id), languages: { $all: [translationInvite.doctorLanguage, translationInvite.patientLanguage] } });
 
+  const translators = await translatorsCursor.toArray();
   if (!translators.length) {
-    return Promise.reject(`There are no translators for ${ translationInvite.patientLanguage }${translationInvite.doctorLanguage}`);
+    return Promise.reject(`There are no translators for ${ translationInvite.patientLanguage } ${translationInvite.doctorLanguage}`);
   }
 
   const translatorIndex =  Math.floor(Math.random() * translators.length);
