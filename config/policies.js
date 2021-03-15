@@ -130,7 +130,10 @@ module.exports.policies = {
     '*': false,
     acceptRequest: true,
     refuseRequest: true,
-    findConsultation: ['isLoggedIn']
+    findConsultation: ['isLoggedIn'],
+    find:['isLoggedIn', 'isAdmin'],
+    findOne:['isLoggedIn', 'isAdmin'],
+    update:['isLoggedIn', 'isAdmin']
   },
   Language: {
     '*': false,
