@@ -78,10 +78,8 @@ async function createTranslationRequest (translationInvite, organization) {
     return Promise.reject(`There are no translators for ${ translationInvite.patientLanguage } ${translationInvite.doctorLanguage}`);
   }
 
-  const translatorIndex =  Math.floor(Math.random() * translators.length);
-  const translator = translators[translatorIndex]
 
-  await PublicInvite.sendTranslationRequestInvite(translationInvite, translator.email);
+  await Promise.all(translators.map(translator=> PublicInvite.sendTranslationRequestInvite(translationInvite, translator.email)) ) ;
   return PublicInvite.setTranslatorRequestTimer(translationInvite);
 
 }
