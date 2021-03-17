@@ -134,7 +134,8 @@ module.exports.policies = {
     find:['isLoggedIn', 'isAdmin'],
     findOne:['isLoggedIn', 'isAdmin'],
     update:['isLoggedIn', 'isAdmin'],
-    create:['isLoggedIn', 'isAdmin']
+    create:['isLoggedIn', 'isAdmin'],
+    destroy: ['isLoggedIn', 'isAdmin'],
   },
   Language: {
     '*': false,
