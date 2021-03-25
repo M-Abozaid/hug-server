@@ -1,6 +1,6 @@
 [Unit]
 Description=@Home Backend
-After=network.target redis.service clamd@clamd.service
+After=network.target redis.service clamd@scan.service
 
 [Service]
 EnvironmentFile=/etc/hug-home/hug-home-backend.conf

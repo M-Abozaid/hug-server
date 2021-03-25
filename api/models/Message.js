@@ -5,7 +5,7 @@
  * @docs        :: https://sailsjs.com/docs/concepts/models-and-orm/models
  */
 const schedule = require('node-schedule');
-const RINGING_TIMEOUT = 5 * 60 * 1000;
+const RINGING_TIMEOUT = 5* 60 * 1000;
 const CALL_DURATION_TIMEOUT = 2 * 60 * 60 * 1000;
 module.exports = {
   attributes: {
@@ -70,6 +70,9 @@ module.exports = {
     },
     openViduURL: {
       type: 'string'
+    },
+    mediasoupURL:{
+      type:'string'
     }
   },
   async endCall (message, consultation, reason) {

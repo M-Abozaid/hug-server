@@ -144,7 +144,7 @@ module.exports = {
 
   async beforeUpdate (valuesToSet, proceed) {
 
-    console.log('values to set ', valuesToSet);
+
     if (valuesToSet.email) {
       let existing = false;
       if(valuesToSet.id){
