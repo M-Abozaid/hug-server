@@ -1,23 +1,21 @@
+const parseConsultationId = require('./utils/parseConsultationId')
 module.exports = async function (req, res, proceed) {
 
-  let consultationId = (req.body ? req.body.consultation : null) || req.params.consultation;
-  if (req.query.where) {
-    try {
-      consultationId = JSON.parse(req.query.where).consultation;
-    } catch (err) {
-      console.error(err);
-      res.badRequest('invalid where parameter');
-    }
+  const consultationId =  parseConsultationId(req, res)
+
+  if(!consultationId){
+    return res.notFound()
   }
   let consultation;
-  if (req.user.role === 'nurse' || req.user.role === 'patient') {
+  const {role} = req.user
+  if (role === 'nurse' || role === 'patient') {
 
     consultation = await Consultation.count({
       id: consultationId,
       owner: req.user.id
     });
 
-  } else if (req.user.role === 'doctor') {
+  } else if (role === 'doctor') {
 
     consultation = await Consultation.count({
       id: consultationId,
@@ -27,8 +25,24 @@ module.exports = async function (req, res, proceed) {
       ]
     });
 
+  }else if(role === 'scheduler'){
+    consultation = await Consultation.count({
+      id: consultationId,
+      invitedBy: req.user.id
+    });
+  }else if(role === 'translator'){
+    consultation = await Consultation.count({
+      id: consultationId,
+      translator: req.user.id
+    });
+  }else if (role === 'guest'){
+    consultation = await Consultation.count({
+      id: consultationId,
+      guest: req.user.id
+    });
+  }else{
+    return res.notFound()
   }
-
   if (!consultation) {
 
     return res.forbidden();

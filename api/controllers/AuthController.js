@@ -76,7 +76,7 @@ module.exports = {
         const publicInvite = await PublicInvite.findOne({ id: user.inviteToken });
         console.log(publicInvite);
 
-        const doctorToNotif = await User.findOne({ id: publicInvite.invitedBy });
+        const doctorToNotif = await User.findOne({ id: publicInvite.doctor });
         console.log(publicInvite, doctorToNotif);
         if (doctorToNotif && doctorToNotif.enableNotif && doctorToNotif.notifPhoneNumber) {
           a = await sails.helpers.sms.with({
@@ -216,9 +216,9 @@ module.exports = {
     } else {
       if (!isAdmin) {
         await User.updateOne({ email: req.body.email, role: { in: ['doctor', 'admin'] } }).set({ doctorClientVersion: 'invalid' });
-        return res.status(400).json({
-          message: 'Le cache de votre navigateur n\'est pas à jour, vous devez le raffraichir avec CTRL+F5 !'
-        });
+        // return res.status(400).json({
+        //   message: 'Le cache de votre navigateur n\'est pas à jour, vous devez le raffraichir avec CTRL+F5 !'
+        // });
       }
     }
 
@@ -432,9 +432,9 @@ module.exports = {
             await User.updateOne({ email: decoded.email, role: { in: ['doctor', 'admin'] } }).set({ doctorClientVersion: req.query._version });
           } else {
             await User.updateOne({ email: decoded.email }).set({ doctorClientVersion: 'invalid' });
-            return res.status(400).json({
-              message: 'Le cache de votre navigateur n\'est pas à jour, vous devez le raffraichir avec CTRL+F5 !'
-            });
+            // return res.status(400).json({
+            //   message: 'Le cache de votre navigateur n\'est pas à jour, vous devez le raffraichir avec CTRL+F5 !'
+            // });
           }
 
 

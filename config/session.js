@@ -38,6 +38,6 @@ module.exports.session = {
   // },
   cookie: {
     secure: process.env.NODE_ENV === 'development'? false: true,
-    sameSite: 'none'
+    sameSite:  process.env.NODE_ENV === 'development'? undefined: 'none'
   }
 };

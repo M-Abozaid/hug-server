@@ -1,5 +1,13 @@
+
+const parseInviteId = require('./utils/parseInviteId')
+
 module.exports = async function (req, res, proceed) {
 
+  const ownerFilter = {
+
+    type: 'PATIENT',
+
+  }
 
   let queues = [];
   if (req.user.allowedQueues && req.user.allowedQueues.length > 0) {
@@ -9,24 +17,34 @@ module.exports = async function (req, res, proceed) {
     queues = queues.map(q => q.id);
   }
 
+  ownerFilter.or = [
+    {
+      doctor: req.user.id
+    },
+    {
 
+      queue: queues
+    },
+    {
+      invitedBy: req.user.id
+    }
+  ]
 
-  req.query.where = JSON.stringify({
-
-    type: 'PATIENT',
-
-    or: [
-      {
-        invitedBy: req.user.id
-      }, {
-
-        queue: queues
+  const inviteId = parseInviteId(req, res)
+  if(inviteId){
+    ownerFilter.id = inviteId
+    const exists = await PublicInvite.count(ownerFilter)
+    if(!exists){
+      const [anonymousConsultation] = await AnonymousConsultation.find({invite: inviteId});
+      if(anonymousConsultation && anonymousConsultation.doctor === req.user.id || anonymousConsultation.invitedBy === req.user.id){
+        return proceed();
       }
-    ]
-  });
+      return res.notFound()
+    }
+  }else{
+    req.query.where = JSON.stringify(ownerFilter);
+  }
 
   return proceed();
-
-
 
 };

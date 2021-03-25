@@ -67,13 +67,21 @@ module.exports = {
     inviteScheduledFor: {
       type: 'number'
     },
-    invitedBy: {
+    doctor: {
       model: 'user',
       required: false
     },
     inviteCreatedAt: {
       type: 'number'
-    }
+    },
+    invitedBy: {
+      model: 'user',
+      required: false
+    },
+    invite: {
+      model: 'PublicInvite',
+      required: false
+    },
   }
 
 };

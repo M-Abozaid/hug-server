@@ -58,7 +58,7 @@ module.exports.policies = {
     '*': false,
     consultationOverview: ['isLoggedIn'],
     acceptConsultation: ['isLoggedIn', 'isDoctor', 'isAssignedTo'],
-    closeConsultation: ['isLoggedIn', 'isDoctor', 'isConsultationOwner'],
+    closeConsultation: ['isLoggedIn',  'isConsultationOwner'],
     create: ['isLoggedIn', 'setConsultationOwner'],
     destroy: ['isLoggedIn', 'isNurseOrPatient'],
     uploadFile: ['isLoggedIn', 'setMessageDestination'],
@@ -95,16 +95,22 @@ module.exports.policies = {
   },
   InviteController: {
     '*': false,
-    invite: ['isLoggedIn', 'isDoctorOrAdmin', 'setPublicInviteOwner'],
-    resend: ['isLoggedIn', 'isDoctor'],
-    revoke: ['isLoggedIn', 'isDoctor'],
-    findByConsultation: ['isLoggedIn', 'isDoctor'],
+    invite: ['isLoggedIn', 'canInvite', 'setPublicInviteOwner'],
+    resend: ['isLoggedIn', 'canInvite'],
+    revoke: ['isLoggedIn', 'canInvite'],
+    findByConsultation: ['isLoggedIn', 'isConsultationOwner'],
+    getConsultation: ['isLoggedIn', 'isInviteOwner'],
+    getInvite: ['isLoggedIn', 'canInvite','isInviteOwner'],
+    closeConsultation: ['isLoggedIn', 'canInvite', 'isScheduler' ,'isInviteOwner'],
     findByToken: true
   },
 
   PublicInviteController: {
     '*': false,
-    find: ['isLoggedIn', 'isDoctorOrAdmin', 'isInviteOwner']
+    find: ['isLoggedIn', 'canInvite', 'isInviteOwner'],
+    destroy: ['isLoggedIn', 'canInvite','isInviteOwner'],
+    update: ['isLoggedIn', 'canInvite','isInviteOwner', 'validateInviteUpdate'],
+    findOne: ['isLoggedIn', 'canInvite','isInviteOwner'],
   },
 
   QueueController: {

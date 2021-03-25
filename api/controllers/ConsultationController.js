@@ -58,7 +58,7 @@ module.exports = {
       match = [{
         acceptedBy: new ObjectId(req.user.id)
       }, {
-        invitedBy: new ObjectId(req.user.id),
+        doctor: new ObjectId(req.user.id),
         queue: null
       }
       ];
@@ -333,8 +333,9 @@ module.exports = {
         consultationJson.lastName = invite.lastName ? invite.lastName : 'No lastname';
         consultationJson.gender = invite.gender ? invite.gender : 'unknown';
         consultationJson.queue = invite.queue;
-        consultationJson.invitedBy = invite.invitedBy;
+        consultationJson.doctor = invite.doctor;
         consultationJson.invite = invite.id;
+        consultationJson.invitedBy = invite.invitedBy;
 
 
       }
@@ -438,13 +439,18 @@ module.exports = {
         id: req.params.consultation
       });
       if (!consultation || consultation.status !== 'active') {
-        return res.notFound();
+        const anonymousConsultation = await AnonymousConsultation.find({consultationId: req.params.consultation})
+        if(anonymousConsultation){
+          return res.status(200).json(anonymousConsultation);
+        }else{
+          return res.notFound();
+        }
       }
       await Consultation.closeConsultation(consultation);
 
 
-      res.status(200);
-      return res.json(consultation);
+
+      return res.status(200).json(consultation);
 
     } catch (error) {
       sails.log('error ', error);
