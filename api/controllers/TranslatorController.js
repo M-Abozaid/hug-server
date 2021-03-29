@@ -6,8 +6,6 @@
  */
 
 
-
-
 module.exports = {
 
 
@@ -16,7 +14,7 @@ module.exports = {
     const locale = req.headers.locale || process.env.DEFAULT_PATIENT_LOCALE;
     try {
 
-      const translatorRequestInvite = await PublicInvite.findOne({ type: 'TRANSLATOR_REQUEST', inviteToken: req.params.translationRequestToken });
+      const translatorRequestInvite = await PublicInvite.findOne({ type: 'TRANSLATOR_REQUEST', inviteToken: req.params.translationRequestToken }).populate('translationOrganization');;
 
       if (!translatorRequestInvite) {
         return res.status(404).json({
@@ -123,6 +121,9 @@ module.exports = {
           }
         }
 
+        if(translatorRequestInvite.translationOrganization && translatorRequestInvite.translationOrganization.reportEmail){
+          await TranslationOrganization.sendTranslationAcceptedReport(translatorRequestInvite.translationOrganization, newUser, translatorRequestInvite, patientInvite.doctor)
+        }
       } catch (err) {
         console.error('Error accepting translation request', err);
         await PublicInvite.updateOne({ type: 'TRANSLATOR_REQUEST', inviteToken: req.params.translationRequestToken }).set({ status: 'SENT' });
