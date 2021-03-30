@@ -126,22 +126,25 @@ module.exports = {
     const nowDate = moment().local(doctorLangCode).format('D MMMM YYYY');
     const doctorLanguage = sails._t(doctorLangCode, doctorLangCode);
     const patientLanguage = sails._t(doctorLangCode, invite.patientLanguage);
+    const doctorName = (invite.doctor.firstName || '') + ' '+ (invite.doctor.lastName || '')
+
     return sails.helpers.email.with({
       to: email,
       subject: sails._t(doctorLangCode, 'translation request email subject', { doctorLanguage, patientLanguage, branding: process.env.BRANDING }),
-      text: invite.scheduledFor ? sails._t(doctorLangCode, 'scheduled translation request email', { doctorLanguage, patientLanguage, inviteTime, url, branding: process.env.BRANDING }) :
-      sails._t(doctorLangCode, 'translation request email', { doctorLanguage, patientLanguage, inviteTime: nowDate, url, branding: process.env.BRANDING })
+      text: invite.scheduledFor ? sails._t(doctorLangCode, 'scheduled translation request email', { doctorLanguage, patientLanguage, inviteTime, url, branding: process.env.BRANDIN, doctorNameG }) :
+      sails._t(doctorLangCode, 'translation request email', { doctorLanguage, patientLanguage, inviteTime: nowDate, url, branding: process.env.BRANDING, doctorName })
     });
   },
 
   sendTranslatorInvite (invite, email) {
     const url = `${process.env.PUBLIC_URL}?invite=${invite.inviteToken}`;
     const doctorLang = invite.doctorLanguage || process.env.DEFAULT_DOCTOR_LOCALE;
+    const doctorName = (invite.doctor.firstName || '') + ' '+ (invite.doctor.lastName || '')
 
     return sails.helpers.email.with({
       to: email,
       subject: sails._t(doctorLang, 'translator login link email subject'),
-      text: sails._t(doctorLang, 'translator login link email', {url})
+      text: sails._t(doctorLang, 'translator login link email', {url, doctorName})
     });
   },
 
@@ -178,9 +181,11 @@ module.exports = {
     const locale = invite.patientLanguage || process.env.DEFAULT_PATIENT_LOCALE;
     const inviteTime = invite.scheduledFor ? moment(invite.scheduledFor).local(locale).format('d MMMM HH:mm') : '';
 
+
+    const doctorName = (invite.doctor.firstName || '') + ' '+ (invite.doctor.lastName || '')
     const message = invite.scheduledFor ?
-    sails._t(locale, 'scheduled patient invite', {inviteTime, testingUrl, branding: process.env.BRANDING}) :
-     sails._t(locale, 'patient invite', {url, branding: process.env.BRANDING});
+    sails._t(locale, 'scheduled patient invite', {inviteTime, testingUrl, branding: process.env.BRANDING, doctorName}) :
+     sails._t(locale, 'patient invite', {url, branding: process.env.BRANDING, doctorName});
     // don't send invite if there is a translator required
     if (invite.emailAddress) {
       try {
@@ -219,10 +224,11 @@ module.exports = {
     const url = `${process.env.PUBLIC_URL}?invite=${invite.inviteToken}`;
     const locale = invite.patientLanguage || process.env.DEFAULT_PATIENT_LOCALE;
     const inviteTime = invite.scheduledFor ? moment(invite.scheduledFor).local(locale).format('d MMMM HH:mm') : '';
+    const doctorName = (invite.doctor.firstName || '') + ' '+ (invite.doctor.lastName || '')
 
     const message = invite.scheduledFor ?
-     sails._t(locale, 'scheduled guest invite', {inviteTime, testingUrl, branding: process.env.BRANDING}) :
-     sails._t(locale, 'guest invite', {url, branding: process.env.BRANDING});
+     sails._t(locale, 'scheduled guest invite', {inviteTime, testingUrl, branding: process.env.BRANDING, doctorName}) :
+     sails._t(locale, 'guest invite', {url, branding: process.env.BRANDING, doctorName});
     // don't send invite if there is a translator required
     if (invite.emailAddress) {
       try {
@@ -263,9 +269,11 @@ module.exports = {
     const url = `${process.env.PUBLIC_URL}?invite=${invite.inviteToken}`;
     const locale = invite.patientLanguage || process.env.DEFAULT_PATIENT_LOCALE;
     const inviteTime = moment(invite.scheduledFor).local(locale).format('d MMMM HH:mm');
-    const firstReminderMessage = invite.type === 'PATIENT' ? sails._t(locale, 'first invite reminder', {inviteTime, branding: process.env.BRANDING}) :
-     sails._t(locale, 'first guest invite reminder', {inviteTime, branding: process.env.BRANDING});
-    const secondReminderMessage = invite.type === 'PATIENT' ? sails._t(locale, 'second invite reminder', {url}) : sails._t(locale, 'second guest invite reminder', {url});
+    const doctorName = (invite.doctor.firstName || '') + ' '+ (invite.doctor.lastName || '')
+
+    const firstReminderMessage = invite.type === 'PATIENT' ? sails._t(locale, 'first invite reminder', {inviteTime, branding: process.env.BRANDING, doctorName}) :
+     sails._t(locale, 'first guest invite reminder', {inviteTime, branding: process.env.BRANDING, doctorName});
+    const secondReminderMessage = invite.type === 'PATIENT' ? sails._t(locale, 'second invite reminder', {url, doctorName}) : sails._t(locale, 'second guest invite reminder', {url, doctorName});
 
     if (invite.phoneNumber) {
 

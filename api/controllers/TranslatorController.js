@@ -89,6 +89,7 @@ module.exports = {
 
         await User.create(newUser);
 
+        patientInvite.translatorInvite.doctor = patientInvite.doctor
 
         await PublicInvite.sendTranslatorInvite(translatorInvite, newUser.email);
 
@@ -100,6 +101,7 @@ module.exports = {
           await PublicInvite.sendPatientInvite(patientInvite);
         }
         if (patientInvite.guestInvite) {
+          patientInvite.guestInvite.doctor = patientInvite.doctor
           await PublicInvite.sendGuestInvite(patientInvite.guestInvite);
         }
 
@@ -117,6 +119,7 @@ module.exports = {
           }
 
           if (patientInvite.guestInvite) {
+            patientInvite.guestInvite.doctor = patientInvite.doctor
             await PublicInvite.setPatientOrGuestInviteReminders(patientInvite.guestInvite);
           }
         }

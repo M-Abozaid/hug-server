@@ -252,6 +252,7 @@ module.exports = {
 
         await PublicInvite.updateOne({ id: invite.id }).set({ translatorRequestInvite: translatorRequestInvite.id });
 
+        translatorRequestInvite.doctor = doctor || req.user
         createTranslationRequest(translatorRequestInvite, translationOrganization);
 
         return res.status(200).json({
@@ -275,9 +276,11 @@ module.exports = {
 
     try {
       if(req.user.role !== 'scheduler'){
+        invite.doctor = doctor || req.user;
         await PublicInvite.sendPatientInvite(invite);
       }
       if (guestInvite) {
+        guestInvite.doctor = doctor || req.user;
         await PublicInvite.sendGuestInvite(guestInvite);
       }
     } catch (error) {
@@ -292,9 +295,11 @@ module.exports = {
 
     if (invite.scheduledFor) {
       if(req.user.role !== 'scheduler'){
+        invite.doctor = doctor || req.user;
         await PublicInvite.setPatientOrGuestInviteReminders(invite);
       }
       if (guestInvite) {
+        guestInvite.doctor = doctor || req.user;
         await PublicInvite.setPatientOrGuestInviteReminders(guestInvite);
       }
     }
@@ -318,7 +323,7 @@ module.exports = {
    */
   async resend (req, res) {
     try {
-      const patientInvite = await PublicInvite.findOne({ id: req.params.invite }).populate('guestInvite').populate('translatorInvite').populate('translatorRequestInvite');
+      const patientInvite = await PublicInvite.findOne({ id: req.params.invite }).populate('guestInvite').populate('translatorInvite').populate('translatorRequestInvite').populate('doctor');
 
       if (!patientInvite) {
         return res.notFound();
@@ -344,7 +349,7 @@ module.exports = {
         await PublicInvite.updateOne({ id: patientInvite.translatorInvite.id }).set({
           status: 'SENT'
         });
-
+        patientInvite.translatorInvite.doctor = patientInvite.doctor
         await PublicInvite.sendTranslatorInvite(patientInvite.translatorInvite, translator.email);
       }
 
@@ -353,7 +358,7 @@ module.exports = {
         await PublicInvite.updateOne({ id: patientInvite.guestInvite.id }).set({
           status: 'SENT'
         });
-
+        patientInvite.guestInvite.doctor = patientInvite.doctor
         await PublicInvite.sendGuestInvite(patientInvite.guestInvite);
       }
 
