@@ -460,20 +460,15 @@ module.exports = {
   async testCall (req, res) {
     try {
 
-      const data1 = {};
-      data1['mediaMode'] = 'ROUTED';
-      data1['recordingMode'] = 'MANUAL';
-      data1['RECORDING_LAYOUT'] = 'BEST_FIT';
-      data1['recordingLayout'] = 'BEST_FIT';
 
-      const openviduServers = await sails.helpers.openviduServer();
+      const mediasoupServers = await sails.helpers.getMediasoupServers();
 
-      const serverIndex = Math.floor(Math.random() * openviduServers.length);
+      const serverIndex = Math.floor(Math.random() * mediasoupServers.length);
 
-      const openvidu = new OpenVidu(openviduServers[serverIndex].url, openviduServers[serverIndex].password);
+      const mediasoupServer = mediasoupServers[serverIndex]
+      const token = await sails.helpers.getMediasoupToken.with({roomId: req.user.id, peerId: req.user.id, server: mediasoupServer})
 
-      const session = await openvidu.createSession(data1);
-      const token = await session.generateToken();
+      return res.json({ token });
 
       return res.json({ token });
     } catch (err) {
@@ -486,29 +481,24 @@ module.exports = {
   async call (req, res) {
     try {
 
-      const openviduServers = await sails.helpers.openviduServer();
+      const mediasoupServers = await sails.helpers.getMediasoupServers();
 
-      const serverIndex = Math.floor(Math.random() * openviduServers.length);
+      const serverIndex = Math.floor(Math.random() * mediasoupServers.length);
 
-      const openvidu = new OpenVidu(openviduServers[serverIndex].url, openviduServers[serverIndex].password);
+      const mediasoupServer = mediasoupServers[serverIndex]
 
-      // the consultation this call belongs to
-      console.log('Start call');
       const consultation = await Consultation.findOne({
         _id: req.params.consultation
       });
       console.log('Got consultation', consultation.id);
-      const session = await openvidu.createSession({
-        customSessionId: req.params.consultation
-      });
-      console.log('Caller session', session);
-
-      const callerToken = await session.generateToken();
-      console.log('Caller token', callerToken);
 
 
-      const patientToken = await session.generateToken();
-      console.log('callee token', patientToken);
+      const callerToken = await sails.helpers.getMediasoupToken.with({roomId: consultation.id, peerId: req.user.id, server: mediasoupServer})
+
+
+      const calleeId = (req.user.id === consultation.owner) ? consultation.acceptedBy : consultation.owner;
+
+      const patientToken = await sails.helpers.getMediasoupToken.with({roomId: consultation.id, peerId: calleeId, server: mediasoupServer});
 
 
       // the current user
@@ -517,7 +507,6 @@ module.exports = {
       });
 
 
-      const calleeId = (req.user.id === consultation.owner) ? consultation.acceptedBy : consultation.owner;
       console.log('Callee id', calleeId);
 
       // create a new message
@@ -529,7 +518,7 @@ module.exports = {
         participants: [req.user.id],
         isConferenceCall: !!((consultation.translator || consultation.guest)),
         status: 'ringing',
-        openViduURL: openviduServers[serverIndex].url
+        mediasoupURL: mediasoupServer.url
       }).fetch();
 
       const patientMsg = Object.assign({}, msg);
@@ -542,7 +531,7 @@ module.exports = {
         data: {
           consultation: req.params.consultation,
           token: patientToken,
-          id: session.id,
+          id: req.params.consultation,
           user: {
             firstName: user.firstName,
             lastName: user.lastName
@@ -553,7 +542,7 @@ module.exports = {
       });
 
       if (consultation.translator) {
-        const translatorToken = await session.generateToken();
+        const translatorToken = await sails.helpers.getMediasoupToken.with({roomId: consultation.id, peerId: consultation.translator, server: mediasoupServer});
         const translatorMsg = Object.assign({}, msg);
         translatorMsg.token = translatorToken;
 
@@ -561,7 +550,7 @@ module.exports = {
           data: {
             consultation: req.params.consultation,
             token: translatorToken,
-            id: session.id,
+            id: req.params.consultation,
             audioOnly: req.query.audioOnly === 'true',
             msg: translatorMsg
           }
@@ -570,7 +559,7 @@ module.exports = {
       }
 
       if (consultation.guest) {
-        const guestToken = await session.generateToken();
+        const guestToken = await sails.helpers.getMediasoupToken.with({roomId: consultation.id, peerId: consultation.guest, server: mediasoupServer});
         const guestMsg = Object.assign({}, msg);
         guestMsg.token = guestToken;
 
@@ -578,7 +567,7 @@ module.exports = {
           data: {
             consultation: req.params.consultation,
             token: guestToken,
-            id: session.id,
+            id: req.params.consultation,
             audioOnly: req.query.audioOnly === 'true',
             msg: guestMsg
           }
@@ -589,7 +578,7 @@ module.exports = {
       msg.token = callerToken;
       return res.json({
         token: callerToken,
-        id: session.id,
+        id: req.params.consultation,
         msg
       });
 
@@ -910,24 +899,26 @@ module.exports = {
 
     const [call] = await Message.find({ where: selector, sort: [{ createdAt: 'DESC' }] }).limit(1);
 
-    let openvidu;
+    let mediasoupServer;
     if (call) {
 
-      const [openViduServer] = await OpenviduServer.find({ url: call.openViduURL }).limit(1);
-      if (openViduServer) {
-
-        openvidu = new OpenVidu(openViduServer.url, openViduServer.password);
-      } else {
-        if (call.openViduURL === sails.config.OPENVIDU_URL) {
-          openvidu = new OpenVidu(sails.config.OPENVIDU_URL, sails.config.OPENVIDU_SECRET);
-        } else {
-          return res.status(500).send();
+      [mediasoupServer] = await MediasoupServer.find({ url: call.mediasoupURL }).limit(1);
+      if (!mediasoupServer) {
+        if (call.mediasoupURL === process.env.MEDIASOUP_URL) {
+          mediasoupServer = {
+            url: process.env.MEDIASOUP_URL,
+            password: process.env.MEDIASOUP_SECRET,
+            username: process.env.MEDIASOUP_USER
+          }
         }
-      }
-      const session = await openvidu.createSession({
-        customSessionId: req.params.consultation
-      });
-      const token = await session.generateToken();
+          else {
+            return res.status(500).send();
+          };
+        }
+
+
+
+      const token = await sails.helpers.getMediasoupToken.with({roomId: req.params.consultation, peerId: req.user.id, server: mediasoupServer})
 
       call.token = token;
     }
