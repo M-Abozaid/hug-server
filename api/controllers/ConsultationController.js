@@ -470,7 +470,6 @@ module.exports = {
 
       return res.json({ token });
 
-      return res.json({ token });
     } catch (err) {
       console.error(err);
     }
