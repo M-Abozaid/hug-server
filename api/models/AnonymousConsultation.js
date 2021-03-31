@@ -82,6 +82,21 @@ module.exports = {
       model: 'PublicInvite',
       required: false
     },
+    numberOfEffectiveParticipants: {
+      type: 'number'
+    },
+    numberOfPlannedParticipants: {
+      type: 'number'
+    },
+    languages: {
+      type: 'string'
+    },
+    translationOrganization: {
+      type: 'string',
+    },
+    interpreterName: {
+      type: 'string',
+    },
   }
 
 };
