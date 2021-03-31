@@ -226,7 +226,7 @@ module.exports = {
           phoneNumber:-1, email:-1
         },
         translator:{
-          firstName:-1, email:-1
+          firstName:-1, email:-1, direct:-1
         },
         consultation: 1,
         lastMsg: 1,
