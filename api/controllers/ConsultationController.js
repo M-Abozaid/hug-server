@@ -36,8 +36,12 @@ const columns = [
   { colName: 'Docteur satisfaction message', key: 'doctorComment' },
   { colName: 'Department', key: 'acceptedBy.department' },
   { colName: 'Function', key: 'acceptedBy._function' },
-  { colName: 'Docteur ID', key: 'acceptedBy.id' }
-
+  { colName: 'Docteur ID', key: 'acceptedBy.id' },
+  { colName: 'Nombre de participants effectifs', key: 'numberOfEffectiveParticipants'},
+  { colName: 'Nombre de participants prévus', key: 'numberOfPlannedParticipants'},
+  { colName: 'Langues' , key: 'languages'},
+  { colName: 'Organisation d\'interprétariat', key: 'translationOrganization'},
+  { colName: 'Nom de l\'interprète', key: 'interpreterName' }
 
 ];
 
@@ -520,6 +524,9 @@ module.exports = {
         mediasoupURL: mediasoupServer.url
       }).fetch();
 
+      await Message.addToCollection(msg.id, 'participants', req.user.id);
+      await Message.addToCollection(msg.id, 'currentParticipants', req.user.id);
+
       const patientMsg = Object.assign({}, msg);
       patientMsg.token = patientToken;
 
@@ -594,28 +601,28 @@ module.exports = {
       });
 
 
-      const message = await Message.findOne({ id: req.params.message }).populate('participants');
+      const message = await Message.findOne({ id: req.params.message }).populate('currentParticipants')
 
       // if conference remove them from participants
       if (message.isConferenceCall) {
 
-        if (!message.participants.length || message.status === 'ended') {
+        if (!message.currentParticipants.length || message.status === 'ended') {
 
           return res.json({
             status: 200
           });
         }
 
-        await Message.removeFromCollection(message.id, 'participants', req.user.id);
+        await Message.removeFromCollection(message.id, 'currentParticipants', req.user.id);
         // if this is the last participant end the call and destroy the session
-        const isParticipant = message.participants.find(p => p.id === req.user.id);
+        const isParticipant = message.currentParticipants.find(p => p.id === req.user.id);
 
         if (req.user.role === 'doctor' && isParticipant) {
           await Message.endCall(message, consultation, 'DOCTOR_LEFT');
 
         } else
         // and set closed at
-        if (message.participants.length <= 2 && isParticipant) {
+        if (message.currentParticipants.length <= 2 && isParticipant) {
           await Message.endCall(message, consultation, 'MEMBERS_LEFT');
 
         }
@@ -666,11 +673,16 @@ module.exports = {
         _id: req.params.consultation
       });
 
-      const message = await Message.findOne({ id: req.params.message }).populate('participants');
+      const message = await Message.findOne({ id: req.params.message }).populate('currentParticipants').populate('participants');
 
+
+      // add them once to the participants list
+      if(!message.participants.find(p=> p.id === req.user.id)){
+        await Message.addToCollection(req.params.message, 'participants', req.user.id);
+      }
       // if conference remove them from participants
       if (message.isConferenceCall) {
-        await Message.addToCollection(req.params.message, 'participants', req.user.id);
+        await Message.addToCollection(req.params.message, 'currentParticipants', req.user.id);
 
         // if message doesn't have accepted At add it and set status to ongoing
         if (!message.acceptAt) {
