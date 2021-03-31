@@ -6,6 +6,7 @@
  */
 
 const ObjectId = require('mongodb').ObjectID;
+const _ = require('@sailshq/lodash');
 
 
 module.exports = {
@@ -93,6 +94,7 @@ module.exports = {
       model: 'user',
       required: false
     },
+    // patient invite
     invite: {
       model: 'PublicInvite',
       required: false
@@ -204,19 +206,43 @@ module.exports = {
       doctorComment: consultation.doctorComment,
       doctor: consultation.doctor,
       invite: consultation.invite,
-      invitedBy: consultation.invitedBy
+      invitedBy: consultation.invitedBy,
+      numberOfPlannedParticipants: 2
 
     };
     if (consultation.invite) {
 
+      let invite
       try {
 
-        const invite = await PublicInvite.findOne({ id: consultation.invite });
+        invite = await PublicInvite.findOne({ id: consultation.invite });
         if (invite) {
           anonymousConsultation.inviteScheduledFor = invite.scheduledFor;
           anonymousConsultation.doctor = invite.doctor;
           anonymousConsultation.inviteCreatedAt = invite.createdAt;
+
+          const translatorInvite = await PublicInvite.findOne({ patientInvite: invite.id, type:"TRANSLATOR"});
+          const guestInvite = await PublicInvite.findOne({ patientInvite: invite.id, type:"GUEST"});
+
+          anonymousConsultation.numberOfPlannedParticipants = anonymousConsultation.numberOfPlannedParticipants + (translatorInvite? 1:0) + (guestInvite? 1:0)
+
+          const translationRequestInvite = await PublicInvite.findOne({ patientInvite: invite.id, type:"TRANSLATOR_REQUEST"}).populate('translationOrganization');
+
+          if(translationRequestInvite){
+            anonymousConsultation.languages = sails._t('fr', translationRequestInvite.doctorLanguage) +', ' +
+            sails._t('fr', translationRequestInvite.patientLanguage)
+
+            anonymousConsultation.translationOrganization = translationRequestInvite.translationOrganization.name
+          }
+
+          if(translatorInvite){
+            const translator = await User.findOne({ username: translatorInvite.id});
+            anonymousConsultation.interpreterName = translator.firstName
+          }
+
         }
+
+
       } catch (error) {
         console.log('Error finding invite ', error);
 
@@ -228,7 +254,7 @@ module.exports = {
       const doctorTextMessagesCount = await Message.count({ from: consultation.acceptedBy, consultation: consultation.id, type: 'text' });
       const patientTextMessagesCount = await Message.count({ from: consultation.owner, consultation: consultation.id, type: 'text' });
       const missedCallsCount = await Message.count({ consultation: consultation.id, type: { in: ['videoCall', 'audioCall'] }, acceptedAt: 0 });
-      const successfulCalls = await Message.find({ consultation: consultation.id, type: { in: ['videoCall', 'audioCall'] }, acceptedAt: { '!=': 0 }, closedAt: { '!=': 0 } });
+      const successfulCalls = await Message.find({ consultation: consultation.id, type: { in: ['videoCall', 'audioCall'] }, acceptedAt: { '!=': 0 }, closedAt: { '!=': 0 } }).populate('participants');
       const successfulCallsCount = await Message.count({ consultation: consultation.id, type: { in: ['videoCall', 'audioCall'] }, acceptedAt: { '!=': 0 } });
 
       const callDurations = successfulCalls.map(c => c.closedAt - c.acceptedAt);
@@ -237,6 +263,7 @@ module.exports = {
       const averageCallDuration = averageCallDurationMs / 60000;
 
 
+      anonymousConsultation.numberOfEffectiveParticipants = _.max(successfulCalls.map(c=> c.participants.length))
       anonymousConsultation.doctorTextMessagesCount = doctorTextMessagesCount;
       anonymousConsultation.patientTextMessagesCount = patientTextMessagesCount;
       anonymousConsultation.missedCallsCount = missedCallsCount;
