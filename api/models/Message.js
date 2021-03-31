@@ -61,6 +61,9 @@ module.exports = {
     isConferenceCall: {
       type: 'boolean'
     },
+    currentParticipants: {
+      collection: 'user'
+    },
     participants: {
       collection: 'user'
     },
