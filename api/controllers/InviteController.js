@@ -118,6 +118,12 @@ module.exports = {
       }
     }
 
+    if(req.body.scheduledFor && new Date(req.body.scheduledFor) < new Date()){
+      return res.status(400).json({
+        success: false,
+        error: 'Consultation Time cannot be in the past'
+      });
+    }
 
     if(req.user.role === 'scheduler'){
       if(!req.body.doctorEmail && !req.body.queue){
