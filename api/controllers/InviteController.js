@@ -94,11 +94,19 @@ module.exports = {
     let invite = null;
     console.log('create invite now');
 
+    // validate
     if (req.body.isPatientInvite) {
 
       const errors = validateInviteRequest(req.body);
       if (errors.length) {
         return res.status(400).json(errors);
+      }
+
+      if(req.user.role !== 'scheduler' && (req.body.IMADTeam || req.body.birthDate)){
+        return res.status(400).json({
+          success: false,
+          error: 'IMADTeam and birthDate are not allowed'
+        });
       }
     } else {
       if (!req.body.translationOrganization && !req.body.guestPhoneNumber && !req.body.guestEmailAddress) {
@@ -112,10 +120,10 @@ module.exports = {
 
 
     if(req.user.role === 'scheduler'){
-      if(!req.body.doctorEmail){
+      if(!req.body.doctorEmail && !req.body.queue){
         return res.status(400).json({
           success: false,
-          error: 'doctorEmail is required.'
+          error: 'doctorEmail or queue is required.'
         });
       }
     }
@@ -191,7 +199,9 @@ module.exports = {
         invitedBy: req.user.id,
         scheduledFor: req.body.scheduledFor ? new Date(req.body.scheduledFor) : undefined,
         patientLanguage: req.body.language,
-        type: 'PATIENT'
+        type: 'PATIENT',
+        IMADTeam: req.body.IMADTeam,
+        birthDate: req.body.birthDate
       };
       if (queue) {
         inviteData.queue = queue.id;

@@ -341,6 +341,8 @@ module.exports = {
         consultationJson.invite = invite.id;
         consultationJson.invitedBy = invite.invitedBy;
 
+        consultationJson.IMADTeam = invite.IMADTeam;
+        consultationJson.birthDate = invite.birthDate;
 
       }
     } else if (process.env.DEFAULT_QUEUE_ID) {

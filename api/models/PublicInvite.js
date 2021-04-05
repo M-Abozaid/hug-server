@@ -108,7 +108,13 @@ module.exports = {
     guestInvite: {
       model: 'publicInvite',
       required: false
-    }
+    },
+    birthDate: {
+      type: 'string'
+    },
+    IMADTeam: {
+      type: 'string'
+    },
 
   },
   customToJSON () {
