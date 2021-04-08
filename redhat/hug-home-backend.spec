@@ -30,7 +30,10 @@ SPECS version 1
 %{__install} -d -m0755 %{buildroot}/%{_sysconfdir}/hug-home/
 %{__cp} redhat/hug-home-backend.conf %{buildroot}/%{_sysconfdir}/hug-home/
 %{__cp} redhat/nginx-common %{buildroot}/%{_sysconfdir}/hug-home/
+%{__cp} redhat/nginx-proxy %{buildroot}/%{_sysconfdir}/hug-home/
 %{__cp} redhat/turn.json %{buildroot}/%{_sysconfdir}/hug-home/
+%{__install} -d -m0755 %{buildroot}/%{_datadir}/doc/%{name}/
+%{__cp} -a redhat/nginx/ %{buildroot}/%{_datadir}/doc/%{name}/nginx-samples/
 
 %clean
 %{__rm} -rf %{buildroot}
@@ -38,6 +41,7 @@ SPECS version 1
 %files
 %defattr(-,root,root, 0755)
 %{_datadir}/%{name}/
+%{_datadir}/doc/%{name}/
 /lib/systemd/system/
 %config(noreplace) %{_sysconfdir}/hug-home/
 
