@@ -1,6 +1,6 @@
 Summary: Front end for Hug@Home Backend application
 Name: hug-home-backend
-Version: 4.0.0
+Version: 4.0.1
 Release: 1
 Group: Web Application
 License: HUG
@@ -29,6 +29,7 @@ SPECS version 1
 %{__cp} redhat/hug-home.service %{buildroot}/lib/systemd/system
 %{__install} -d -m0755 %{buildroot}/%{_sysconfdir}/hug-home/
 %{__cp} redhat/hug-home-backend.conf %{buildroot}/%{_sysconfdir}/hug-home/
+%{__cp} redhat/nginx-common %{buildroot}/%{_sysconfdir}/hug-home/
 
 %clean
 %{__rm} -rf %{buildroot}
