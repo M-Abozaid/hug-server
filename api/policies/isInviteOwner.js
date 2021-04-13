@@ -36,9 +36,11 @@ module.exports = async function (req, res, proceed) {
     const exists = await PublicInvite.count(ownerFilter)
     if(!exists){
       const [anonymousConsultation] = await AnonymousConsultation.find({invite: inviteId});
-      if(anonymousConsultation && anonymousConsultation.doctor === req.user.id || anonymousConsultation.invitedBy === req.user.id){
-        return proceed();
-      }
+     if(anonymousConsultation){
+       if(anonymousConsultation.doctor === req.user.id || anonymousConsultation.invitedBy === req.user.id){
+         return proceed();
+       }
+     }
       return res.notFound()
     }
   }else{
