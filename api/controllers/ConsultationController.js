@@ -341,7 +341,7 @@ module.exports = {
         consultationJson.invite = invite.id;
         consultationJson.invitedBy = invite.invitedBy;
 
-        consultationJson.IMADTeam = invite.IMADTeam;
+        consultationJson.IMADTeam = invite.IMADTeam || 'none';
         consultationJson.birthDate = invite.birthDate;
 
       }
