@@ -97,8 +97,11 @@ async function getRoomsCount(server){
     server.url+'/rooms-count',
     {
       headers: {
-        'Authorization': 'Basic ' + Buffer(process.env.MEDIASOUP_USER+':' + process.env.MEDIASOUP_SECRET).toString('base64'),
         'Content-Type': 'application/json'
+      },
+      auth:{
+        username: server.username,
+        password: server.password
       }
     }
   );

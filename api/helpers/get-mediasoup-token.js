@@ -47,8 +47,11 @@ module.exports = {
       },
       {
         headers: {
-          'Authorization': 'Basic ' + Buffer(inputs.server.username+':' + inputs.server.password).toString('base64'),
           'Content-Type': 'application/json'
+        },
+        auth:{
+          username: inputs.server.username,
+          password: inputs.server.password
         }
       }
     );
