@@ -306,8 +306,20 @@ module.exports = {
     }
 
 
+    let shouldSend = true;
+    if(!req.body.hasOwnProperty('sendInvite') ){
+      if(req.user.role === 'scheduler'){
+        req.body.sendInvite = false
+      }else{
+        req.body.sendInvite = true
+      }
+    }
+
+    shouldSend = req.body.sendInvite;
+
+
     try {
-      if(req.user.role !== 'scheduler' || req.body.sendInvite){
+      if(shouldSend){
         invite.doctor = doctor || req.user;
         await PublicInvite.sendPatientInvite(invite);
       }
@@ -326,7 +338,7 @@ module.exports = {
 
 
     if (invite.scheduledFor) {
-      if(req.user.role !== 'scheduler' || req.body.sendInvite){
+      if(shouldSend){
         invite.doctor = doctor || req.user;
         await PublicInvite.setPatientOrGuestInviteReminders(invite);
       }
