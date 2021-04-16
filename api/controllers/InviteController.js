@@ -8,6 +8,7 @@ const db = PublicInvite.getDatastore().manager;
 const ObjectId = require('mongodb').ObjectID;
 
 
+const moment = require('moment');
 
 
 
@@ -116,6 +117,21 @@ module.exports = {
           error: 'You must invite at least a patient translator or a guest!'
         });
       }
+    }
+
+    if(req.body.scheduledFor && !moment(req.body.scheduledFor).isValid()){
+      return res.status(400).json({
+        success: false,
+        error: 'ScheduledFor is not a valid date'
+      });
+    }
+
+
+    if(req.body.birthDate && !moment(req.body.birthDate).isValid()){
+      return res.status(400).json({
+        success: false,
+        error: 'birthDate is not a valid date'
+      });
     }
 
     if(req.body.scheduledFor && new Date(req.body.scheduledFor) < new Date()){
@@ -290,8 +306,20 @@ module.exports = {
     }
 
 
+    let shouldSend = true;
+    if(!req.body.hasOwnProperty('sendInvite') ){
+      if(req.user.role === 'scheduler'){
+        req.body.sendInvite = false
+      }else{
+        req.body.sendInvite = true
+      }
+    }
+
+    shouldSend = req.body.sendInvite;
+
+
     try {
-      if(req.user.role !== 'scheduler'){
+      if(shouldSend){
         invite.doctor = doctor || req.user;
         await PublicInvite.sendPatientInvite(invite);
       }
@@ -310,7 +338,7 @@ module.exports = {
 
 
     if (invite.scheduledFor) {
-      if(req.user.role !== 'scheduler'){
+      if(shouldSend){
         invite.doctor = doctor || req.user;
         await PublicInvite.setPatientOrGuestInviteReminders(invite);
       }
