@@ -472,9 +472,10 @@ module.exports = {
       const serverIndex = Math.floor(Math.random() * mediasoupServers.length);
 
       const mediasoupServer = mediasoupServers[serverIndex]
-      const token = await sails.helpers.getMediasoupToken.with({roomId: req.user.id, peerId: req.user.id, server: mediasoupServer})
+      const roomIdPeerId = 'test_'+ uuidv1();
+      const token = await sails.helpers.getMediasoupToken.with({roomId: roomIdPeerId, peerId: roomIdPeerId, server: mediasoupServer})
 
-      return res.json({ token });
+      return res.json({ token, peerId:roomIdPeerId });
 
     } catch (err) {
       console.error(err);
