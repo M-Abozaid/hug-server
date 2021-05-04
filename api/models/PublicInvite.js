@@ -185,7 +185,7 @@ module.exports = {
 
     const url = `${process.env.PUBLIC_URL}?invite=${invite.inviteToken}`;
     const locale = invite.patientLanguage || process.env.DEFAULT_PATIENT_LOCALE;
-    const inviteTime = invite.scheduledFor ? moment(invite.scheduledFor).local(locale).format('d MMMM HH:mm') : '';
+    const inviteTime = invite.scheduledFor ? moment(invite.scheduledFor).local(locale).format('D MMMM HH:mm') : '';
 
 
     const doctorName = (invite.doctor.firstName || '') + ' '+ (invite.doctor.lastName || '')
@@ -229,7 +229,7 @@ module.exports = {
 
     const url = `${process.env.PUBLIC_URL}?invite=${invite.inviteToken}`;
     const locale = invite.patientLanguage || process.env.DEFAULT_PATIENT_LOCALE;
-    const inviteTime = invite.scheduledFor ? moment(invite.scheduledFor).local(locale).format('d MMMM HH:mm') : '';
+    const inviteTime = invite.scheduledFor ? moment(invite.scheduledFor).local(locale).format('D MMMM HH:mm') : '';
     const doctorName = (invite.doctor.firstName || '') + ' '+ (invite.doctor.lastName || '')
 
     const message = invite.scheduledFor ?
@@ -274,7 +274,7 @@ module.exports = {
 
     const url = `${process.env.PUBLIC_URL}?invite=${invite.inviteToken}`;
     const locale = invite.patientLanguage || process.env.DEFAULT_PATIENT_LOCALE;
-    const inviteTime = moment(invite.scheduledFor).local(locale).format('d MMMM HH:mm');
+    const inviteTime = moment(invite.scheduledFor).local(locale).format('D MMMM HH:mm');
     const doctorName = (invite.doctor.firstName || '') + ' '+ (invite.doctor.lastName || '')
 
     const firstReminderMessage = invite.type === 'PATIENT' ? sails._t(locale, 'first invite reminder', {inviteTime, branding: process.env.BRANDING, doctorName}) :
