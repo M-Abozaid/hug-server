@@ -44,7 +44,7 @@ module.exports = {
       - Email de l'interprète : ${translator.email}
       - Téléphone de l'interprète : ${translator.direct}
       - Langues demandées : ${sails._t('fr',invite.patientLanguage)} et ${sails._t('fr',invite.doctorLanguage)}.${invite.scheduledFor?`
-      - Date planifiée : ${moment(invite.scheduledFor).local('fr').format('D MMMM YYYY HH:mm')}.`:''}
+      - Date planifiée : ${moment(invite.scheduledFor).tz(moment.tz.guess()).locale('fr').format('D MMMM HH:mm zz')}.`:''}
       - Soignant demandant : ${doctor.name || doctor.firstName} ${doctor.email}
       - Contact du soignant : ${doctor.email}`
     });

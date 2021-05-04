@@ -4,7 +4,7 @@
  * @description :: A model definition represents a database table/collection.
  * @docs        :: https://sailsjs.com/docs/concepts/models-and-orm/models
  */
-const moment = require('moment');
+const moment = require('moment-timezone');
 moment.locale('fr');
 const schedule = require('node-schedule');
 
@@ -128,7 +128,7 @@ module.exports = {
   sendTranslationRequestInvite (invite, email) {
     const url = `${process.env.PUBLIC_URL}?invite=${invite.inviteToken}`;
     const doctorLangCode = invite.doctorLanguage || process.env.DEFAULT_DOCTOR_LOCALE;
-    const inviteTime = invite.scheduledFor ? moment(invite.scheduledFor).local(doctorLangCode).format('D MMMM YYYY HH:mm') : '';
+    const inviteTime = invite.scheduledFor ? moment(invite.scheduledFor).local(doctorLangCode).format('D MMMM YYYY HH:mm zz') : '';
     const nowDate = moment().local(doctorLangCode).format('D MMMM YYYY');
     const doctorLanguage = sails._t(doctorLangCode, doctorLangCode);
     const patientLanguage = sails._t(doctorLangCode, invite.patientLanguage);
@@ -185,7 +185,7 @@ module.exports = {
 
     const url = `${process.env.PUBLIC_URL}?invite=${invite.inviteToken}`;
     const locale = invite.patientLanguage || process.env.DEFAULT_PATIENT_LOCALE;
-    const inviteTime = invite.scheduledFor ? moment(invite.scheduledFor).local(locale).format('D MMMM HH:mm') : '';
+    const inviteTime = invite.scheduledFor ? moment(invite.scheduledFor).tz(moment.tz.guess()).locale(locale).format('D MMMM HH:mm zz') : '';
 
 
     const doctorName = (invite.doctor.firstName || '') + ' '+ (invite.doctor.lastName || '')
@@ -229,7 +229,7 @@ module.exports = {
 
     const url = `${process.env.PUBLIC_URL}?invite=${invite.inviteToken}`;
     const locale = invite.patientLanguage || process.env.DEFAULT_PATIENT_LOCALE;
-    const inviteTime = invite.scheduledFor ? moment(invite.scheduledFor).local(locale).format('D MMMM HH:mm') : '';
+    const inviteTime = invite.scheduledFor ? moment(invite.scheduledFor).tz(moment.tz.guess()).locale(locale).format('D MMMM HH:mm zz') : '';
     const doctorName = (invite.doctor.firstName || '') + ' '+ (invite.doctor.lastName || '')
 
     const message = invite.scheduledFor ?
@@ -274,7 +274,7 @@ module.exports = {
 
     const url = `${process.env.PUBLIC_URL}?invite=${invite.inviteToken}`;
     const locale = invite.patientLanguage || process.env.DEFAULT_PATIENT_LOCALE;
-    const inviteTime = moment(invite.scheduledFor).local(locale).format('D MMMM HH:mm');
+    const inviteTime = moment(invite.scheduledFor).tz(moment.tz.guess()).locale(locale).format('D MMMM HH:mm zz');
     const doctorName = (invite.doctor.firstName || '') + ' '+ (invite.doctor.lastName || '')
 
     const firstReminderMessage = invite.type === 'PATIENT' ? sails._t(locale, 'first invite reminder', {inviteTime, branding: process.env.BRANDING, doctorName}) :
