@@ -115,6 +115,9 @@ module.exports = {
     IMADTeam: {
       type: 'string'
     },
+    patientTZ:{
+      type: 'string'
+    }
 
   },
   customToJSON () {
@@ -185,7 +188,7 @@ module.exports = {
 
     const url = `${process.env.PUBLIC_URL}?invite=${invite.inviteToken}`;
     const locale = invite.patientLanguage || process.env.DEFAULT_PATIENT_LOCALE;
-    const inviteTime = invite.scheduledFor ? moment(invite.scheduledFor).tz(moment.tz.guess()).locale(locale).format('D MMMM HH:mm zz') : '';
+    const inviteTime = invite.scheduledFor ? moment(invite.scheduledFor).tz(invite.patientTZ || moment.tz.guess()).locale(locale).format('D MMMM HH:mm zz') : '';
 
 
     const doctorName = (invite.doctor.firstName || '') + ' '+ (invite.doctor.lastName || '')
@@ -229,7 +232,7 @@ module.exports = {
 
     const url = `${process.env.PUBLIC_URL}?invite=${invite.inviteToken}`;
     const locale = invite.patientLanguage || process.env.DEFAULT_PATIENT_LOCALE;
-    const inviteTime = invite.scheduledFor ? moment(invite.scheduledFor).tz(moment.tz.guess()).locale(locale).format('D MMMM HH:mm zz') : '';
+    const inviteTime = invite.scheduledFor ? moment(invite.scheduledFor).tz(invite.patientTZ ||  moment.tz.guess()).locale(locale).format('D MMMM HH:mm zz') : '';
     const doctorName = (invite.doctor.firstName || '') + ' '+ (invite.doctor.lastName || '')
 
     const message = invite.scheduledFor ?
@@ -274,7 +277,7 @@ module.exports = {
 
     const url = `${process.env.PUBLIC_URL}?invite=${invite.inviteToken}`;
     const locale = invite.patientLanguage || process.env.DEFAULT_PATIENT_LOCALE;
-    const inviteTime = moment(invite.scheduledFor).tz(moment.tz.guess()).locale(locale).format('D MMMM HH:mm zz');
+    const inviteTime = moment(invite.scheduledFor).tz(invite.patientTZ || moment.tz.guess()).locale(locale).format('D MMMM HH:mm zz');
     const doctorName = (invite.doctor.firstName || '') + ' '+ (invite.doctor.lastName || '')
 
     const firstReminderMessage = invite.type === 'PATIENT' ? sails._t(locale, 'first invite reminder', {inviteTime, branding: process.env.BRANDING, doctorName}) :

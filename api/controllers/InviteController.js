@@ -8,7 +8,7 @@ const db = PublicInvite.getDatastore().manager;
 const ObjectId = require('mongodb').ObjectID;
 
 
-const moment = require('moment');
+const moment = require('moment-timezone');
 
 
 
@@ -150,6 +150,18 @@ module.exports = {
       }
     }
 
+
+    if(req.body.patientTZ){
+
+      const isTZValid = moment.tz.names().includes(req.body.patientTZ)
+      if(!isTZValid){
+        return res.status(400).json({
+          success: false,
+          error: `Unknown timezone identifier ${req.body.patientTZ}`
+        });
+      }
+    }
+
     let doctor;
     if(req.body.doctorEmail){
       // get doctor
@@ -223,7 +235,8 @@ module.exports = {
         patientLanguage: req.body.language,
         type: 'PATIENT',
         IMADTeam: req.body.IMADTeam,
-        birthDate: req.body.birthDate
+        birthDate: req.body.birthDate,
+        patientTZ: req.body.patientTZ
       };
       if (queue) {
         inviteData.queue = queue.id;
