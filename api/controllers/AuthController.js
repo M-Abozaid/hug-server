@@ -576,7 +576,14 @@ module.exports = {
   getConfig (req, res) {
     res.json({
       method: process.env.LOGIN_METHOD ? process.env.LOGIN_METHOD : 'both',
-      branding: process.env.BRANDING || '@HOME'
+      branding: process.env.BRANDING || '@HOME',
+      appleStoreUrl: process.env.APPLE_STORE_URL,
+      appleStoreTitle: process.env.APPLE_STORE_TITLE,
+      androidStoreUrl: process.env.ANDROID_STORE_URL,
+      androidStoreTitle: process.env.ANDROID_STORE_TITLE
     });
   }
 };
+
+
+
