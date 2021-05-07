@@ -47,6 +47,7 @@ SPECS version 1
 %post
 ## Commands to for the post install
 systemctl daemon-reload
+systemctl restart hug-home
 #mkdir -p /usr/share/hug-home-backend/.tmp
 #chown -R apache /usr/share/hug-home-backend/.tmp
 #./node_modules/.bin/grunt build:production
