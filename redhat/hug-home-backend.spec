@@ -6,8 +6,8 @@ Group: Web Application
 License: HUG
 Source: %{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-root
-BuildRequires: nodejs = 2:10.24.0-1nodesource
-Requires: nodejs = 2:10.24.0-1nodesource
+BuildRequires: nodejs = 2:10.24.1-1nodesource
+Requires: nodejs = 2:10.24.1-1nodesource
 BuildArch: noarch
 
 %global __requires_exclude dtrace
