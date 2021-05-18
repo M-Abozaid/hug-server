@@ -1,13 +1,13 @@
 Summary: Front end for Hug@Home Backend application
 Name: hug-home-backend
-Version: 4.0.1
-Release: 8
+Version: 4.0.3
+Release: 1
 Group: Web Application
 License: HUG
 Source: %{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-root
-#BuildRequires: nodejs
-Requires: nodejs = 2:10.24.0-1nodesource
+BuildRequires: nodejs = 2:10.24.1-1nodesource
+Requires: nodejs = 2:10.24.1-1nodesource
 BuildArch: noarch
 
 %global __requires_exclude dtrace
@@ -47,6 +47,7 @@ SPECS version 1
 %post
 ## Commands to for the post install
 systemctl daemon-reload
+systemctl restart hug-home
 #mkdir -p /usr/share/hug-home-backend/.tmp
 #chown -R apache /usr/share/hug-home-backend/.tmp
 #./node_modules/.bin/grunt build:production
