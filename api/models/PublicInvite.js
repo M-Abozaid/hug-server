@@ -127,6 +127,39 @@ module.exports = {
     obj.inviteToken = await generateToken();
     return proceed();
   },
+  async beforeUpdate (valuesToSet, proceed) {
+    console.log('beforeUpdate', valuesToSet)
+    if(valuesToSet.scheduledFor && !moment(valuesToSet.scheduledFor).isValid()){
+
+      const err = new Error('ScheduledFor is not a valid date ');
+      err.name = 'INVALID_SCHEDULED_FOR';
+      err.code = 400;
+
+      return proceed(err);
+    }
+    if(valuesToSet.scheduledFor && new Date(valuesToSet.scheduledFor) < new Date()){
+
+      const err = new Error('Consultation Time cannot be in the past ');
+      err.name = 'INVALID_SCHEDULED_FOR';
+      err.code = 400;
+
+      return proceed(err);
+    }
+    return proceed()
+  },
+  async afterUpdate (invite, proceed) {
+    console.log('afterUpdate', invite)
+
+    // TODO: update respective guest and translator invites
+    if(invite.type === 'PATIENT'){
+     await PublicInvite.sendPatientInvite(invite)
+     if(invite.scheduledFor){
+       await PublicInvite.setPatientOrGuestInviteReminders(invite)
+     }
+    }
+
+    proceed()
+  },
   generateToken,
   sendTranslationRequestInvite (invite, email) {
     const url = `${process.env.PUBLIC_URL}?invite=${invite.inviteToken}`;
@@ -287,14 +320,16 @@ module.exports = {
     if (invite.phoneNumber) {
 
       if (invite.scheduledFor - Date.now() > FIRST_INVITE_REMINDER) {
-        schedule.scheduleJob(new Date(invite.scheduledFor - FIRST_INVITE_REMINDER), async () => {
+        PublicInvite.scheduleInviteJob(invite, new Date(invite.scheduledFor - FIRST_INVITE_REMINDER), async () => {
+
           await sails.helpers.sms.with({
             phoneNumber: invite.phoneNumber,
             message: firstReminderMessage
           });
         });
       }
-      schedule.scheduleJob(new Date(invite.scheduledFor - SECOND_INVITE_REMINDER), async () => {
+      PublicInvite.scheduleInviteJob(invite, new Date(invite.scheduledFor - SECOND_INVITE_REMINDER), async () => {
+
         await sails.helpers.sms.with({
           phoneNumber: invite.phoneNumber,
           message: secondReminderMessage
@@ -304,7 +339,8 @@ module.exports = {
 
     if (invite.emailAddress) {
       if (invite.scheduledFor - Date.now() > FIRST_INVITE_REMINDER) {
-        schedule.scheduleJob(new Date(invite.scheduledFor - FIRST_INVITE_REMINDER), async () => {
+        PublicInvite.scheduleInviteJob(invite, new Date(invite.scheduledFor - FIRST_INVITE_REMINDER), async () => {
+
           await sails.helpers.email.with({
             to: invite.emailAddress,
             subject: sails._t(locale, 'your consultation link'),
@@ -313,7 +349,8 @@ module.exports = {
 
         });
       }
-      schedule.scheduleJob(new Date(invite.scheduledFor - SECOND_INVITE_REMINDER), async () => {
+      PublicInvite.scheduleInviteJob(invite, new Date(invite.scheduledFor - SECOND_INVITE_REMINDER), async () => {
+
         await sails.helpers.email.with({
           to: invite.emailAddress,
           subject: sails._t(locale, 'your consultation link'),
@@ -378,6 +415,19 @@ module.exports = {
       });
     }
 
+  },
+
+  async scheduleInviteJob(invite, jobTime, job){
+    schedule.scheduleJob(jobTime, async () => {
+      const updatedInvite = await PublicInvite.findOne({id: invite.id});
+      if(updatedInvite.updatedAt !== invite.updatedAt){
+        console.log('invite have been updated CANCEL JOB')
+        return
+      }
+      await job()
+
+    });
   }
+
 
 };
