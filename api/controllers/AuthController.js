@@ -22,6 +22,21 @@ function generateVerificationCode () {
   return string;
 }
 
+const canLoginLocal = async (req)=>{
+  if( (process.env.LOGIN_METHOD === 'password' || process.env.LOGIN_METHOD === 'both')){
+    return true
+  }
+  if(req.user && req.user.role === 'doctor'){
+    return false
+  }else if(req.body.email){
+    const isDoctor = await User.count({ email: req.body.email, role: 'doctor' });
+    return !isDoctor
+  }else if(typeof req.body.user === 'string'){
+    const isDoctor = await User.count({ id: req.body.user, role: 'doctor' });
+    return !isDoctor
+  }
+  return false
+}
 module.exports = {
 
   // login using client certificate
