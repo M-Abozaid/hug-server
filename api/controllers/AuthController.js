@@ -219,10 +219,13 @@ module.exports = {
   // used only for admin
   async loginLocal (req, res) {
     if (!process.env.LOGIN_METHOD || (process.env.LOGIN_METHOD !== 'password' && process.env.LOGIN_METHOD !== 'both')) {
-      console.log('Password login is disabled');
-      return res.status(500).json({
-        message: 'Password login is disabled'
-      });
+      const isDoctor = await User.count({ email: req.body.email, role: 'doctor' });
+      if (isDoctor) {
+        console.log('Password login is disabled');
+        return res.status(500).json({
+          message: 'Password login is disabled'
+        });
+      }
     }
 
     const isAdmin = await User.count({ email: req.body.email, role: 'admin' });
