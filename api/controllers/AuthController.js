@@ -220,12 +220,12 @@ module.exports = {
   async loginLocal (req, res) {
     const isLoginLocalAllowed = await canLoginLocal(req)
     if (!isLoginLocalAllowed) {
-      if (isDoctor) {
+
         console.log('Password login is disabled');
         return res.status(400).json({
           message: 'Password login is disabled'
         });
-      }
+
     }
 
     const isAdmin = await User.count({ email: req.body.email, role: 'admin' });
