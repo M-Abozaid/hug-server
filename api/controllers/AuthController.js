@@ -218,11 +218,11 @@ module.exports = {
 
   // used only for admin
   async loginLocal (req, res) {
-    if (!process.env.LOGIN_METHOD || (process.env.LOGIN_METHOD !== 'password' && process.env.LOGIN_METHOD !== 'both')) {
-      const isDoctor = await User.count({ email: req.body.email, role: 'doctor' });
+    const isLoginLocalAllowed = await canLoginLocal(req)
+    if (!isLoginLocalAllowed) {
       if (isDoctor) {
         console.log('Password login is disabled');
-        return res.status(500).json({
+        return res.status(400).json({
           message: 'Password login is disabled'
         });
       }
@@ -330,12 +330,6 @@ module.exports = {
 
   // used only for admin
   loginSms (req, res) {
-    if (!process.env.LOGIN_METHOD || (process.env.LOGIN_METHOD !== 'password' && process.env.LOGIN_METHOD !== 'both')) {
-      console.log('Password login is disabled');
-      return res.status(500).json({
-        message: 'Password login is disabled'
-      });
-    }
 
     passport.authenticate('sms', async (err, user, info = {}) => {
       console.log('Authenticate now', err, user);
@@ -373,12 +367,6 @@ module.exports = {
 
 
   login2FA (req, res) {
-    if (!process.env.LOGIN_METHOD || (process.env.LOGIN_METHOD !== 'password' && process.env.LOGIN_METHOD !== 'both')) {
-      console.log('Password login is disabled');
-      return res.status(500).json({
-        message: 'Password login is disabled'
-      });
-    }
 
     passport.authenticate('2FA', (err, user, info = {}) => {
       console.log('Authenticate now', err, user);
