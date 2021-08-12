@@ -1,6 +1,6 @@
 {
-	"patient invite": "Cliquez ici pour accéder à votre vidéo consultation avec votre soignant  %(doctorName)s : %(url)s",
-	"guest invite": "Cliquez ici pour accéder à votre vidéo consultation avec votre soignant  %(doctorName)s : %(url)s",
+	"patient invite": "Cliquez ici pour accéder à votre vidéo consultation avec votre soignant %(doctorName)s : %(url)s",
+	"guest invite": "Cliquez ici pour accéder à votre vidéo consultation avec votre soignant %(doctorName)s : %(url)s",
 	"scheduled patient invite": "Bonjour, vous avez été invité pour une télé-consultation de télémédecine %(branding)s le %(inviteTime)s. Nous vous conseillons d'ores et déjà de tester la compatibilité de votre appareil avec le lien suivant.\n %(testingUrl)s",
 	"scheduled guest invite": "Bonjour, vous avez été invité pour une télé-consultation de télémédecine %(branding)s le %(inviteTime)s. Nous vous conseillons d'ores et déjà de tester la compatibilité de votre appareil avec le lien suivant.\n %(testingUrl)s",
 	"first invite reminder": "Rappel J-1 Votre consultation de télémédecine %(branding)s aura lieu demain à %(inviteTime)s",
@@ -10,7 +10,7 @@
 	"your consultation link": "Votre lien de téléconsultation",
 	"translation request email subject": "Requête d'interprète entre %(doctorLanguage)s et %(patientLanguage)s",
 	"translation request email":  "Cher interprète,\n\nNous avons reçu de la part d'un soignant une demande d'interprétation sur la plateforme %(branding)s :\nLangue du soignant : %(doctorLanguage)s\nLangue du patient : %(patientLanguage)s\nDate : aussi vite que possible\nAfin de confirmer ou non votre disponibilité, veuillez cliquer sur le lien ci-dessous\n%(url)s\n\nSi personne ne confirme sa disponibilité après 48h, nous considérerons que personne n'est disponible.\n\nMerci",
-        "scheduled translation request email": "Cher interprète,\n\nNous avons reçu de la part d'un soignant une requête d'interprète sur la plateforme %(branding)s :\nLangue du soignant : %(doctorLanguage)s\nLangue du patient : %(patientLanguage)s\nDate : %(inviteTime)s\n\nAfin de confirmer ou non votre disponibilité, veuillez cliquer sur le lien ci-dessous\n%(url)s\n\nSi personne ne confirme sa disponibilité après 48h, nous considérerons que personne n'est disponible.\n\nMerci",
+    "scheduled translation request email": "Cher interprète,\n\nNous avons reçu de la part d'un soignant une requête d'interprète sur la plateforme %(branding)s :\nLangue du soignant : %(doctorLanguage)s\nLangue du patient : %(patientLanguage)s\nDate : %(inviteTime)s\n\nAfin de confirmer ou non votre disponibilité, veuillez cliquer sur le lien ci-dessous\n%(url)s\n\nSi personne ne confirme sa disponibilité après 48h, nous considérerons que personne n'est disponible.\n\nMerci",
 	"translator login link email subject": "Votre lien de téléconsultation",
 	"translator login link email": "Veuillez cliquer ici pour rejoindre la consultation %(url)s",
 	"invalid invite": "Ce lien d'invitation est invalide",
