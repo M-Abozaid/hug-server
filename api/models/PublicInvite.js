@@ -147,19 +147,7 @@ module.exports = {
     }
     return proceed()
   },
-  async afterUpdate (invite, proceed) {
-    console.log('afterUpdate', invite)
 
-    // TODO: update respective guest and translator invites
-    if(invite.type === 'PATIENT'){
-     await PublicInvite.sendPatientInvite(invite)
-     if(invite.scheduledFor){
-       await PublicInvite.setPatientOrGuestInviteReminders(invite)
-     }
-    }
-
-    proceed()
-  },
   generateToken,
   sendTranslationRequestInvite (invite, email) {
     const url = `${process.env.PUBLIC_URL}?invite=${invite.inviteToken}`;

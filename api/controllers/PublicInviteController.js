@@ -9,6 +9,33 @@ const db = PublicInvite.getDatastore().manager;
 
 module.exports = {
 
+  async update(req, res) {
+    const inviteId = req.params.id;
+
+    const invite = await PublicInvite.findOne({id:inviteId});
+
+    if(!invite) {
+      return res.notFound();
+    }
+
+    try {
+      const updatedInvite = await PublicInvite.updateOne({id:inviteId}).set(req.body);
+
+
+      // TODO: update respective guest and translator invites
+      if(invite.type === 'PATIENT'){
+        await PublicInvite.sendPatientInvite(invite)
+        if(invite.scheduledFor){
+          await PublicInvite.setPatientOrGuestInviteReminders(invite)
+        }
+      }
+      res.json(updatedInvite)
+
+    } catch (error) {
+      res.serverError(error.message);
+    }
+
+  }
   // async find (req, res) {
   //   console.log('getting public invites');
   //   const publicInviteCollection = db.collection('publicInvite');
