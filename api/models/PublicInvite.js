@@ -413,7 +413,7 @@ module.exports = {
 //      if(updatedInvite.updatedAt !== invite.updatedAt){
 //        console.log('invite have been updated CANCEL JOB')
 //        return
-      }
+//      }
       await job()
 
     });
