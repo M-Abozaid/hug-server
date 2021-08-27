@@ -394,30 +394,41 @@ module.exports = {
         });
       }
 
+      await PublicInvite.sendPatientInvite(patientInvite);
       await PublicInvite.updateOne({ id: req.params.invite }).set({
         status: 'SENT'
       });
-      await PublicInvite.sendPatientInvite(patientInvite);
 
 
 
       if (patientInvite.translatorInvite) {
         const translator = await User.findOne({ username: patientInvite.translatorInvite.id });
+        patientInvite.translatorInvite.doctor = patientInvite.doctor
+        await PublicInvite.sendTranslatorInvite(patientInvite.translatorInvite, translator.email);
         await PublicInvite.updateOne({ id: patientInvite.translatorInvite.id }).set({
           status: 'SENT'
         });
-        patientInvite.translatorInvite.doctor = patientInvite.doctor
-        await PublicInvite.sendTranslatorInvite(patientInvite.translatorInvite, translator.email);
       }
 
 
       if (patientInvite.guestInvite) {
+        patientInvite.guestInvite.doctor = patientInvite.doctor
+        await PublicInvite.sendGuestInvite(patientInvite.guestInvite);
         await PublicInvite.updateOne({ id: patientInvite.guestInvite.id }).set({
           status: 'SENT'
         });
-        patientInvite.guestInvite.doctor = patientInvite.doctor
-        await PublicInvite.sendGuestInvite(patientInvite.guestInvite);
       }
+
+      // if the invite is scheduled for later set the reminders
+      if(patientInvite.scheduledFor &&
+        patientInvite.scheduledFor > Date.now()){
+          await PublicInvite.setPatientOrGuestInviteReminders(patientInvite);
+          if(patientInvite.guestInvite){
+            await PublicInvite.setPatientOrGuestInviteReminders(guestInvite);
+          }
+
+
+        }
 
 
       return res.json({
