@@ -408,10 +408,12 @@ module.exports = {
   async scheduleInviteJob(invite, jobTime, job){
     schedule.scheduleJob(jobTime, async () => {
       const updatedInvite = await PublicInvite.findOne({id: invite.id});
-      if(updatedInvite.updatedAt !== invite.updatedAt){
-        console.log('invite have been updated CANCEL JOB')
-        return
-      }
+// TODO : Temporary disable this check has patient doesn't receive invite when
+// other participant are added Check Redmine #3732
+//      if(updatedInvite.updatedAt !== invite.updatedAt){
+//        console.log('invite have been updated CANCEL JOB')
+//        return
+//      }
       await job()
 
     });
