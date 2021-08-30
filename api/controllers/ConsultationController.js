@@ -452,6 +452,21 @@ module.exports = {
           return res.notFound();
         }
       }
+
+      // end any ongoing calls
+      const selector = {
+        consultation: req.params.consultation,
+        type: { in: ['videoCall', 'audioCall'] },
+        status: { in: ['ringing', 'ongoing'] }
+      };
+
+
+
+      const [call] = await Message.find({ where: selector, sort: [{ createdAt: 'DESC' }] }).limit(1);
+
+      if(call){
+          await Message.endCall(call, consultation, 'CONSULTATION_CLOSED');
+      }
       await Consultation.closeConsultation(consultation);
 
 
