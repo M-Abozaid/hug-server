@@ -161,7 +161,7 @@ module.exports = {
     return sails.helpers.email.with({
       to: email,
       subject: sails._t(doctorLangCode, 'translation request email subject', { doctorLanguage, patientLanguage, branding: process.env.BRANDING }),
-      text: invite.scheduledFor ? sails._t(doctorLangCode, 'scheduled translation request email', { doctorLanguage, patientLanguage, inviteTime, url, branding: process.env.BRANDIN, doctorNameG }) :
+      text: invite.scheduledFor ? sails._t(doctorLangCode, 'scheduled translation request email', { doctorLanguage, patientLanguage, inviteTime, url, branding: process.env.BRANDIN, doctorName }) :
       sails._t(doctorLangCode, 'translation request email', { doctorLanguage, patientLanguage, inviteTime: nowDate, url, branding: process.env.BRANDING, doctorName })
     });
   },
