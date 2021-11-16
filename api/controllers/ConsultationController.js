@@ -345,24 +345,6 @@ module.exports = {
         consultationJson.birthDate = invite.birthDate;
 
       }
-    } else if (process.env.DEFAULT_QUEUE_ID) {
-      const queuesUsersCollection = db.collection('queue_allowedQueues_queue__user_allowedQueues');
-      const results = await queuesUsersCollection.find({ queue_allowedQueues_queue: new ObjectId(process.env.DEFAULT_QUEUE_ID) });
-
-      const queuesUsers = await results.toArray();
-      const userCollection = db.collection('user');
-      const doctorsCurs = await userCollection.find({ role: 'doctor', $or: [{ viewAllQueues: true }, { _id: { $in: queuesUsers.map(qu => new ObjectId(qu.user_allowedQueues)) } }] });
-
-      const doctors = await doctorsCurs.toArray();
-
-      doctors.forEach(async doctor => {
-        if (doctor && doctor.enableNotif && doctor.notifPhoneNumber) {
-          a = await sails.helpers.sms.with({
-            phoneNumber: doctor.notifPhoneNumber,
-            message: `Un patient est dans la file d'attente`
-          });
-        }
-      });
     }
 
 
@@ -389,6 +371,39 @@ module.exports = {
     Consultation.create(consultationJson).fetch().then(async consultation => {
       console.log(consultation);
       await Consultation.changeOnlineStatus(req.user, true)
+      if(!req.body.invitationToken && process.env.DEFAULT_QUEUE_ID){
+        const doctors = await Queue.getQueueUsers(process.env.DEFAULT_QUEUE_ID)
+        doctors.forEach(async doctor => {
+          if (doctor && doctor.enableNotif && doctor.notifPhoneNumber) {
+            a = await sails.helpers.sms.with({
+              phoneNumber: doctor.notifPhoneNumber,
+              message: `Un patient est dans la file d'attente`
+            });
+
+          }
+        });
+      }else{
+        if(invite && invite.queue && !invite.doctor){
+          const doctors = await Queue.getQueueUsers(invite.queue)
+          doctors.forEach(async doctor => {
+            if (doctor && doctor.enableNotif && doctor.notifPhoneNumber) {
+              a = await sails.helpers.sms.with({
+                phoneNumber: doctor.notifPhoneNumber,
+                message: `Un patient est dans la file d'attente`
+              });
+
+            }
+          });
+        }else if(invite.doctor){
+          if (invite.doctor && invite.doctor.enableNotif && invite.doctor.notifPhoneNumber) {
+            a = await sails.helpers.sms.with({
+              phoneNumber: invite.doctor.notifPhoneNumber,
+              message: `Un patient est dans la file d'attente`
+            });
+
+          }
+        }
+      }
 
       res.json(consultation);
     }).catch(err => {
@@ -915,6 +930,7 @@ module.exports = {
     res.send(csv);
 
   },
+
 
   async getCurrentCall (req, res) {
 

@@ -212,7 +212,7 @@ module.exports = {
     const inviteTime = invite.scheduledFor ? moment(invite.scheduledFor).tz(invite.patientTZ || moment.tz.guess()).locale(locale).format('D MMMM HH:mm zz') : '';
 
 
-    const doctorName = (invite.doctor.firstName || '') + ' '+ (invite.doctor.lastName || '')
+    const doctorName = invite.doctor? ( invite.doctor.firstName || '') + ' '+ (invite.doctor.lastName || '') :""
     const message = (invite.scheduledFor &&  invite.scheduledFor > Date.now()) ?
     sails._t(locale, 'scheduled patient invite', {inviteTime, testingUrl, branding: process.env.BRANDING, doctorName}) :
      sails._t(locale, 'patient invite', {url, branding: process.env.BRANDING, doctorName});

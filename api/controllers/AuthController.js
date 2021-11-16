@@ -86,22 +86,7 @@ module.exports = {
       } catch (error) {
         console.log('error Updating user login type ', error);
       }
-      // When a patient accept an invitation if the doctor enable the notif he recieve a sms
-      try {
-        const publicInvite = await PublicInvite.findOne({ id: user.inviteToken });
-        console.log(publicInvite);
 
-        const doctorToNotif = await User.findOne({ id: publicInvite.doctor });
-        console.log(publicInvite, doctorToNotif);
-        if (doctorToNotif && doctorToNotif.enableNotif && doctorToNotif.notifPhoneNumber) {
-          a = await sails.helpers.sms.with({
-            phoneNumber: doctorToNotif.notifPhoneNumber,
-            message: `Un patient est dans la file d'attente`
-          });
-        }
-      }
-      catch (e) {
-      }
       req.logIn(user, function(err) {
         req.session.cookie.expires =  7*24*60*50*1000;
         if (err) {

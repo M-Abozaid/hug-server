@@ -94,7 +94,7 @@ module.exports = {
   async invite (req, res) {
     let invite = null;
     console.log('create invite now');
-
+    const currentUserPublic = {id: req.user.id, firstName: req.user.firstName, lastName: req.user.lastName , role: req.user.role};
     // validate
     if (req.body.isPatientInvite) {
 
@@ -166,11 +166,17 @@ module.exports = {
     if(req.body.doctorEmail){
       // get doctor
       [doctor] = await User.find({role: 'doctor', email: req.body.doctorEmail})
+      if(doctor){
+        doctor = _.pick(doctor, ['id', 'firstName', 'lastName', 'email', 'role', 'organization'])
+      }
+
 
       if(!doctor){
         return res.status(400).json({success: false, error: `Doctor with email ${req.body.doctorEmail} not found`})
       }
       // a
+    }else if(req.user.role === 'doctor'){
+      doctor = currentUserPublic;
     }
 
     let queue;
@@ -229,7 +235,6 @@ module.exports = {
         gender: req.body.gender,
         firstName: req.body.firstName,
         lastName: req.body.lastName,
-        doctor: doctor? doctor.id: req.user.id,
         invitedBy: req.user.id,
         scheduledFor: req.body.scheduledFor ? new Date(req.body.scheduledFor) : undefined,
         patientLanguage: req.body.language,
@@ -238,6 +243,9 @@ module.exports = {
         birthDate: req.body.birthDate,
         patientTZ: req.body.patientTZ
       };
+      if(doctor){
+        inviteData.doctor = doctor.id;
+      }
       if (queue) {
         inviteData.queue = queue.id;
       }
@@ -333,11 +341,11 @@ module.exports = {
 
     try {
       if(shouldSend){
-        invite.doctor = doctor || req.user;
+        invite.doctor = doctor
         await PublicInvite.sendPatientInvite(invite);
       }
       if (guestInvite) {
-        guestInvite.doctor = doctor || req.user;
+        guestInvite.doctor = doctor
         await PublicInvite.sendGuestInvite(guestInvite);
       }
     } catch (error) {
@@ -352,11 +360,11 @@ module.exports = {
 
     if (invite.scheduledFor) {
       if(shouldSend){
-        invite.doctor = doctor || req.user;
+        invite.doctor = doctor
         await PublicInvite.setPatientOrGuestInviteReminders(invite);
       }
       if (guestInvite) {
-        guestInvite.doctor = doctor || req.user;
+        guestInvite.doctor = doctor
         await PublicInvite.setPatientOrGuestInviteReminders(guestInvite);
       }
     }
@@ -513,7 +521,9 @@ module.exports = {
     const [consultation] = await Consultation.find({invite: inviteId})
 
     if(!consultation){
-      return res.notFound()
+      const [anonymousConsultation] = await AnonymousConsultation.find({invite: inviteId})
+      if(!anonymousConsultation) return res.notFound();
+
     }
     if(consultation.closedAt){
       consultation.duration = consultation.createAt - consultation.closedAt
