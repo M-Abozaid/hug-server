@@ -529,9 +529,11 @@ module.exports = {
       consultation.duration = consultation.createAt - consultation.closedAt
     }
 
+    const anonymousConsultationDetails = await Consultation.getAnonymousDetails(consultation)
+
     consultation.doctorURL  = process.env.DOCTOR_URL + '/app/consultation/' + consultation.id
 
-    return res.status(200).json(consultation)
+    return res.status(200).json(anonymousConsultationDetails)
   },
   async getInvite(req, res, next){
 

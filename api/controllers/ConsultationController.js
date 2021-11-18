@@ -20,36 +20,9 @@ const _ = require('@sailshq/lodash');
 const db = Consultation.getDatastore().manager;
 
 
-const columns = [
-  { colName: 'Invitation envoyée le', key: 'inviteCreatedAt' },
-  { colName: 'Consultation planifiée le', key: 'inviteScheduledFor' },
-  { colName: 'File d\'attente', key: 'queue.name' },
-  { colName: 'Patient consultation demandée à', key: 'consultationCreatedAt' },
-  { colName: 'IMAD equipe', key: 'IMADTeam' },
-  { colName: 'Consultation clôturée le', key: 'closedAt' },
-  { colName: 'Total appel avec réponse', key: 'successfulCallsCount' },
-  { colName: 'Total appel sans réponse', key: 'missedCallsCount' },
-  { colName: 'Moyenne durée appel', key: 'averageCallDuration' },
-  { colName: 'Patient taux satisfaction', key: 'patientRating' },
-  { colName: 'Patient satisfaction message', key: 'patientComment' },
-  { colName: 'Docteur taux satisfaction', key: 'doctorRating' },
-  { colName: 'Docteur satisfaction message', key: 'doctorComment' },
-  { colName: 'Department', key: 'acceptedBy.department' },
-  { colName: 'Function', key: 'acceptedBy._function' },
-  { colName: 'Docteur ID', key: 'acceptedBy.id' },
-  { colName: 'Nombre de participants effectifs', key: 'numberOfEffectiveParticipants'},
-  { colName: 'Nombre de participants prévus', key: 'numberOfPlannedParticipants'},
-  { colName: 'Langues' , key: 'languages'},
-  { colName: 'Organisation d\'interprétariat', key: 'translationOrganization'},
-  { colName: 'Nom de l\'interprète', key: 'interpreterName' }
-
-];
 
 
 
-
-
-// saveAnonymousDetails()
 module.exports = {
   async consultationOverview (req, res) {
 
@@ -910,21 +883,9 @@ module.exports = {
   async consultationsCSV (req, res) {
 
     const consultations = await AnonymousConsultation.find().populate('acceptedBy').populate('queue').populate('owner');
-    const mappedConsultations = consultations.map(consultation => {
-      if (consultation.owner) {
-        consultation.owner.name = `${consultation.owner.firstName } ${ consultation.owner.lastName}`;
-      }
-      if (consultation.acceptedBy) {
-        consultation.acceptedBy.name = `${consultation.acceptedBy.firstName } ${ consultation.acceptedBy.lastName}`;
-      }
-      const mappedConsultation = {};
-      columns.forEach(col => {
-        mappedConsultation[col.colName] = _.get(consultation, col.key);
-      });
-      return mappedConsultation;
-    });
+    const mappedConsultations = consultations.map(Consultation.getConsultationReport);
 
-    const parser = new Json2csvParser({ fields: columns.map(c => c.colName) }, { encoding: 'utf-8' });
+    const parser = new Json2csvParser({ fields: Consultation.columns.map(c => c.colName) }, { encoding: 'utf-8' });
     const csv = parser.parse(mappedConsultations);
     res.set({ 'Content-Disposition': 'attachment; filename="consultations_summary.csv"' });
     res.send(csv);

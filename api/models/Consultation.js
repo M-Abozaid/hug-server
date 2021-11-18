@@ -9,6 +9,33 @@ const ObjectId = require('mongodb').ObjectID;
 const _ = require('@sailshq/lodash');
 
 
+const columns = [
+  { colName: 'Invitation envoyée le', key: 'inviteCreatedAt' },
+  { colName: 'Consultation planifiée le', key: 'inviteScheduledFor' },
+  { colName: 'File d\'attente', key: 'queue.name' },
+  { colName: 'Patient consultation demandée à', key: 'consultationCreatedAt' },
+  { colName: 'IMAD equipe', key: 'IMADTeam' },
+  { colName: 'Consultation clôturée le', key: 'closedAt' },
+  { colName: 'Total appel avec réponse', key: 'successfulCallsCount' },
+  { colName: 'Total appel sans réponse', key: 'missedCallsCount' },
+  { colName: 'Moyenne durée appel', key: 'averageCallDuration' },
+  { colName: 'Patient taux satisfaction', key: 'patientRating' },
+  { colName: 'Patient satisfaction message', key: 'patientComment' },
+  { colName: 'Docteur taux satisfaction', key: 'doctorRating' },
+  { colName: 'Docteur satisfaction message', key: 'doctorComment' },
+  { colName: 'Department', key: 'acceptedBy.department' },
+  { colName: 'Function', key: 'acceptedBy._function' },
+  { colName: 'Docteur ID', key: 'acceptedBy.id' },
+  { colName: 'Nombre de participants effectifs', key: 'numberOfEffectiveParticipants'},
+  { colName: 'Nombre de participants prévus', key: 'numberOfPlannedParticipants'},
+  { colName: 'Langues' , key: 'languages'},
+  { colName: 'Organisation d\'interprétariat', key: 'translationOrganization'},
+  { colName: 'Nom de l\'interprète', key: 'interpreterName' }
+
+];
+
+
+
 module.exports = {
 
   attributes: {
@@ -186,7 +213,7 @@ module.exports = {
     return consultationParticipants;
   },
 
-  async saveAnonymousDetails (consultation) {
+  async getAnonymousDetails (consultation) {
 
     // consultation = await Consultation.findOne({id:'5e81e3838475f6352ef40aec'})
     const anonymousConsultation = {
@@ -276,8 +303,8 @@ module.exports = {
       console.log('Error counting messages ', error);
     }
     console.log('create anonymous ', anonymousConsultation);
-    await AnonymousConsultation.create(anonymousConsultation);
 
+    return anonymousConsultation
 
   },
   sendConsultationClosed (consultation) {
@@ -304,7 +331,8 @@ module.exports = {
 
     try {
 
-      await Consultation.saveAnonymousDetails(consultation);
+     const anonymousConsultation =  await Consultation.getAnonymousDetails(consultation);
+     await AnonymousConsultation.create(anonymousConsultation);
     } catch (error) {
       console.error('Error Saving anonymous details ', error);
     }
@@ -486,7 +514,22 @@ module.exports = {
     });
 
   },
+  getConsultationReport(consultation){
 
+    if (consultation.owner) {
+      consultation.owner.name = `${consultation.owner.firstName } ${ consultation.owner.lastName}`;
+    }
+    if (consultation.acceptedBy) {
+      consultation.acceptedBy.name = `${consultation.acceptedBy.firstName } ${ consultation.acceptedBy.lastName}`;
+    }
+    const mappedConsultation = {};
+    columns.forEach(col => {
+      mappedConsultation[col.colName] = _.get(consultation, col.key);
+    });
+    return mappedConsultation;
+
+  },
+  columns
   // afterUpdate(consultation){
   //   Consultation.getConsultationParticipants().forEach(participant=>{
   //     sails.sockets.broadcast(participant, 'consultationUpdated', {
