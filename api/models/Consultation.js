@@ -290,7 +290,7 @@ module.exports = {
       const averageCallDuration = averageCallDurationMs / 60000;
 
 
-      anonymousConsultation.numberOfEffectiveParticipants = _.max(successfulCalls.map(c=> c.participants.length))
+      anonymousConsultation.numberOfEffectiveParticipants = (successfulCalls.length>0)?_.max(successfulCalls.map(c=> c.participants.length)):0;
       anonymousConsultation.doctorTextMessagesCount = doctorTextMessagesCount;
       anonymousConsultation.patientTextMessagesCount = patientTextMessagesCount;
       anonymousConsultation.missedCallsCount = missedCallsCount;
