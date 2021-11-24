@@ -525,7 +525,7 @@ module.exports = {
       if(!anonymousConsultation) return res.notFound();
 
     }
-    if(consultation.closedAt){
+    if(consultation && consultation.closedAt){
       consultation.duration = consultation.createAt - consultation.closedAt
     }
 
