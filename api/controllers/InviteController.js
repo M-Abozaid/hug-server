@@ -519,21 +519,24 @@ module.exports = {
     const inviteId = req.params.invite || req.params.id;
     if(!inviteId) return res.status(500).send();
     const [consultation] = await Consultation.find({invite: inviteId})
+    const [anonymousConsultation] = await AnonymousConsultation.find({invite: inviteId})
 
-    if(!consultation){
-      const [anonymousConsultation] = await AnonymousConsultation.find({invite: inviteId})
-      if(!anonymousConsultation) return res.notFound();
-
+    if(!consultation && !anonymousConsultation){
+       return res.notFound();
     }
     if(consultation && consultation.closedAt){
       consultation.duration = consultation.createAt - consultation.closedAt
     }
 
-    const anonymousConsultationDetails = await Consultation.getAnonymousDetails(consultation)
-
-    consultation.doctorURL  = process.env.DOCTOR_URL + '/app/consultation/' + consultation.id
-
-    return res.status(200).json(anonymousConsultationDetails)
+    if(consultation){
+      const anonymousConsultationDetails = await Consultation.getAnonymousDetails(consultation)
+      consultation.doctorURL  = process.env.DOCTOR_URL + '/app/consultation/' + consultation.id
+      return res.status(200).json(anonymousConsultationDetails)
+    }
+    if(anonymousConsultation){
+      anonymousConsultation.doctorURL  = process.env.DOCTOR_URL + '/app/consultation/' + anonymousConsultation.id
+      return res.status(200).json(anonymousConsultation)
+    }
   },
   async getInvite(req, res, next){
 
