@@ -13,6 +13,7 @@ console.log('START MEDIA SERVER', sails.config.OPENVIDU_URL, sails.config.OPENVI
 // const openvidu = new OpenVidu(sails.config.OPENVIDU_URL, sails.config.OPENVIDU_SECRET);
 const fs = require('fs');
 const Json2csvParser = require('json2csv').Parser;
+const jwt = require('jsonwebtoken');
 
 const _ = require('@sailshq/lodash');
 
@@ -345,28 +346,10 @@ module.exports = {
       console.log(consultation);
       await Consultation.changeOnlineStatus(req.user, true)
       if(!req.body.invitationToken && process.env.DEFAULT_QUEUE_ID){
-        const doctors = await Queue.getQueueUsers(process.env.DEFAULT_QUEUE_ID)
-        doctors.forEach(async doctor => {
-          if (doctor && doctor.enableNotif && doctor.notifPhoneNumber) {
-            a = await sails.helpers.sms.with({
-              phoneNumber: doctor.notifPhoneNumber,
-              message: `Un patient est dans la file d'attente`
-            });
-
-          }
-        });
+        await Consultation.sendPatientReadyToQueue(consultation,  process.env.DEFAULT_QUEUE_ID)
       }else{
         if(invite && invite.queue && !invite.doctor){
-          const doctors = await Queue.getQueueUsers(invite.queue)
-          doctors.forEach(async doctor => {
-            if (doctor && doctor.enableNotif && doctor.notifPhoneNumber) {
-              a = await sails.helpers.sms.with({
-                phoneNumber: doctor.notifPhoneNumber,
-                message: `Un patient est dans la file d'attente`
-              });
-
-            }
-          });
+          await Consultation.sendPatientReadyToQueue(consultation,  invite.queue)
         }else if(invite.doctor){
           if (invite.doctor && invite.doctor.enableNotif && invite.doctor.notifPhoneNumber) {
             a = await sails.helpers.sms.with({
@@ -389,7 +372,7 @@ module.exports = {
   async acceptConsultation (req, res) {
 
     const consultation = await Consultation.updateOne({
-      _id: req.params.consultation,
+      id: req.params.consultation,
       status: 'pending'
     })
       .set({
@@ -639,7 +622,7 @@ module.exports = {
       }
 
       await Message.updateOne({
-        _id: req.params.message,
+        id: req.params.message,
         consultation: req.params.consultation
       })
       .set({
@@ -929,7 +912,136 @@ module.exports = {
       call.token = token;
     }
     res.status(200).json(call);
-  }
+  },
 
+
+  async getConsultationFromToken(req, res){
+    const token = req.query.token;
+
+    if(!token) {
+      return res.status(400).json({
+        message: 'invalidUrl'
+      });
+    }
+
+    jwt.verify(
+      token,
+      sails.config.globals.APP_SECRET,
+      async (err, decoded) => {
+        if (err) {
+          if (err.name == 'TokenExpiredError') {
+            return res.status(400).json({
+              message: 'tokenExpired'
+            });
+          }
+          return res.status(500).json({success:false, message: 'Something went wrong'});
+        }
+        const consultation = await Consultation.findOne({id: decoded.consultationId});
+        if(!consultation) {
+          return res.status(400).json({
+            message: 'invalidUrl'
+          });
+        }
+        const queue = await Queue.findOne({id: consultation.queue});
+        return res.status(200).json({id: consultation.id, status: consultation.status, queue});
+      });
+  },
+
+  async planConsultation (req, res) {
+    const {token, delay} = req.body
+
+    if(!delay || delay>60 || delay<0) {
+      return res.status(400).json({
+        message: 'invalidDelay'
+      });
+    }
+
+
+    if(!token) {
+      return res.status(400).json({
+        message: 'invalidUrl'
+      });
+    }
+
+      jwt.verify(
+        token,
+        sails.config.globals.APP_SECRET,
+        async (err, decoded) => {
+          if (err) {
+            if (err.name == 'TokenExpiredError') {
+              return res.status(400).json({
+                message: 'tokenExpired'
+              });
+            }
+            return res.status(500).json({success:false, message: 'Something went wrong'});
+          }
+          const consultation = await Consultation.findOne({id: decoded.consultationId}).populate('invite');
+          if(!consultation) {
+            return res.status(400).json({
+
+              message: 'invalidUrl'
+            });
+
+          }
+          if(consultation.status !== 'pending') {
+            return res.status(400).json({
+              message: 'alreadyStarted'
+            });
+
+          }
+
+          const doctor = await User.findOne({id: decoded.doctorId});
+          if(!doctor) {
+            return res.status(400).json({
+              message: 'invalidUrl'
+            });
+          }
+
+           const updatedConsultation = await Consultation.updateOne({
+            id: decoded.consultationId,
+            status: 'pending'
+          })
+            .set({
+              status: 'active',
+              acceptedBy: decoded.doctorId,
+              acceptedAt: new Date()
+            });
+
+          Consultation.getConsultationParticipants(consultation).forEach(participant => {
+
+            sails.sockets.broadcast(participant, 'consultationAccepted', {
+              data: {
+                consultation,
+                _id: consultation.id,
+                doctor: {
+                  firstName: doctor.firstName,
+                  lastName: doctor.lastName,
+                  phoneNumber: doctor.phoneNumber ? doctor.phoneNumber : ''
+                }
+              }
+            });
+          });
+
+          const patientLanguage = (consultation.invite && consultation.invite.patientLanguage)?
+          consultation.invite.patientLanguage:
+           process.env.DEFAULT_PATIENT_LOCALE;
+          const doctorDelayMsg = sails._t(patientLanguage, 'doctor delay in minutes', { delay, patientLanguage, branding: process.env.BRANDING })
+          const message = await Message.create({
+            text:doctorDelayMsg,
+            consultation: decoded.consultationId,
+            type: 'text',
+            to: consultation.owner
+          }).fetch();
+          await Message.afterCreate(message, (err, message) => {});
+
+
+          return res.status(200).json({
+            message: 'success'
+          });
+
+
+        })
+
+  }
 };
 

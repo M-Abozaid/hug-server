@@ -7,6 +7,7 @@
 
 const ObjectId = require('mongodb').ObjectID;
 const _ = require('@sailshq/lodash');
+const jwt = require('jsonwebtoken');
 
 
 const columns = [
@@ -529,7 +530,22 @@ module.exports = {
     return mappedConsultation;
 
   },
-  columns
+  columns,
+  async sendPatientReadyToQueue(consultation,  queue){
+    const doctors = await Queue.getQueueUsers(queue)
+    doctors.forEach(async doctor => {
+      if (doctor && doctor.enableNotif && doctor.notifPhoneNumber) {
+        const token = jwt.sign({ consultationId:consultation.id, doctorId:doctor._id.toString() }, sails.config.globals.APP_SECRET, { expiresIn: 60*60*1000 });
+        const url = `${process.env.DOCTOR_URL}/app/plan-consultation?token=${token}`;
+
+        await sails.helpers.sms.with({
+          phoneNumber: doctor.notifPhoneNumber,
+          message: `Un patient est dans la file d'attente. ${url}`
+        });
+
+      }
+    });
+  }
   // afterUpdate(consultation){
   //   Consultation.getConsultationParticipants().forEach(participant=>{
   //     sails.sockets.broadcast(participant, 'consultationUpdated', {

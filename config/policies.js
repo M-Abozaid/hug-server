@@ -71,7 +71,9 @@ module.exports.policies = {
     doctorFeedback: ['isLoggedIn', 'isConsultationOwner'],
     consultationsCSV: ['isLoggedIn', 'isAdmin'],
     testCall: true,
-    getCurrentCall: ['isLoggedIn', 'isConsultationParticipant']
+    getCurrentCall: ['isLoggedIn', 'isConsultationParticipant'],
+    getConsultationFromToken: true,
+    planConsultation: true,
     // findOne: ['isLoggedIn', 'isConsultationOwnerOrTranslator']
 
   },
