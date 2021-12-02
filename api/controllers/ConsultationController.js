@@ -351,9 +351,10 @@ module.exports = {
         if(invite && invite.queue && !invite.doctor){
           await Consultation.sendPatientReadyToQueue(consultation,  invite.queue)
         }else if(invite.doctor){
-          if (invite.doctor && invite.doctor.enableNotif && invite.doctor.notifPhoneNumber) {
-            a = await sails.helpers.sms.with({
-              phoneNumber: invite.doctor.notifPhoneNumber,
+          const doctor = await User.findOne({ id: invite.doctor });
+          if (doctor && doctor.enableNotif && doctor.notifPhoneNumber) {
+            await sails.helpers.sms.with({
+              phoneNumber: doctor.notifPhoneNumber,
               message: `Un patient est dans la file d'attente`
             });
 
