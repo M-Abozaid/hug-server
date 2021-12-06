@@ -534,17 +534,23 @@ module.exports = {
   async sendPatientReadyToQueue(consultation,  queue){
     const doctors = await Queue.getQueueUsers(queue)
     doctors.forEach(async doctor => {
-      if (doctor && doctor.enableNotif && doctor.notifPhoneNumber) {
-        const token = jwt.sign({ consultationId:consultation.id, doctorId:doctor._id.toString() }, sails.config.globals.APP_SECRET, { expiresIn: 60*60*1000 });
-        const url = `${process.env.DOCTOR_URL}/app/plan-consultation?token=${token}`;
-
-        await sails.helpers.sms.with({
-          phoneNumber: doctor.notifPhoneNumber,
-          message: `Un patient est dans la file d'attente. ${url}`
-        });
-
-      }
+    await  Consultation.sendPatientReadyToDoctor(consultation, doctor)
     });
+  },
+    async sendPatientReadyToDoctor(consultation,  doctor){
+
+        if (doctor && doctor.enableNotif && doctor.notifPhoneNumber) {
+          const token = jwt.sign({ consultationId:consultation.id, doctorId:doctor._id.toString() }, sails.config.globals.APP_SECRET, { expiresIn: 60*60*1000 });
+          const url = `${process.env.DOCTOR_URL}/app/plan-consultation?token=${token}`;
+          const doctorLanguage = doctor.preferredLanguage || process.env.DEFAULT_DOCTOR_LOCALE;
+
+          await sails.helpers.sms.with({
+            phoneNumber: doctor.notifPhoneNumber,
+            message: sails._t(doctorLanguage,"patient is ready",{url})
+          });
+
+        }
+
   }
   // afterUpdate(consultation){
   //   Consultation.getConsultationParticipants().forEach(participant=>{
