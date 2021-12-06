@@ -539,8 +539,9 @@ module.exports = {
   },
     async sendPatientReadyToDoctor(consultation,  doctor){
 
+      const doctorId = doctor._id?doctor._id.toString():doctor.id;
         if (doctor && doctor.enableNotif && doctor.notifPhoneNumber) {
-          const token = jwt.sign({ consultationId:consultation.id, doctorId:doctor._id.toString() }, sails.config.globals.APP_SECRET, { expiresIn: 60*60*1000 });
+          const token = jwt.sign({ consultationId:consultation.id, doctorId }, sails.config.globals.APP_SECRET, { expiresIn: 60*60*1000 });
           const url = `${process.env.DOCTOR_URL}/app/plan-consultation?token=${token}`;
           const doctorLanguage = doctor.preferredLanguage || process.env.DEFAULT_DOCTOR_LOCALE;
 
