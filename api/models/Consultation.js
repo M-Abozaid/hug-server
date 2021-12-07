@@ -540,26 +540,26 @@ module.exports = {
   async sendPatientReadyToDoctor(consultation,  doctor){
 
     const doctorId = doctor._id?doctor._id.toString():doctor.id;
-      if (doctor && doctor.enableNotif && doctor.notifPhoneNumber) {
+    if (doctor && doctor.enableNotif && doctor.notifPhoneNumber) {
 
-        const tokenString = await PublicInvite.generateToken()
-        const token = await Token.create({token:tokenString, user:doctorId, value:consultation.id}).fetch();
-        const db = Consultation.getDatastore().manager;
-        const tokenCollection = db.collection('token');
-        await tokenCollection.update({ _id: new ObjectId(token.id) }, {
-          $set: {
-            closedAtISO: new Date(),
-          }
-        });
-        const url = `${process.env.DOCTOR_URL}/app/plan-consultation?token=${tokenString}`;
-        const doctorLanguage = doctor.preferredLanguage || process.env.DEFAULT_DOCTOR_LOCALE;
+      const tokenString = await PublicInvite.generateToken()
+      const token = await Token.create({token:tokenString, user:doctorId, value:consultation.id}).fetch();
+      const db = Consultation.getDatastore().manager;
+      const tokenCollection = db.collection('token');
+      await tokenCollection.update({ _id: new ObjectId(token.id) }, {
+        $set: {
+          closedAtISO: new Date(),
+        }
+      });
+      const url = `${process.env.DOCTOR_URL}/app/plan-consultation?token=${tokenString}`;
+      const doctorLanguage = doctor.preferredLanguage || process.env.DEFAULT_DOCTOR_LOCALE;
 
-        await sails.helpers.sms.with({
-          phoneNumber: doctor.notifPhoneNumber,
-          message: sails._t(doctorLanguage,"patient is ready",{url})
-        });
+      await sails.helpers.sms.with({
+        phoneNumber: doctor.notifPhoneNumber,
+        message: sails._t(doctorLanguage,"patient is ready",{url})
+      });
 
-      }
+    }
 
   }
   // afterUpdate(consultation){
