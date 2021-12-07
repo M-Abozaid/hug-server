@@ -911,27 +911,28 @@ module.exports = {
 
 
   async getConsultationFromToken(req, res){
-    const token = req.query.token;
+    const tokenString = req.query.token;
 
-    if(!token) {
+    if(!tokenString) {
       return res.status(400).json({
         message: 'invalidUrl'
       });
     }
 
-    jwt.verify(
-      token,
-      sails.config.globals.APP_SECRET,
-      async (err, decoded) => {
-        if (err) {
-          if (err.name == 'TokenExpiredError') {
+
+    try {
+
+        const token = await Token.findOne({token:tokenString});
+
+        if(!token) {
             return res.status(400).json({
               message: 'tokenExpired'
             });
           }
-          return res.status(500).json({success:false, message: 'Something went wrong'});
-        }
-        const consultation = await Consultation.findOne({id: decoded.consultationId});
+
+        const consultationId = token.value;
+
+        const consultation = await Consultation.findOne({id: consultationId});
         if(!consultation) {
           return res.status(400).json({
             message: 'invalidUrl'
@@ -939,11 +940,16 @@ module.exports = {
         }
         const queue = await Queue.findOne({id: consultation.queue});
         return res.status(200).json({id: consultation.id, status: consultation.status, queue});
-      });
+    } catch (error) {
+
+      return res.status(500).json({success:false, message: 'Something went wrong'});
+    }
+
+
   },
 
   async planConsultation (req, res) {
-    const {token, delay} = req.body
+    const {delay} = req.body
 
     if(!delay || delay>60 || delay<0) {
       return res.status(400).json({
@@ -952,90 +958,89 @@ module.exports = {
     }
 
 
-    if(!token) {
+    if(!req.body.token) {
       return res.status(400).json({
         message: 'invalidUrl'
       });
     }
+    try {
 
-      jwt.verify(
-        token,
-        sails.config.globals.APP_SECRET,
-        async (err, decoded) => {
-          if (err) {
-            if (err.name == 'TokenExpiredError') {
-              return res.status(400).json({
-                message: 'tokenExpired'
-              });
+      const token = await Token.findOne({token:req.body.token});
+
+      if(!token) {
+          return res.status(400).json({
+            message: 'tokenExpired'
+          });
+        }
+
+      const consultationId = token.value;
+
+      const consultation = await Consultation.findOne({id: consultationId}).populate('invite');
+      if(!consultation) {
+        return res.status(400).json({
+          message: 'invalidUrl'
+        });
+
+      }
+      if(consultation.status !== 'pending') {
+        return res.status(400).json({
+          message: 'alreadyStarted'
+        });
+
+      }
+
+      const doctor = await User.findOne({id: token.user});
+      if(!doctor) {
+        return res.status(400).json({
+          message: 'invalidUrl'
+        });
+      }
+
+      await Consultation.updateOne({
+        id: consultationId,
+        status: 'pending'
+      }).set({
+        status: 'active',
+        acceptedBy: token.user,
+        acceptedAt: new Date()
+      });
+
+      Consultation.getConsultationParticipants(consultation).forEach(participant => {
+
+        sails.sockets.broadcast(participant, 'consultationAccepted', {
+          data: {
+            consultation,
+            _id: consultation.id,
+            doctor: {
+              firstName: doctor.firstName,
+              lastName: doctor.lastName,
+              phoneNumber: doctor.phoneNumber ? doctor.phoneNumber : ''
             }
-            return res.status(500).json({success:false, message: 'Something went wrong'});
           }
-          const consultation = await Consultation.findOne({id: decoded.consultationId}).populate('invite');
-          if(!consultation) {
-            return res.status(400).json({
+        });
+      });
 
-              message: 'invalidUrl'
-            });
-
-          }
-          if(consultation.status !== 'pending') {
-            return res.status(400).json({
-              message: 'alreadyStarted'
-            });
-
-          }
-
-          const doctor = await User.findOne({id: decoded.doctorId});
-          if(!doctor) {
-            return res.status(400).json({
-              message: 'invalidUrl'
-            });
-          }
-
-           const updatedConsultation = await Consultation.updateOne({
-            id: decoded.consultationId,
-            status: 'pending'
-          })
-            .set({
-              status: 'active',
-              acceptedBy: decoded.doctorId,
-              acceptedAt: new Date()
-            });
-
-          Consultation.getConsultationParticipants(consultation).forEach(participant => {
-
-            sails.sockets.broadcast(participant, 'consultationAccepted', {
-              data: {
-                consultation,
-                _id: consultation.id,
-                doctor: {
-                  firstName: doctor.firstName,
-                  lastName: doctor.lastName,
-                  phoneNumber: doctor.phoneNumber ? doctor.phoneNumber : ''
-                }
-              }
-            });
-          });
-
-          const patientLanguage = (consultation.invite && consultation.invite.patientLanguage)?
-          consultation.invite.patientLanguage:
-           process.env.DEFAULT_PATIENT_LOCALE;
-          const doctorDelayMsg = sails._t(patientLanguage, 'doctor delay in minutes', { delay, patientLanguage, branding: process.env.BRANDING })
-          const message = await Message.create({
-            text:doctorDelayMsg,
-            consultation: decoded.consultationId,
-            type: 'text',
-            to: consultation.owner
-          }).fetch();
-          await Message.afterCreate(message, (err, message) => {});
+      const patientLanguage = (consultation.invite && consultation.invite.patientLanguage)?
+      consultation.invite.patientLanguage:
+       process.env.DEFAULT_PATIENT_LOCALE;
+      const doctorDelayMsg = sails._t(patientLanguage, 'doctor delay in minutes', { delay, patientLanguage, branding: process.env.BRANDING })
+      const message = await Message.create({
+        text:doctorDelayMsg,
+        consultation: consultationId,
+        type: 'text',
+        to: consultation.owner
+      }).fetch();
+      await Message.afterCreate(message, (err, message) => {});
 
 
-          return res.status(200).json({
-            message: 'success'
-          });
+      return res.status(200).json({
+        message: 'success'
+      });
+    } catch (error) {
+      return res.status(500).json({success:false, message: 'Something went wrong'});
+    }
 
 
-        })
 
   }
 };

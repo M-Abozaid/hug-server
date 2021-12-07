@@ -537,20 +537,29 @@ module.exports = {
     await  Consultation.sendPatientReadyToDoctor(consultation, doctor)
     });
   },
-    async sendPatientReadyToDoctor(consultation,  doctor){
+  async sendPatientReadyToDoctor(consultation,  doctor){
 
-      const doctorId = doctor._id?doctor._id.toString():doctor.id;
-        if (doctor && doctor.enableNotif && doctor.notifPhoneNumber) {
-          const token = jwt.sign({ consultationId:consultation.id, doctorId }, sails.config.globals.APP_SECRET, { expiresIn: 60*60*1000 });
-          const url = `${process.env.DOCTOR_URL}/app/plan-consultation?token=${token}`;
-          const doctorLanguage = doctor.preferredLanguage || process.env.DEFAULT_DOCTOR_LOCALE;
+    const doctorId = doctor._id?doctor._id.toString():doctor.id;
+      if (doctor && doctor.enableNotif && doctor.notifPhoneNumber) {
 
-          await sails.helpers.sms.with({
-            phoneNumber: doctor.notifPhoneNumber,
-            message: sails._t(doctorLanguage,"patient is ready",{url})
-          });
+        const tokenString = await PublicInvite.generateToken()
+        const token = await Token.create({token:tokenString, user:doctorId, value:consultation.id}).fetch();
+        const db = Consultation.getDatastore().manager;
+        const tokenCollection = db.collection('token');
+        await tokenCollection.update({ _id: new ObjectId(token.id) }, {
+          $set: {
+            closedAtISO: new Date(),
+          }
+        });
+        const url = `${process.env.DOCTOR_URL}/app/plan-consultation?token=${tokenString}`;
+        const doctorLanguage = doctor.preferredLanguage || process.env.DEFAULT_DOCTOR_LOCALE;
 
-        }
+        await sails.helpers.sms.with({
+          phoneNumber: doctor.notifPhoneNumber,
+          message: sails._t(doctorLanguage,"patient is ready",{url})
+        });
+
+      }
 
   }
   // afterUpdate(consultation){
