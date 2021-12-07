@@ -477,7 +477,7 @@ module.exports = {
       const consultation = await Consultation.findOne({
         _id: req.params.consultation
       });
-      console.log('Got consultation', consultation.id);
+
 
 
       const callerToken = await sails.helpers.getMediasoupToken.with({roomId: consultation.id, peerId: req.user.id, server: mediasoupServer})
@@ -496,6 +496,14 @@ module.exports = {
 
       console.log('Callee id', calleeId);
 
+
+      if(!consultation.firstCallAt){
+        await Consultation.updateOne({
+          id: consultation.id,
+        }).set({
+          firstCallAt: new Date()
+        });
+      }
       // create a new message
       const msg = await Message.create({
         type: (req.query.audioOnly === 'true') ? 'audioCall' : 'videoCall',
@@ -1002,7 +1010,8 @@ module.exports = {
       }).set({
         status: 'active',
         acceptedBy: token.user,
-        acceptedAt: new Date()
+        acceptedAt: new Date(),
+        consultationEstimatedAt: new Date(new Date().getTime() + (delay * 60000))
       });
 
       Consultation.getConsultationParticipants(consultation).forEach(participant => {

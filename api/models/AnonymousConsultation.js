@@ -97,6 +97,12 @@ module.exports = {
     interpreterName: {
       type: 'string',
     },
+    consultationEstimatedAt: {
+      type: 'number'
+    },
+    firstCallAt: {
+      type: 'number'
+    }
   }
 
 };

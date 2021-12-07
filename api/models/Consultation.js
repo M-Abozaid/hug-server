@@ -31,7 +31,9 @@ const columns = [
   { colName: 'Nombre de participants prévus', key: 'numberOfPlannedParticipants'},
   { colName: 'Langues' , key: 'languages'},
   { colName: 'Organisation d\'interprétariat', key: 'translationOrganization'},
-  { colName: 'Nom de l\'interprète', key: 'interpreterName' }
+  { colName: 'Nom de l\'interprète', key: 'interpreterName' },
+  { colName: 'consultationEstimatedAt', key: 'Prise en charge estimée' },
+  { colName: 'firstCallAt', key: 'Premier appel effectué' },
 
 ];
 
@@ -146,6 +148,12 @@ module.exports = {
     },
     scheduledFor: {
       type: 'number'
+    },
+    consultationEstimatedAt: {
+      type: 'number'
+    },
+    firstCallAt: {
+      type: 'number'
     }
   },
 
@@ -235,7 +243,9 @@ module.exports = {
       doctor: consultation.doctor,
       invite: consultation.invite,
       invitedBy: consultation.invitedBy,
-      numberOfPlannedParticipants: 2
+      numberOfPlannedParticipants: 2,
+      firstCallAt: consultation.firstCallAt,
+      consultationEstimatedAt: consultation.consultationEstimatedAt
 
     };
     if (consultation.invite) {
@@ -297,6 +307,8 @@ module.exports = {
       anonymousConsultation.missedCallsCount = missedCallsCount;
       anonymousConsultation.successfulCallsCount = successfulCallsCount;
       anonymousConsultation.averageCallDuration = averageCallDuration;
+      anonymousConsultation.firstCallAt = firstCallAt;
+      anonymousConsultation.consultationEstimatedAt = consultationEstimatedAt;
 
       console.log('anonymous consultation ', anonymousConsultation);
     } catch (error) {
