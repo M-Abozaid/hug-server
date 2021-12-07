@@ -43,6 +43,6 @@
 	"translation request refused subject": "Demande d'interprète refusée",
 	"translator is ready subject":"Demande d'interprète acceptée",
 	"translator is ready":"Bonjour,\nl'interprète a accepté votre invitation à votre consultation. Merci de vous connecter à %(branding)s pour lancer sa prise en charge.",
-  "doctor delay in minutes": "Thanks for your request, I will take care this consultation in approximately %(delay)s minutes.",
+  "doctor delay in minutes": "Merci pour votre patience, je vais prendre la consultation dans approximativement %(delay)s minutes.",
   "patient is ready": "Un patient est dans la file d'attente. Vous pouvez lui fournir une estimation de son attente avec le lien suivant %(url)s"
 }
