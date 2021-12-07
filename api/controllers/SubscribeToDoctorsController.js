@@ -13,7 +13,7 @@
  * @param {string} room
  */
 function joinP (req, room) {
-  console.log('join ', room);
+
   return new Promise((resolve, reject) => {
     sails.sockets.join(req, room, (err) => {
       if (err) {
