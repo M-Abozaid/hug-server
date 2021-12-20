@@ -307,7 +307,6 @@ module.exports = {
       anonymousConsultation.missedCallsCount = missedCallsCount;
       anonymousConsultation.successfulCallsCount = successfulCallsCount;
       anonymousConsultation.averageCallDuration = averageCallDuration;
-      anonymousConsultation.firstCallAt = firstCallAt;
       anonymousConsultation.consultationEstimatedAt = consultationEstimatedAt;
 
       console.log('anonymous consultation ', anonymousConsultation);
