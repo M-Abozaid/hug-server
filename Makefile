@@ -1,5 +1,5 @@
 node_version:=$(shell node -v)
-npm_version:=$(shell npm -v)
+yarn_version:=$(shell npx yarn -v)
 timeStamp:=$(shell date +%Y%m%d%H%M%S)
 
 
@@ -8,10 +8,10 @@ timeStamp:=$(shell date +%Y%m%d%H%M%S)
 show:
 		@ echo Timestamp: "$(timeStamp)"
 		@ echo Node Version: $(node_version)
-		@ echo npm_version: $(npm_version)
+		@ echo yarn_version: $(yarn_version)
 
 install:
-		@ npm install --unsafe-perm
+		@ npx yarn install
 		@ ./node_modules/.bin/grunt build:production
 
 archive:
@@ -19,7 +19,7 @@ archive:
 
 test:
 		echo "test the app"
-		@ npm run test
+		@ npx yarn run test
 
 clean:
 		echo "cleaning the dist directory"
