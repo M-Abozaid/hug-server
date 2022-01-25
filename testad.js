@@ -9,7 +9,7 @@ const config = { url: process.env.AD_URIS,
 const ad = new ActiveDirectory(config);
 
 var opts = {
-  filter: `mail=Olivier.Bitsch@hcuge.ch`,
+  filter: `mail=Maryline.Bovero@hcuge.ch`,
   includeMembership : ['user'],
   includeDeleted : false,
   attributes: []
