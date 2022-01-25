@@ -10,7 +10,7 @@ const passportCustom = require('passport-custom');
 
 const CustomStrategy = passportCustom.Strategy;
 
-const ActiveDirectory = require('activedirectory');
+const ActiveDirectory = require('activedirectory2');
 const config = { url: process.env.AD_URIS,
                baseDN: process.env.AD_BASE,
                username: process.env.AD_USER,
