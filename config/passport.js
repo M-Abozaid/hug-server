@@ -320,6 +320,8 @@ console.log('env >>>> ', process.env.NODE_ENV);
 
           if(process.env.AD_ENABLE){
 
+            console.log('Sending AD request with filter: ',`${process.env.AD_ATTR_LOGIN}=${profile[process.env.EMAIL_FIELD]}`)
+            console.log('AD_URIS',process.env.AD_URIS)
             var opts = {
               filter: `${process.env.AD_ATTR_LOGIN}=${profile[process.env.EMAIL_FIELD]}`,
               includeMembership : ['user'],
