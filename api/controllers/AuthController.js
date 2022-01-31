@@ -610,8 +610,8 @@ module.exports = {
            firstName:user.firstName,
            lastName:user.lastName
           }, sails.config.globals.APP_SECRET);
-        console.log('login', `${process.env.DOCTOR_URL}/app?tk=${nativeToken}`)
-        return res.redirect(`${process.env.DOCTOR_URL}/app?tk=${nativeToken}`);
+        // console.log('login', `${process.env.DOCTOR_URL}/app?tk=${nativeToken}`)
+        return res.redirect(`${process.env.DOCTOR_URL}/app?tk=${nativeToken}${req.query.returnUrl ? `&returnUrl=${req.query.returnUrl}` : ''}`);
 
       } catch (error) {
         console.log('error ', error);
