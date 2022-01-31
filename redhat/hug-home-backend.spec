@@ -1,6 +1,6 @@
 Summary: Front end for Hug@Home Backend application
 Name: hug-home-backend
-Version: 4.6.0
+Version: 4.7.0
 Release: 2
 Group: Web Application
 License: HUG
