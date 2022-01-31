@@ -91,6 +91,7 @@ module.exports.policies = {
     samlCallback: true,
     getConfig: true,
     logout: true,
+    externalAuth: true,
   },
   SupportController: {
     supportRequest: ['isLoggedIn']

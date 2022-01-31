@@ -573,6 +573,51 @@ module.exports = {
       androidStoreUrl: process.env.ANDROID_STORE_URL,
       androidStoreTitle: process.env.ANDROID_STORE_TITLE
     });
+  },
+  externalAuth (req, res) {
+    const { token } = req.query;
+    if (!token) {
+      return res.badRequest();
+    }
+    jwt.verify(token, process.env.SHARED_EXTERNAL_AUTH_SECRET, async (err, decoded) => {
+      if(err){
+        console.log('error ', err);
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
+      if(!decoded.email){
+        return res.status(401).json({ error: 'Email is required' });
+      }
+      try {
+        let user = await User.findOne({
+          email: decoded.email
+        });
+        if(!user){
+          user = await User.create({
+            email:decoded.email,
+            firstName:decoded.firstName,
+            lastName:decoded.lastName,
+            phoneNumber:decoded.phoneNumber,
+            notifPhoneNumber:decoded.notifPhoneNumber,
+            preferredLanguage:decoded.preferredLanguage || process.env.DEFAULT_DOCTOR_LOCALE,
+            role: 'doctor'
+          }).fetch();
+        }
+
+        const nativeToken = jwt.sign({
+           id: user.id,
+           email:user.email,
+           firstName:user.firstName,
+           lastName:user.lastName
+          }, sails.config.globals.APP_SECRET);
+        console.log('login', `${process.env.DOCTOR_URL}/app?tk=${nativeToken}`)
+        return res.redirect(`${process.env.DOCTOR_URL}/app?tk=${nativeToken}`);
+
+      } catch (error) {
+        console.log('error ', error);
+        return res.status(500).json({ error: 'Unexpected error' });
+      }
+    })
   }
 };
 
