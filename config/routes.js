@@ -72,7 +72,7 @@ module.exports.routes = {
   'GET /api/v1/invite': 'PublicInviteController.find',
   'GET /api/v1/invite/:id': 'InviteController.getInvite',
   'DELETE /api/v1/invite/:id': 'PublicInviteController.destroy',
-  'PATCH /api/v1/invite/:id': 'PublicInviteController.update',
+  'PATCH /api/v1/invite/:id': 'InviteController.update',
   'POST /api/v1/invite/:invite/resend': 'InviteController.resend',
   'POST /api/v1/invite/:invite/revoke': 'InviteController.revoke',
   'GET /api/v1/invite/:invite/consultation': 'InviteController.getConsultation',

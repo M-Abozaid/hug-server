@@ -103,6 +103,7 @@ module.exports.policies = {
     findByConsultation: ['isLoggedIn', 'isConsultationOwner'],
     getConsultation: ['isLoggedIn', 'isInviteOwner'],
     getInvite: ['isLoggedIn', 'canInvite','isInviteOwner'],
+    update: ['isLoggedIn', 'canInvite','isInviteOwner'],
     closeConsultation: ['isLoggedIn', 'canInvite', 'isScheduler' ,'isInviteOwner'],
     findByToken: true
   },
@@ -111,7 +112,6 @@ module.exports.policies = {
     '*': false,
     find: ['isLoggedIn', 'canInvite', 'isInviteOwner'],
     destroy: ['isLoggedIn', 'canInvite','isInviteOwner'],
-    update: ['isLoggedIn', 'canInvite','isInviteOwner', 'validateInviteUpdate'],
     findOne: ['isLoggedIn', 'canInvite','isInviteOwner'],
   },
 
