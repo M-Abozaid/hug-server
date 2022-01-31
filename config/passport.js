@@ -318,7 +318,7 @@ console.log('env >>>> ', process.env.NODE_ENV);
         }
           let user = await User.findOne({ email: profile[process.env.EMAIL_FIELD], role:"doctor" }).populate('allowedQueues');
 
-          if(process.env.AD_ENABLE){
+          if(process.env.AD_ENABLE && process.env.AD_ENABLE !== 'false'){
 
             console.log('Sending AD request with filter: ',`${process.env.AD_ATTR_LOGIN}=${profile[process.env.EMAIL_FIELD]}`)
             console.log('AD_URIS',process.env.AD_URIS)
