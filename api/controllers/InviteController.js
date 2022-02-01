@@ -382,6 +382,7 @@ module.exports = {
   async update(req, res) {
     let invite = await PublicInvite.findOne({ id: req.params.id, type:"PATIENT" }).populate('guestInvite').populate('translatorInvite').populate('translatorRequestInvite').populate('doctor');;
 
+
     // if no invite return 404
     if(!invite){
       return res.notFound()
@@ -405,10 +406,30 @@ module.exports = {
     const currentUserPublic = {id: req.user.id, firstName: req.user.firstName, lastName: req.user.lastName , role: req.user.role};
 
 
+    const {
+      firstName,
+      lastName,
+      emailAddress,
+      phoneNumber,
+      scheduledFor,
+      birthDate,
+      patientTZ,
+      doctorEmail,
+      queue,
+      translationOrganization,
+      gender,
+      language,
+      guestEmailAddress,
+      guestPhoneNumber,
+      IMADTeam,
+      doctorLanguage,
+      cancelGuestInvite,
+      cancelTranslationRequestInvite,
+      cancelScheduledFor
+    } = req.body;
 
     // validate provided fields
-
-    if(req.body.scheduledFor && !moment(req.body.scheduledFor).isValid()){
+    if(scheduledFor && !moment(scheduledFor).isValid()){
       return res.status(400).json({
         success: false,
         error: 'ScheduledFor is not a valid date'
@@ -416,14 +437,14 @@ module.exports = {
     }
 
 
-    if(req.body.birthDate && !moment(req.body.birthDate).isValid()){
+    if(birthDate && !moment(birthDate).isValid()){
       return res.status(400).json({
         success: false,
         error: 'birthDate is not a valid date'
       });
     }
 
-    if(req.body.scheduledFor && new Date(req.body.scheduledFor) < new Date()){
+    if(scheduledFor && new Date(scheduledFor) < new Date()){
       return res.status(400).json({
         success: false,
         error: 'Consultation Time cannot be in the past'
@@ -432,144 +453,147 @@ module.exports = {
 
 
 
-
-    if(req.body.patientTZ){
-
-      const isTZValid = moment.tz.names().includes(req.body.patientTZ)
+    if(patientTZ){
+      const isTZValid = moment.tz.names().includes(patientTZ)
       if(!isTZValid){
         return res.status(400).json({
           success: false,
-          error: `Unknown timezone identifier ${req.body.patientTZ}`
+          error: `Unknown timezone identifier ${patientTZ}`
         });
       }
     }
 
     let doctor;
-    if(req.body.doctorEmail){
+    if(doctorEmail){
       // get doctor
-      [doctor] = await User.find({role: 'doctor', email: req.body.doctorEmail})
+      [doctor] = await User.find({role: 'doctor', email: doctorEmail})
       if(doctor){
         doctor = _.pick(doctor, ['id', 'firstName', 'lastName', 'email', 'role', 'organization'])
       }
 
 
       if(!doctor){
-        return res.status(400).json({success: false, error: `Doctor with email ${req.body.doctorEmail} not found`})
+        return res.status(400).json({success: false, error: `Doctor with email ${doctorEmail} not found`})
       }
       // a
     }else if(req.user.role === 'doctor'){
       doctor = currentUserPublic;
     }
 
-    let queue;
-    if (req.body.queue) {
-      queue = await Queue.findOne({
+    let queueObj;
+    if (queue) {
+      queueObj = await Queue.findOne({
         or: [
-          { name: req.body.queue },
-          { id: req.body.queue }
+          { name: queue },
+          { id: queue }
         ]
       });
     }
 
 
-    if (req.body.queue && !queue) {
+    if (queue && !queueObj) {
       return res.status(400).json({
         error: true,
-        message: `queue ${req.body.queue} doesn't exist`
+        message: `queue ${queue} doesn't exist`
       });
     }
 
-    let translationOrganization;
-    if (req.body.translationOrganization) {
-      translationOrganization = await TranslationOrganization.findOne({
+    let translationOrganizationObj;
+    if (translationOrganization) {
+      translationOrganizationObj = await TranslationOrganization.findOne({
         or: [
-          { name: req.body.translationOrganization },
-          { id: req.body.translationOrganization }
+          { name: translationOrganization },
+          { id: translationOrganization }
         ]
       });
+
+      if (!translationOrganizationObj) {
+        return res.status(400).json({
+          error: true,
+          message: `translationOrganization ${translationOrganization} doesn't exist`
+        });
+      }
+      if ((translationOrganizationObj.languages || []).indexOf(language) === -1) {
+        return res.status(400).json({
+          error: true,
+          message: `patientLanguage ${language} doesn't exist`
+        });
+      }
     }
 
-    if (req.body.translationOrganization && !translationOrganization) {
-      return res.status(400).json({
-        error: true,
-        message: `translationOrganization ${req.body.translationOrganization} doesn't exist`
-      });
-    }
-
-
-
-    if (translationOrganization && (translationOrganization.languages || []).indexOf(req.body.language) === -1) {
-      return res.status(400).json({
-        error: true,
-        message: `patientLanguage ${req.body.language} doesn't exist`
-      });
-    }
 
 
     let guestInvite;
-
+    const hasScheduledForChanged = scheduledFor && invite.scheduledFor !== new Date(scheduledFor).getTime();
     try {
 
 
        let inviteData = {
-        phoneNumber: req.body.phoneNumber,
-        emailAddress: req.body.emailAddress,
-        gender: req.body.gender,
-        firstName: req.body.firstName,
-        lastName: req.body.lastName,
+        phoneNumber: phoneNumber,
+        emailAddress: emailAddress,
+        gender: gender,
+        firstName: firstName,
+        lastName: lastName,
 
-        patientLanguage: req.body.language,
-        IMADTeam: req.body.IMADTeam,
-        birthDate: req.body.birthDate,
-        patientTZ: req.body.patientTZ
+        patientLanguage: language,
+        IMADTeam: IMADTeam,
+        birthDate: birthDate,
+        patientTZ: patientTZ
       };
+      // remove undefined values
       inviteData = JSON.parse(JSON.stringify(inviteData))
-      if(req.body.scheduledFor) {inviteData.scheduledFor =   new Date(req.body.scheduledFor) }
+
+      if(cancelScheduledFor){
+        inviteData.scheduledFor = 0;
+      }else if(hasScheduledForChanged) {
+        inviteData.scheduledFor = new Date(scheduledFor)
+      }
+
 
       if(doctor){
         inviteData.doctor = doctor.id;
       }
-      if (queue) {
-        inviteData.queue = queue.id;
+      if (queueObj) {
+        inviteData.queue = queueObj.id;
       }
 
 
-      if (translationOrganization && translationOrganization.id.toString() !== invite.translationOrganization) {
-        inviteData.translationOrganization = translationOrganization.id;
+
+      if (guestEmailAddress && guestEmailAddress !== invite.guestEmailAddress) {
+        inviteData.guestEmailAddress = guestEmailAddress;
       }
 
-      if (req.body.guestEmailAddress) {
-        inviteData.guestEmailAddress = req.body.guestEmailAddress;
-      }
-
-      if (req.body.guestPhoneNumber) {
-        inviteData.guestPhoneNumber = req.body.guestPhoneNumber;
+      if (guestPhoneNumber && guestPhoneNumber !== invite.guestPhoneNumber) {
+        inviteData.guestPhoneNumber = guestPhoneNumber;
       }
 
 
       // update
       invite = await PublicInvite.updateOne({ id: invite.id }).set(inviteData);
       invite = await PublicInvite.findOne({id: invite.id}).populate('guestInvite').populate('translatorInvite').populate('translatorRequestInvite').populate('doctor');
-      if (inviteData.guestPhoneNumber || inviteData.guestEmailAddress) {
+
+
+      if(cancelGuestInvite){
+       await PublicInvite.cancelGuestInvite(invite)
+      }else {
+        if (inviteData.guestPhoneNumber || inviteData.guestEmailAddress) {
 
         const guestInviteDate = {
-
           patientInvite: invite.id,
           doctor: doctor? doctor.id: req.user.id,
           invitedBy: req.user.id,
-          scheduledFor: req.body.scheduledFor ? new Date(req.body.scheduledFor) : undefined,
+          scheduledFor: invite.scheduledFor,
           type: 'GUEST',
           guestEmailAddress: inviteData.guestEmailAddress,
           guestPhoneNumber: inviteData.guestPhoneNumber,
           emailAddress: inviteData.guestEmailAddress,
           phoneNumber: inviteData.guestPhoneNumber,
-          patientLanguage: req.body.language
+          patientLanguage: language
         };
 
         // if guest invite already exits update it
-        if(invite.guestInvite){
+        if(invite.guestInvite ){
            await PublicInvite.update({id: invite.guestInvite.id}).set(guestInviteDate);
-
         }
         // else create new
         else{
@@ -578,50 +602,37 @@ module.exports = {
         }
 
       }
+    }
 
-      const isPatientLanguageDifferent = (req.body.language && req.body.language !== invite.translatorRequestInvite.patientLanguage )
-      const isDoctorLanguageDifferent = (req.body.doctorLanguage && req.body.doctorLanguage !== invite.translatorRequestInvite.doctorLanguage )
-      const isTranslationOrganizationDifferent = translationOrganization && translationOrganization.id.toString() !== invite.translatorRequestInvite.translationOrganization
-      if(invite.translatorRequestInvite){
+      if(cancelTranslationRequestInvite){
+        await PublicInvite.cancelTranslationRequestInvite(invite)
+        invite.translatorRequestInvite = null;
+        // continue to sending invite
+      }
+      // if translation requirements have changed cancel translation request invite and send new one
+      else{
 
-        if(isPatientLanguageDifferent || isDoctorLanguageDifferent || isTranslationOrganizationDifferent){
-          const translatorRequestInviteDate = {
-            patientInvite: invite.id,
-            doctor: doctor? doctor.id: req.user.id,
-            invitedBy: req.user.id,
-            scheduledFor: req.body.scheduledFor ? new Date(req.body.scheduledFor) : undefined,
-            type: 'TRANSLATOR_REQUEST',
-            patientLanguage: req.body.language,
-            doctorLanguage: req.body.doctorLanguage,
-            translationOrganization: translationOrganization? translationOrganization.id: undefined
-          };
-          const translatorRequestInvite = await PublicInvite.update({id: invite.translatorRequestInvite.id}).set(JSON.parse(JSON.stringify(translatorRequestInviteDate)));
-          createTranslationRequest(translatorRequestInvite, translationOrganization);
-
-        }
-
-      }else{
-        // else create new
-        if (translationOrganization) {
-          // create and send translator invite
+        if(!invite.translatorRequestInvite && translationOrganizationObj){
+          // create new
           const translatorRequestInviteData = {
             patientInvite: invite.id,
-            translationOrganization: translationOrganization.id,
+            translationOrganization: translationOrganizationObj.id,
             doctor: doctor? doctor.id: req.user.id,
             invitedBy: req.user.id,
-            scheduledFor: req.body.scheduledFor ? new Date(req.body.scheduledFor) : undefined,
-            patientLanguage: req.body.language,
-            doctorLanguage: req.body.doctorLanguage || process.env.DEFAULT_DOCTOR_LOCALE,
+            scheduledFor: invite.scheduledFor,
+            patientLanguage: language,
+            doctorLanguage: doctorLanguage || process.env.DEFAULT_DOCTOR_LOCALE,
             type: 'TRANSLATOR_REQUEST'
           };
 
-
           const translatorRequestInvite = await PublicInvite.create(translatorRequestInviteData).fetch();
 
-          await PublicInvite.updateOne({ id: invite.id }).set({ translatorRequestInvite: translatorRequestInvite.id });
+          await PublicInvite.updateOne({ id: invite.id }).set({
+            translatorRequestInvite: translatorRequestInvite.id,
+            translationOrganization: translationOrganizationObj.id });
 
           translatorRequestInvite.doctor = doctor || req.user
-          createTranslationRequest(translatorRequestInvite, translationOrganization);
+          createTranslationRequest(translatorRequestInvite, translationOrganizationObj);
 
 
           // that's it we don't send the invite until the translation request is accepted
@@ -630,6 +641,47 @@ module.exports = {
             invite
           });
         }
+        const isPatientLanguageDifferent = (invite.translatorRequestInvite && language && language !== invite.translatorRequestInvite.patientLanguage )
+        const isDoctorLanguageDifferent = (invite.translatorRequestInvite && doctorLanguage && doctorLanguage !== invite.translatorRequestInvite.doctorLanguage )
+        const isTranslationOrganizationDifferent = invite.translatorRequestInvite && translationOrganizationObj && translationOrganizationObj.id.toString() !== invite.translatorRequestInvite.translationOrganization
+
+        // if existing update it
+        if((translationOrganizationObj && isPatientLanguageDifferent || isDoctorLanguageDifferent || isTranslationOrganizationDifferent)){
+              await PublicInvite.cancelTranslationRequestInvite(invite)
+
+             // create and send translator invite
+             const translatorRequestInviteData = {
+              patientInvite: invite.id,
+              translationOrganization: translationOrganizationObj.id,
+              doctor: doctor? doctor.id: req.user.id,
+              invitedBy: req.user.id,
+              scheduledFor: invite.scheduledFor,
+              patientLanguage: language,
+              doctorLanguage: doctorLanguage || process.env.DEFAULT_DOCTOR_LOCALE,
+              type: 'TRANSLATOR_REQUEST'
+            };
+
+
+            const translatorRequestInvite = await PublicInvite.create(translatorRequestInviteData).fetch();
+
+            await PublicInvite.updateOne({ id: invite.id }).set({
+              translatorRequestInvite: translatorRequestInvite.id,
+              translationOrganization: translationOrganizationObj.id });
+
+            translatorRequestInvite.doctor = doctor || req.user
+            createTranslationRequest(translatorRequestInvite, translationOrganizationObj);
+
+
+            // that's it we don't send the invite until the translation request is accepted
+            return res.status(200).json({
+              success: true,
+              invite
+            });
+
+
+        }
+
+
       }
 
 
@@ -663,16 +715,16 @@ module.exports = {
         await PublicInvite.sendGuestInvite(guestInvite);
       }
     } catch (error) {
-      console.log('ERROR UPDATING Invite ', error);
+      console.log('ERROR sending Invite ', error);
       // await PublicInvite.destroyOne({ id: invite.id });
       return res.status(500).json({
         error: true,
-        message: 'Error updating Invite'
+        message: 'Error sending Invite'
       });
     }
 
 
-    if (req.body.scheduledFor) {
+    if (hasScheduledForChanged && scheduledFor) {
       if(shouldSend){
         invite.doctor = doctor
         await PublicInvite.setPatientOrGuestInviteReminders(invite);

@@ -56,7 +56,7 @@ module.exports = {
     },
     status: {
       type: 'string',
-      isIn: ['SENT', 'ACCEPTED', 'COMPLETE', 'REFUSED', 'CANCELED'],
+      isIn: ['PENDING','SENT', 'ACCEPTED', 'COMPLETE', 'REFUSED', 'CANCELED'],
       defaultsTo: 'SENT'
     },
     queue: {
@@ -408,6 +408,10 @@ module.exports = {
   async scheduleInviteJob(invite, jobTime, job){
     schedule.scheduleJob(jobTime, async () => {
       const updatedInvite = await PublicInvite.findOne({id: invite.id});
+      // if shceduledFor has changed, do not run the job
+      if(updatedInvite.scheduledFor !== invite.scheduledFor) {
+        return
+      }
 // TODO : Temporary disable this check has patient doesn't receive invite when
 // other participant are added Check Redmine #3732
 //      if(updatedInvite.updatedAt !== invite.updatedAt){
@@ -417,7 +421,38 @@ module.exports = {
       await job()
 
     });
+  },
+
+
+  async cancelTranslationRequestInvite(patientInvite) {
+
+    if(!patientInvite.translatorRequestInvite) return;
+    const translatorRequestInviteId = patientInvite.translatorRequestInvite.id || patientInvite.translatorRequestInvite;
+    await PublicInvite.destroyOne({ id: translatorRequestInviteId });
+
+    if(patientInvite.translatorInvite) {
+      const translatorInviteId = patientInvite.translatorInvite.id || patientInvite.translatorInvite;
+      await PublicInvite.destroyOne({ id: translatorInviteId });
+      await User.destroyOne({ username: translatorInviteId});
+    }
+
+    await PublicInvite.updateOne({ id: patientInvite.id }).set({
+      translatorRequestInvite:null,
+      translatorInvite:null
+    });
+
+    await PublicInvite.updateOne({ id: patientInvite.id }).set({translationOrganization: null});
+
+  },
+  async cancelGuestInvite(patientInvite){
+
+    if(!patientInvite.guestInvite) return;
+    await PublicInvite.updateOne({ id: patientInvite.id }).set({guestEmailAddress: '', guestPhoneNumber: ''});
+
+    const guestInviteId = patientInvite.guestInvite.id || patientInvite.guestInvite;
+    await PublicInvite.destroyOne({ id: guestInviteId });
+
+    await User.destroyOne({ username: guestInviteId });
+    await PublicInvite.updateOne({ id: patientInvite.id }).set({guestInvite:null});
   }
-
-
 };
