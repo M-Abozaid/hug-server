@@ -55,9 +55,9 @@ const generate = (options = {}) => {
   const silentError = options.silentError;
 
   const middleware = function (req, res, next) {
-    if(!req.options){
-      return next();
-    }
+    // if(!req.options){
+    //   return next();
+    // }
     const now = !!(req.options && (req.options.blueprintAction || req.options.action));
     let oldSendOrNext;
 
